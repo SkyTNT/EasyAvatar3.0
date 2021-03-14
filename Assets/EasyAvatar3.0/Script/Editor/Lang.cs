@@ -22,6 +22,9 @@ namespace EasyAvatar
             Control,
             Icon,
             Target,
+            Missing,
+            Property,
+            SetTo,
             BehaviorOff,
             BehaviorOn,
             ErrAvatarMenuLen1,
@@ -62,9 +65,11 @@ namespace EasyAvatar
             Control = "控件";
             Icon = "图标";
             Target = "目标";
+            Missing = "缺失";
+            Property = "属性";
+            SetTo = "设置为";
             BehaviorOff = "控件关闭时的行为";
             BehaviorOn = "控件打开时的行为";
-
             ErrAvatarMenuLen1 = "一个模型中只能有一个主菜单，请考虑创建子菜单";
             ErrMenuItemLen8 = "菜单中的项目数量不能超过8，请考虑创建子菜单";
             ErrMenuInControl = "控件中不能加菜单";
@@ -88,6 +93,9 @@ namespace EasyAvatar
             Control = "Control";
             Icon = "Icon";
             Target = "Target";
+            Missing = "Missing";
+            Property = "Property";
+            SetTo = "Set Value";
             BehaviorOff = "On Control Switch Off";
             BehaviorOn = "On Control Switch On";
             ErrAvatarMenuLen1 = "There can only be one main menu in a avatar. Consider creating a submenu.";

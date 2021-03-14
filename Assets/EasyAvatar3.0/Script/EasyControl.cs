@@ -12,6 +12,7 @@ namespace EasyAvatar
         }
         [SerializeField]
         public Texture2D icon;
+        [SerializeField]
         public List<EasyBehavior> offBehaviors, onBehaviors;
         // Start is called before the first frame update
         void Start()

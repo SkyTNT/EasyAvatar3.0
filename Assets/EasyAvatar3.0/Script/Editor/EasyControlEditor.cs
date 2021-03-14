@@ -12,6 +12,7 @@ namespace EasyAvatar
         SerializedProperty icon,offBehaviors, onBehaviors;
         GameObject avatar;
         ReorderableList offBehaviorsList, onBehaviorsList;
+
         private void OnEnable()
         {
             
@@ -24,7 +25,7 @@ namespace EasyAvatar
             onBehaviorsList  = new ReorderableList(serializedObject, onBehaviors, true, true, true, true);
             offBehaviorsList.drawHeaderCallback = (Rect rect) => GUI.Label(rect, Lang.BehaviorOff);
             onBehaviorsList.drawHeaderCallback = (Rect rect) => GUI.Label(rect, Lang.BehaviorOn);
-            offBehaviorsList.elementHeight = onBehaviorsList.elementHeight = EditorGUIUtility.singleLineHeight;
+            offBehaviorsList.elementHeight = onBehaviorsList.elementHeight = EditorGUIUtility.singleLineHeight*3 +3*2*3;
             offBehaviorsList.drawElementCallback = (Rect rect, int index, bool selected, bool focused) => DrawBehavior(rect, offBehaviors.GetArrayElementAtIndex(index));
             onBehaviorsList.drawElementCallback = (Rect rect, int index, bool selected, bool focused) => DrawBehavior(rect, onBehaviors.GetArrayElementAtIndex(index));
             serializedObject.ApplyModifiedProperties();
@@ -57,7 +58,7 @@ namespace EasyAvatar
             SerializedProperty targetPath = behavior.FindPropertyRelative("targetPath");
             GameObject tempTarget =null;
             //获取目标物体
-            if (avatar)
+            if (avatar && targetPath.stringValue != "")
             {
                 Transform tempTransform = avatar.transform.Find(targetPath.stringValue);
                 if (tempTransform)
@@ -66,25 +67,40 @@ namespace EasyAvatar
             //当前avatar是否缺失目标物体（因为是目标物体相对于avatar的）
             bool isMissing = !tempTarget && targetPath.stringValue != "";
             //计算布局
-            position.width /= 3;
+            position.y += 3;
+            position.height = EditorGUIUtility.singleLineHeight;
+
+
             Rect targetLabelRect = new Rect(position)
             {
-                width = 60
+                width = Mathf.Max(position.width/3,100)
             };
             Rect targetFieldRect = new Rect(position)
             {
-                x = targetLabelRect.width,
+                x = targetLabelRect.x + targetLabelRect.width,
                 width = position.width - targetLabelRect.width
                 
             };
             Rect propertyLabelRect = new Rect(position)
             {
-                x = position.width,
-                width = 60
+                y = position.y + position.height +6,
+                width = Mathf.Max(position.width/3,100)
             };
             Rect propertyFieldRect = new Rect(position)
             {
                 x = propertyLabelRect.x + propertyLabelRect.width,
+                y =position.y + position.height +6,
+                width = position.width - propertyLabelRect.width
+            };
+            Rect valueLabelRect = new Rect(position)
+            {
+                y = position.y + (position.height + 6) * 2,
+                width = Mathf.Max(position.width / 3, 100)
+            };
+            Rect valueFieldRect = new Rect(position)
+            {
+                x = propertyLabelRect.x + propertyLabelRect.width,
+                y = position.y + (position.height + 6) * 2,
                 width = position.width - propertyLabelRect.width
             };
 
@@ -92,62 +108,21 @@ namespace EasyAvatar
             EditorGUI.LabelField(targetLabelRect, Lang.Target);
             tempTarget =(GameObject) EditorGUI.ObjectField(targetFieldRect, tempTarget, typeof(GameObject),true);
             if (isMissing)
-                EditorGUI.LabelField(targetFieldRect, "Missing",MyGUIStyle.yellowLabel);
+            {
+                Rect missingRect = new Rect(targetFieldRect) { width = targetFieldRect.width - targetFieldRect.height -2 };
+                GUI.Box(missingRect, GUIContent.none, "Tag MenuItem");
+                EditorGUI.LabelField(missingRect, Lang.Missing +":"+targetPath.stringValue, MyGUIStyle.yellowLabel);
+            }
             if (tempTarget)
             {
                 targetPath.stringValue = CalculateGameObjectPath(tempTarget);
             }
-            if (GUILayout.Button("log"))
-            {
-                EasyPropertySelector.open(avatar,tempTarget);
-                
-                //LogProperty(tempTarget);
-            }
-            //EditorGUI.LabelField(propertyLabelRect, Lang.Target);
+            EditorGUI.LabelField(propertyLabelRect, Lang.Property);
+            EasyPropertySelector.EditorCurveBindingField(propertyFieldRect, behavior.FindPropertyRelative("targetProperty"), behavior.FindPropertyRelative("targetPropertyType"), avatar, tempTarget);
+            EditorGUI.LabelField(valueLabelRect, Lang.SetTo);
 
-            //EditorGUI.PropertyField(propertyFieldRect, behavior.FindPropertyRelative("targetProperty"), new GUIContent());
-           
         }
-
-        public bool DrawButton(Rect rect,string content)
-        {
-            /*Event evt = Event.current;
-            EventType type = evt.rawType;
-            switch (type)
-            {
-                case EventType.MouseDown:
-                    if (position.Contains(evt.mousePosition) && evt.button == 0)
-                    {
-                        GUIUtility.hotControl = id;
-                        evt.Use();
-                    }
-                    break;
-                case EventType.MouseUp:
-                    if (GUIUtility.hotControl == id)
-                    {
-                        GUIUtility.hotControl = 0;
-                        evt.Use();
-
-                        if (position.Contains(evt.mousePosition))
-                        {
-                            return true;
-                        }
-                    }
-                    break;
-            }*/
-            return false;
-        }
-
-        public void LogProperty(GameObject gameObject)
-        {
-            EditorCurveBinding[] bindings= AnimationUtility.GetAnimatableBindings(gameObject, avatar);
-            foreach(EditorCurveBinding binding in bindings)
-            {
-                Debug.Log(binding.propertyName);
-                Debug.Log(binding.type);
-                Debug.Log(binding.path);
-            }
-        }
+       
         
 
         public GameObject GetAvatar()
