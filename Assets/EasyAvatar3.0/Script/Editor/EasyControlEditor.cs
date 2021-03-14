@@ -56,6 +56,9 @@ namespace EasyAvatar
         public void DrawBehavior(Rect position, SerializedProperty behavior)
         {
             SerializedProperty targetPath = behavior.FindPropertyRelative("targetPath");
+            SerializedProperty targetProperty = behavior.FindPropertyRelative("targetProperty");
+            SerializedProperty targetPropertyType = behavior.FindPropertyRelative("targetPropertyType");
+
             GameObject tempTarget =null;
             //获取目标物体
             if (avatar && targetPath.stringValue != "")
@@ -117,9 +120,15 @@ namespace EasyAvatar
             {
                 targetPath.stringValue = CalculateGameObjectPath(tempTarget);
             }
+            
             EditorGUI.LabelField(propertyLabelRect, Lang.Property);
-            EasyPropertySelector.EditorCurveBindingField(propertyFieldRect, behavior.FindPropertyRelative("targetProperty"), behavior.FindPropertyRelative("targetPropertyType"), avatar, tempTarget);
+            EasyPropertySelector.EditorCurveBindingField(propertyFieldRect, targetProperty, targetPropertyType, avatar, tempTarget);
             EditorGUI.LabelField(valueLabelRect, Lang.SetTo);
+            if (GUI.Button(valueFieldRect, "log"))
+            {
+                Debug.Log(AnimationUtility.GetEditorCurveValueType(avatar, new EditorCurveBinding { path = targetPath.stringValue, propertyName = targetProperty.stringValue, type = System.Type.GetType(targetPropertyType.stringValue) }));
+                
+            }
 
         }
        
