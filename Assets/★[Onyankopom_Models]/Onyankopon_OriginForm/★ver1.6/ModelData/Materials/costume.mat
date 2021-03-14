@@ -199,6 +199,7 @@ Material:
     - _BaseShade_Feather: 0.1
     - _Base_Speed: 0
     - _BlendMode: 3
+    - _BlendOperation: 4
     - _BlightOffset: 0
     - _BlightOutput: 1
     - _BlurLevelMatcap: 0
@@ -413,7 +414,7 @@ Material:
     - _UvAnimScrollX: 0
     - _UvAnimScrollY: 0
     - _VersionH: 1
-    - _VersionL: 1
+    - _VersionL: 2
     - _VersionM: 4
     - _VertexColor: 0
     - _ZWrite: 1

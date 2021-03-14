@@ -13,16 +13,40 @@ namespace EasyAvatar
         public UnityEngine.Object objectValue;
         public bool boolValue;
         public float floatValue;
-        public float intValue;
+        public int intValue;
         public EasyBehavior()
         {
 
         }
 
-        public static void GenerateAnimClip(string path,List<EasyBehavior> behaviors)
+        public static void GenerateAnimClip(string path, SerializedProperty behaviors)
         {
-            
+            AnimationClip clip = new AnimationClip();
+            clip.frameRate = 60;
+
+            int count = behaviors.arraySize;
+            for (int i = 0; i < count; i++)
+            {
+                SerializedProperty behavior = behaviors.GetArrayElementAtIndex(i);
+                SerializedProperty property = behavior.FindPropertyRelative("property");
+                EditorCurveBinding binding = EasyProperty.GetBinding(property);
+                Type valueType = EasyProperty.GetValueType(property);
+                if(valueType == typeof(bool)|| valueType == typeof(float) || valueType == typeof(int) )
+                {
+                    ObjectReferenceKeyframe objectReferenceKeyframe = new ObjectReferenceKeyframe()
+                    {
+                        time = 1.0f / 60,
+                        value = behavior.FindPropertyRelative("objectValue").objectReferenceValue
+                    };
+                    
+                }
+                else//UnityEngine.Object
+                {
+
+                }
+            }
         }
+        
     }
 
     [Serializable]
@@ -30,6 +54,7 @@ namespace EasyAvatar
     {
         public string targetPath, targetProperty, targetPropertyType, valueType;
         public bool isDiscrete, isPPtr;
+
         public static EditorCurveBinding GetBinding(SerializedProperty property)
         {
             SerializedProperty targetPath = property.FindPropertyRelative("targetPath");
@@ -43,6 +68,7 @@ namespace EasyAvatar
                 return EditorCurveBinding.DiscreteCurve(targetPath.stringValue, EasyReflection.FindType(targetPropertyType.stringValue), targetProperty.stringValue);
             return EditorCurveBinding.FloatCurve(targetPath.stringValue, EasyReflection.FindType(targetPropertyType.stringValue), targetProperty.stringValue);
         }
+        
 
         public static Type GetValueType(SerializedProperty property)
         {

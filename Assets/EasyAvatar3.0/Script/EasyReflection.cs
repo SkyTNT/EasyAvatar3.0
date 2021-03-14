@@ -11,6 +11,7 @@ namespace EasyAvatar
         public static Type FindType(string typeName)
         {
             Type _type = null;
+            //通过字典提高效率
             if (types.ContainsKey(typeName))
                 return types[typeName];
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())

@@ -130,7 +130,7 @@ namespace EasyAvatar
             
 
             
-            if (!isMissing&&tempTarget&& targetProperty.stringValue != "")
+            if (property.FindPropertyRelative("valueType").stringValue != "")
             {
                 PropertyValueField(valueFieldRect, behavior);
             }
@@ -141,29 +141,33 @@ namespace EasyAvatar
         public void PropertyValueField(Rect rect, SerializedProperty behavior)
         {
             SerializedProperty property= behavior.FindPropertyRelative("property");
+            SerializedProperty propertyValueType = property.FindPropertyRelative("valueType");
             SerializedProperty value = null;
 
-            Type valueType = AnimationUtility.GetEditorCurveValueType(avatar, EasyProperty.GetBinding(property));
+            Type valueType = EasyReflection.FindType(propertyValueType.stringValue);
+
 
             if (valueType == typeof(bool))
             {
                 value= behavior.FindPropertyRelative("boolValue");
+                EditorGUI.PropertyField(rect, value, GUIContent.none);
             }
             else if (valueType == typeof(float))
             {
                 value = behavior.FindPropertyRelative("floatValue");
+                EditorGUI.PropertyField(rect, value, GUIContent.none);
             }
             else if (valueType == typeof(int))
             {
                 value = behavior.FindPropertyRelative("intValue");
+                EditorGUI.PropertyField(rect, value, GUIContent.none);
             }
             else
             {
                 value = behavior.FindPropertyRelative("objectValue");
-                //UnityEngine.Object tempValue = null;
-                //EditorGUI.ObjectField(rect, "", tempValue, valueType, true);
+                value.objectReferenceValue = EditorGUI.ObjectField(rect, "", value.objectReferenceValue, valueType, true);
             }
-            EditorGUI.PropertyField(rect, value,GUIContent.none);
+            
         }
 
 
