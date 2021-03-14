@@ -6,7 +6,7 @@ using UnityEditor;
 namespace EasyAvatar
 {
     [CustomEditor(typeof(EasyAvatarHelper))]
-    public class EasyAvatarInfoEditor : Editor
+    public class EasyAvatarHelperEditor : Editor
     {
         SerializedProperty avatar;
         public override void OnInspectorGUI()

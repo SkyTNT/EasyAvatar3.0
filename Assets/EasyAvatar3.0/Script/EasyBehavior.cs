@@ -8,6 +8,8 @@ namespace EasyAvatar
     [Serializable]
     public class EasyBehavior
     {
+        public string targetPath, targetProperty;
+        public System.Object value;
         public EasyBehavior()
         {
 

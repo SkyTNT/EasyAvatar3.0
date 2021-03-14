@@ -6,14 +6,14 @@ using UnityEditor;
 namespace EasyAvatar
 {
     
-    public class EasyAvatarCore
+    public class EasyAvatarTool
     {
 
         [MenuItem("GameObject/EasyAvatar3.0/Avatar Helper", priority = 0)]
         public static bool CreateAvatarInfo()
         {
-            
             GameObject gameObject = new GameObject(Lang.AvatarHelper);
+            Undo.RegisterCreatedObjectUndo(gameObject, "Create Avatar Helper");
             gameObject.AddComponent<EasyAvatarHelper>();
 
             if (Selection.activeGameObject)
@@ -62,6 +62,7 @@ namespace EasyAvatar
 
 
             GameObject gameObject = new GameObject(isSubMenu?Lang.SubMenu:Lang.MainMenu);
+            Undo.RegisterCreatedObjectUndo(gameObject, "Create Expression Menu");
             gameObject.AddComponent<EasyMenu>();
 
             if (Selection.activeGameObject)
@@ -96,6 +97,7 @@ namespace EasyAvatar
                     return false;
 
             GameObject gameObject = new GameObject(Lang.Control);
+            Undo.RegisterCreatedObjectUndo(gameObject, "Create Menu Control");
             gameObject.AddComponent<EasyControl>();
             if (Selection.activeGameObject)
                 gameObject.transform.parent = Selection.activeGameObject.transform;

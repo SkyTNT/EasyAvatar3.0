@@ -7,11 +7,23 @@ namespace EasyAvatar
 {
     public class MyGUIStyle
     {
-        public static GUIStyle centerBoldLable = new GUIStyle(EditorStyles.label)
+        public static GUIStyle centerBoldLable;
+        public static GUIStyle yellowLabel;
+
+        static MyGUIStyle()
         {
-            alignment = TextAnchor.MiddleCenter,
-            wordWrap = true,
-            fontStyle = FontStyle.Bold
-        };
+            centerBoldLable = new GUIStyle(EditorStyles.label)
+            {
+                alignment = TextAnchor.MiddleCenter,
+                wordWrap = true,
+                fontStyle = FontStyle.Bold
+            };
+            yellowLabel = new GUIStyle(EditorStyles.label)
+            {
+                alignment = TextAnchor.MiddleCenter,
+            };
+            yellowLabel.normal.textColor = Color.yellow;
+        }
+
     }
 }

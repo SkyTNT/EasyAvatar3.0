@@ -6,11 +6,17 @@ namespace EasyAvatar
 {
     public class EasyControl : MonoBehaviour
     {
-        public List<EasyBehavior> behaviors;
+        enum Type{
+            Button,
+            Toggle,
+        }
+        [SerializeField]
+        public Texture2D icon;
+        public List<EasyBehavior> offBehaviors, onBehaviors;
         // Start is called before the first frame update
         void Start()
         {
-
+            
         }
 
         // Update is called once per frame
