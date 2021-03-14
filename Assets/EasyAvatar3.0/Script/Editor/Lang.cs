@@ -23,6 +23,7 @@ namespace EasyAvatar
             Icon,
             Target,
             Missing,
+            MissingTarget,
             Property,
             SetTo,
             BehaviorOff,
@@ -66,6 +67,7 @@ namespace EasyAvatar
             Icon = "图标";
             Target = "目标";
             Missing = "缺失";
+            MissingTarget = "缺失目标物体";
             Property = "属性";
             SetTo = "设置为";
             BehaviorOff = "控件关闭时的行为";
@@ -94,6 +96,7 @@ namespace EasyAvatar
             Icon = "Icon";
             Target = "Target";
             Missing = "Missing";
+            MissingTarget = "Missing Target";
             Property = "Property";
             SetTo = "Set Value";
             BehaviorOff = "On Control Switch Off";

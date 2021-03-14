@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using UnityEditorInternal;
+using System;
 
 namespace EasyAvatar
 {
@@ -12,6 +13,7 @@ namespace EasyAvatar
         SerializedProperty icon,offBehaviors, onBehaviors;
         GameObject avatar;
         ReorderableList offBehaviorsList, onBehaviorsList;
+        
 
         private void OnEnable()
         {
@@ -51,13 +53,14 @@ namespace EasyAvatar
             //打开行为
             onBehaviorsList.DoLayoutList();
             serializedObject.ApplyModifiedProperties();
-        }
+        }  
 
         public void DrawBehavior(Rect position, SerializedProperty behavior)
         {
-            SerializedProperty targetPath = behavior.FindPropertyRelative("targetPath");
-            SerializedProperty targetProperty = behavior.FindPropertyRelative("targetProperty");
-            SerializedProperty targetPropertyType = behavior.FindPropertyRelative("targetPropertyType");
+            SerializedProperty property = behavior.FindPropertyRelative("property");
+            SerializedProperty targetPath = property.FindPropertyRelative("targetPath");
+            SerializedProperty targetProperty = property.FindPropertyRelative("targetProperty");
+            SerializedProperty targetPropertyType = property.FindPropertyRelative("targetPropertyType");
 
             GameObject tempTarget =null;
             //获取目标物体
@@ -122,17 +125,48 @@ namespace EasyAvatar
             }
             
             EditorGUI.LabelField(propertyLabelRect, Lang.Property);
-            EasyPropertySelector.EditorCurveBindingField(propertyFieldRect, targetProperty, targetPropertyType, avatar, tempTarget);
+            EasyPropertySelector.EditorCurveBindingField(propertyFieldRect, property, avatar, tempTarget);
             EditorGUI.LabelField(valueLabelRect, Lang.SetTo);
-            if (GUI.Button(valueFieldRect, "log"))
+            
+
+            
+            if (!isMissing&&tempTarget&& targetProperty.stringValue != "")
             {
-                Debug.Log(AnimationUtility.GetEditorCurveValueType(avatar, new EditorCurveBinding { path = targetPath.stringValue, propertyName = targetProperty.stringValue, type = System.Type.GetType(targetPropertyType.stringValue) }));
-                
+                PropertyValueField(valueFieldRect, behavior);
             }
+            
 
         }
-       
-        
+
+        public void PropertyValueField(Rect rect, SerializedProperty behavior)
+        {
+            SerializedProperty property= behavior.FindPropertyRelative("property");
+            SerializedProperty value = null;
+
+            Type valueType = AnimationUtility.GetEditorCurveValueType(avatar, EasyProperty.GetBinding(property));
+
+            if (valueType == typeof(bool))
+            {
+                value= behavior.FindPropertyRelative("boolValue");
+            }
+            else if (valueType == typeof(float))
+            {
+                value = behavior.FindPropertyRelative("floatValue");
+            }
+            else if (valueType == typeof(int))
+            {
+                value = behavior.FindPropertyRelative("intValue");
+            }
+            else
+            {
+                value = behavior.FindPropertyRelative("objectValue");
+                //UnityEngine.Object tempValue = null;
+                //EditorGUI.ObjectField(rect, "", tempValue, valueType, true);
+            }
+            EditorGUI.PropertyField(rect, value,GUIContent.none);
+        }
+
+
 
         public GameObject GetAvatar()
         {

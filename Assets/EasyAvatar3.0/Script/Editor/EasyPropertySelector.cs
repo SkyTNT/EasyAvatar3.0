@@ -11,13 +11,23 @@ namespace EasyAvatar
         
         EasyPropertyTree tree;
 
-        public static void EditorCurveBindingField(Rect rect, SerializedProperty property,SerializedProperty propertyType, GameObject avatar, GameObject target)
+        public static void EditorCurveBindingField(Rect rect, SerializedProperty property, GameObject avatar, GameObject target)
         {
-            string displayName = property.stringValue == "" ? "None" : propertyType.stringValue + ":" + property.stringValue;
+            SerializedProperty targetPath = property.FindPropertyRelative("targetPath");
+            SerializedProperty targetProperty = property.FindPropertyRelative("targetProperty");
+            SerializedProperty targetPropertyType = property.FindPropertyRelative("targetPropertyType");
+            SerializedProperty valueType = property.FindPropertyRelative("valueType");
+
+            string displayName = targetProperty.stringValue == "" ? "None" : EasyReflection.FindType(targetPropertyType.stringValue).Name + ":" + targetProperty.stringValue;
             if (GUI.Button(rect, displayName))
             {
+                if(!target)
+                {
+                    EditorUtility.DisplayDialog("Error", Lang.MissingTarget, "ok");
+                    return;
+                }
                 EasyPropertySelector editorWindow = CreateInstance<EasyPropertySelector>();
-                editorWindow.Init(property,propertyType,avatar,target);
+                editorWindow.Init(property,avatar, target);
                 //转换到屏幕坐标
                 Vector2 vector2 = EditorGUIUtility.GUIToScreenPoint(new Vector2(rect.x, rect.y));
                 Rect screenFixedRect = new Rect(rect)
@@ -31,9 +41,9 @@ namespace EasyAvatar
         }
         
 
-        public void Init(SerializedProperty targetProperty, SerializedProperty targetPropertyType, GameObject avatar, GameObject target)
+        public void Init(SerializedProperty property,GameObject avatar, GameObject target)
         {
-            tree = new EasyPropertyTree(targetProperty, targetPropertyType, avatar, target, new TreeViewState());
+            tree = new EasyPropertyTree(property, avatar, target, new TreeViewState());
         }
         public void OnGUI()
         {
@@ -46,15 +56,19 @@ namespace EasyAvatar
     public class EasyPropertyTree : TreeView
     {
         GameObject avatar, target;
-        SerializedProperty targetProperty, targetPropertyType;
+        SerializedProperty property,targetProperty, targetPropertyType, valueType, isDiscrete, isPPtr;
         EditorCurveBinding[] bindings;
-        public EasyPropertyTree(SerializedProperty targetProperty, SerializedProperty targetPropertyType, GameObject avatar, GameObject target, TreeViewState treeViewState)
+        public EasyPropertyTree(SerializedProperty property, GameObject avatar, GameObject target, TreeViewState treeViewState)
         : base(treeViewState)
         {
             this.target = target;
             this.avatar = avatar;
-            this.targetProperty = targetProperty;
-            this.targetPropertyType = targetPropertyType;
+            this.property = property;
+            targetProperty = property.FindPropertyRelative("targetProperty");
+            targetPropertyType = property.FindPropertyRelative("targetPropertyType");
+            valueType = property.FindPropertyRelative("valueType");
+            isDiscrete = property.FindPropertyRelative("isDiscrete");
+            isPPtr = property.FindPropertyRelative("isPPtr");
             bindings = AnimationUtility.GetAnimatableBindings(target, avatar);
             Reload();
         }
@@ -130,7 +144,10 @@ namespace EasyAvatar
         public void ApplyBinding(EditorCurveBinding binding)
         {
             targetProperty.stringValue = binding.propertyName;
-            targetPropertyType.stringValue = binding.type.Name;
+            targetPropertyType.stringValue = binding.type.FullName;
+            valueType.stringValue = AnimationUtility.GetEditorCurveValueType(avatar, binding).FullName;
+            isDiscrete.boolValue = binding.isDiscreteCurve;
+            isPPtr.boolValue = binding.isPPtrCurve;
             targetProperty.serializedObject.ApplyModifiedProperties();
             targetProperty.serializedObject.Update();
         }
