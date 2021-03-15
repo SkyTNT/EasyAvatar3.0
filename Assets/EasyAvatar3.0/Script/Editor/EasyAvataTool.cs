@@ -133,68 +133,6 @@ namespace EasyAvatar
             return count;
         }
 
-        public static string NicifyPropertyGroupName(Type animatableObjectType, string propertyGroupName)
-        {
-            string result = GetPropertyGroupName(GetPropertyDisplayName(propertyGroupName));
-            if (animatableObjectType == typeof(RectTransform) & result.Equals("Position"))
-                result = "Position (Z)";
-
-            return result;
-        }
-
-
-        //Reference: https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Editor/Mono/Animation/AnimationWindow/AnimationWindowUtility.cs
-        public static string GetPropertyGroupName(string propertyName)
-        {
-            if (GetComponentIndex(propertyName) != -1)
-                return propertyName.Substring(0, propertyName.Length - 2);
-
-            return propertyName;
-        }
-        //Reference: https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Editor/Mono/Animation/AnimationWindow/AnimationWindowUtility.cs
-        public static string GetPropertyDisplayName(string propertyName)
-        {
-            propertyName = propertyName.Replace("m_LocalPosition", "Position");
-            propertyName = propertyName.Replace("m_LocalScale", "Scale");
-            propertyName = propertyName.Replace("m_LocalRotation", "Rotation");
-            propertyName = propertyName.Replace("localEulerAnglesBaked", "Rotation");
-            propertyName = propertyName.Replace("localEulerAnglesRaw", "Rotation");
-            propertyName = propertyName.Replace("localEulerAngles", "Rotation");
-            propertyName = propertyName.Replace("m_Materials.Array.data", "Material Reference");
-
-            propertyName = ObjectNames.NicifyVariableName(propertyName);
-            propertyName = propertyName.Replace("m_", "");
-
-            return propertyName;
-        }
-        //Reference: https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Editor/Mono/Animation/AnimationWindow/AnimationWindowUtility.cs
-        static public int GetComponentIndex(string name)
-        {
-            if (name == null || name.Length < 3 || name[name.Length - 2] != '.')
-                return -1;
-            char lastCharacter = name[name.Length - 1];
-            switch (lastCharacter)
-            {
-                case 'r':
-                    return 0;
-                case 'g':
-                    return 1;
-                case 'b':
-                    return 2;
-                case 'a':
-                    return 3;
-                case 'x':
-                    return 0;
-                case 'y':
-                    return 1;
-                case 'z':
-                    return 2;
-                case 'w':
-                    return 3;
-                default:
-                    return -1;
-            }
-        }
     }
 }
 

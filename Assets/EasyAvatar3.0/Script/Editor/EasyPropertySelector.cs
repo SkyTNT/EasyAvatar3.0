@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
+using System;
 
 namespace EasyAvatar
 {
@@ -11,12 +12,19 @@ namespace EasyAvatar
         
         EasyPropertyTree tree;
 
-        public static void EditorCurveBindingField(Rect rect, SerializedProperty property, GameObject avatar, GameObject target)
+        public static void DoSelect(Rect rect, SerializedProperty propertyGroup, GameObject avatar, GameObject target)
         {
+            SerializedProperty property = propertyGroup.GetArrayElementAtIndex(0);
             SerializedProperty targetProperty = property.FindPropertyRelative("targetProperty");
             SerializedProperty targetPropertyType = property.FindPropertyRelative("targetPropertyType");
-
-            string displayName = targetProperty.stringValue == "" ? "None" : EasyReflection.FindType(targetPropertyType.stringValue).Name + ":" + targetProperty.stringValue;
+            string displayName = "";
+            if (targetProperty.stringValue == "")
+                displayName = "None";
+            else
+            {
+                Type properTytype = EasyReflection.FindType(targetPropertyType.stringValue);
+                displayName = properTytype.Name + ":" + EasyBehavior.NicifyPropertyGroupName(properTytype, targetProperty.stringValue);
+            }
             if (GUI.Button(rect, displayName))
             {
                 if(!target)
@@ -25,7 +33,7 @@ namespace EasyAvatar
                     return;
                 }
                 EasyPropertySelector editorWindow = CreateInstance<EasyPropertySelector>();
-                editorWindow.Init(property,avatar, target);
+                editorWindow.Init(propertyGroup, avatar, target);
                 //转换到屏幕坐标
                 Vector2 vector2 = EditorGUIUtility.GUIToScreenPoint(new Vector2(rect.x, rect.y));
                 Rect screenFixedRect = new Rect(rect)
@@ -39,9 +47,9 @@ namespace EasyAvatar
         }
         
 
-        public void Init(SerializedProperty property,GameObject avatar, GameObject target)
+        public void Init(SerializedProperty propertyGroup, GameObject avatar, GameObject target)
         {
-            tree = new EasyPropertyTree(property, avatar, target, new TreeViewState());
+            tree = new EasyPropertyTree(propertyGroup, avatar, target, new TreeViewState());
         }
         public void OnGUI()
         {
@@ -54,14 +62,15 @@ namespace EasyAvatar
     public class EasyPropertyTree : TreeView
     {
         GameObject avatar, target;
-        SerializedProperty property,targetProperty, targetPropertyType, valueType, isDiscrete, isPPtr;
+        SerializedProperty propertyGroup,property, targetProperty, targetPropertyType, valueType, isDiscrete, isPPtr;
         EditorCurveBinding[] bindings;
-        public EasyPropertyTree(SerializedProperty property, GameObject avatar, GameObject target, TreeViewState treeViewState)
+        public EasyPropertyTree(SerializedProperty propertyGroup, GameObject avatar, GameObject target, TreeViewState treeViewState)
         : base(treeViewState)
         {
             this.target = target;
             this.avatar = avatar;
-            this.property = property;
+            this.propertyGroup = propertyGroup;
+            property = propertyGroup.GetArrayElementAtIndex(0);
             targetProperty = property.FindPropertyRelative("targetProperty");
             targetPropertyType = property.FindPropertyRelative("targetPropertyType");
             valueType = property.FindPropertyRelative("valueType");
@@ -74,22 +83,33 @@ namespace EasyAvatar
         protected override TreeViewItem BuildRoot()
         {
             //按照type分类
-            Dictionary<string, List<EditorCurveBinding>> bindingsDictionary =new Dictionary<string, List<EditorCurveBinding>>();
-            foreach(EditorCurveBinding binding in bindings)
+            Dictionary<string, List<EditorCurveBinding[]>> bindingsDictionary =new Dictionary<string, List<EditorCurveBinding[]>>();
+            //分组
+            List<EditorCurveBinding> tempGroup = new List<EditorCurveBinding>();
+            for(int i=0;i<bindings.Length;i++)
             {
+                EditorCurveBinding binding = bindings[i];
+                tempGroup.Add(binding);
                 if (!bindingsDictionary.ContainsKey(binding.type.Name))
-                    bindingsDictionary.Add(binding.type.Name,new List<EditorCurveBinding>());
-                bindingsDictionary[binding.type.Name].Add(binding);
+                    bindingsDictionary.Add(binding.type.Name,new List<EditorCurveBinding[]>());
+                if(i == bindings.Length-1 || EasyBehavior.NicifyPropertyGroupName(bindings[i+1].type,bindings[i+1].propertyName)!= EasyBehavior.NicifyPropertyGroupName(binding.type, binding.propertyName))
+                {
+                    bindingsDictionary[binding.type.Name].Add(tempGroup.ToArray());
+                    tempGroup.Clear();
+                }
             }
             //构建树
             PropertyTreeItem root = new PropertyTreeItem(0, -1, "Root");
             List<TreeViewItem> items = new List<TreeViewItem>();
             foreach (string name in bindingsDictionary.Keys)
             {
-                items.Add(new PropertyTreeItem(items.Count +1, 0, name));
-                foreach (EditorCurveBinding binding in bindingsDictionary[name])
+                //把Is Active单独列出来
+                if (!name.Contains("GameObject"))
+                    items.Add(new PropertyTreeItem(items.Count +1, 0, name));
+
+                foreach (EditorCurveBinding[] bindingGroup in bindingsDictionary[name])
                 {
-                    items.Add(new PropertyTreeItem(items.Count + 1, 1,ObjectNames.NicifyVariableName( binding.propertyName), binding));
+                    items.Add(new PropertyTreeItem(items.Count + 1, bindingGroup[0].propertyName == "m_IsActive" ? 0 : 1, EasyBehavior.NicifyPropertyGroupName(bindingGroup[0].type, bindingGroup[0].propertyName), bindingGroup));
                 }
             }
             SetupParentsAndChildrenFromDepths(root, items);
@@ -102,9 +122,9 @@ namespace EasyAvatar
             Rect position = args.rowRect;
             PropertyTreeItem item = (PropertyTreeItem) args.item;
             
-            if (item.binding != null)
+            if (item.bindingGroup != null)
             {
-                EditorCurveBinding binding = (EditorCurveBinding) item.binding;
+                EditorCurveBinding binding = item.bindingGroup[0];
                 Texture2D icon = GetIcon(avatar,binding);
                 //绘制图标
                 if (icon)
@@ -121,7 +141,7 @@ namespace EasyAvatar
                 GUI.Box(addBottonRect,GUIContent.none, "Tag MenuItem");
                 if (GUI.Button(addBottonRect, EditorGUIUtility.TrIconContent("Toolbar Plus"), "IconButton"))
                 {
-                    ApplyBinding(binding);
+                    ApplyBinding(item.bindingGroup);
                     EditorWindow.GetWindow<EasyPropertySelector>().Close();
                 }
                 
@@ -132,22 +152,30 @@ namespace EasyAvatar
         protected override void DoubleClickedItem(int id)
         {
             PropertyTreeItem item = (PropertyTreeItem)FindItem(id,rootItem);
-            if(item.binding != null)
+            if(item.bindingGroup != null)
             {
-                ApplyBinding((EditorCurveBinding)item.binding);
+                ApplyBinding(item.bindingGroup);
                 EditorWindow.GetWindow<EasyPropertySelector>().Close();
             }
         }
 
-        public void ApplyBinding(EditorCurveBinding binding)
+        public void ApplyBinding(EditorCurveBinding[] bindingGroup)
         {
-            targetProperty.stringValue = binding.propertyName;
-            targetPropertyType.stringValue = binding.type.FullName;
-            valueType.stringValue = AnimationUtility.GetEditorCurveValueType(avatar, binding).FullName;
-            isDiscrete.boolValue = binding.isDiscreteCurve;
-            isPPtr.boolValue = binding.isPPtrCurve;
-            targetProperty.serializedObject.ApplyModifiedProperties();
-            targetProperty.serializedObject.Update();
+            propertyGroup.arraySize = bindingGroup.Length;
+            for (int i = 0; i < bindingGroup.Length; i++)
+            {
+                EditorCurveBinding binding = bindingGroup[i];
+                SerializedProperty property = propertyGroup.GetArrayElementAtIndex(i);
+                property.FindPropertyRelative("targetProperty").stringValue = binding.propertyName;
+                property.FindPropertyRelative("targetPropertyType").stringValue = binding.type.FullName;
+                property.FindPropertyRelative("valueType").stringValue = AnimationUtility.GetEditorCurveValueType(avatar, binding).FullName;
+                property.FindPropertyRelative("isDiscrete").boolValue = binding.isDiscreteCurve;
+                property.FindPropertyRelative("isPPtr").boolValue = binding.isPPtrCurve;
+
+                
+            }
+            propertyGroup.serializedObject.ApplyModifiedProperties();
+            propertyGroup.serializedObject.Update();
         }
 
         static Texture2D GetIcon(GameObject avatar, EditorCurveBinding binding)
@@ -157,11 +185,11 @@ namespace EasyAvatar
 
         public class PropertyTreeItem : TreeViewItem
         {
-            public EditorCurveBinding? binding;
+            public EditorCurveBinding[] bindingGroup;
 
-            public PropertyTreeItem( int id, int depth,string displayName, EditorCurveBinding? binding = null)
+            public PropertyTreeItem( int id, int depth,string displayName, EditorCurveBinding[] bindingGroup = null)
             {
-                this.binding = binding;
+                this.bindingGroup = bindingGroup;
                 this.id = id;
                 this.depth = depth;
                 this.displayName = displayName;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEngine;
 
 namespace EasyAvatar
@@ -24,5 +25,12 @@ namespace EasyAvatar
             return _type;
         }
 
+        public static MethodInfo internalNicifyPropertyGroupName;
+
+        static EasyReflection()
+        {
+            internalNicifyPropertyGroupName = FindType("UnityEditorInternal.AnimationWindowUtility").GetMethod("NicifyPropertyGroupName", BindingFlags.Static | BindingFlags.Public);
+        }
+            
     }
 }

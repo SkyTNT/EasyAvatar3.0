@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
@@ -9,12 +10,8 @@ namespace EasyAvatar
     [Serializable]
     public class EasyBehavior
     {
-        //public List<EasyProperty> propertyGroup;
-        public EasyProperty property;
-        public UnityEngine.Object objectValue;
-        public bool boolValue;
-        public float floatValue;
-        public int intValue;
+        public List<EasyProperty> propertyGroup;
+
         public EasyBehavior()
         {
 
@@ -65,7 +62,32 @@ namespace EasyAvatar
             AssetDatabase.CreateAsset(clip, path);
             AssetDatabase.SaveAssets();
         }
-        
+
+        public static void PropertyGroupEdit(SerializedProperty propertyGroup ,string relativePath,string value)
+        {
+            for(int i = 0; i < propertyGroup.arraySize; i++)
+            {
+                SerializedProperty property = propertyGroup.GetArrayElementAtIndex(i).FindPropertyRelative(relativePath);
+                property.stringValue =value;
+            }
+        }
+
+        public static void PropertyGroupEdit(SerializedProperty propertyGroup, string relativePath, bool value)
+        {
+            for (int i = 0; i < propertyGroup.arraySize; i++)
+            {
+                SerializedProperty property = propertyGroup.GetArrayElementAtIndex(i).FindPropertyRelative(relativePath);
+                property.boolValue = value;
+            }
+        }
+
+
+        public static string NicifyPropertyGroupName(Type animatableObjectType, string propertyGroupName)
+        {
+            
+            return (string)EasyReflection.internalNicifyPropertyGroupName.Invoke(null, new object[] { animatableObjectType, propertyGroupName });
+        }
+
     }
 
     [Serializable]
@@ -74,6 +96,11 @@ namespace EasyAvatar
         public string targetPath, targetProperty, targetPropertyType, valueType;
         public bool isDiscrete, isPPtr;
 
+        public UnityEngine.Object objectValue;
+        public bool boolValue;
+        public float floatValue;
+        public int intValue;
+
         public static EditorCurveBinding GetBinding(SerializedProperty property)
         {
             SerializedProperty targetPath = property.FindPropertyRelative("targetPath");
@@ -81,7 +108,7 @@ namespace EasyAvatar
             SerializedProperty targetPropertyType = property.FindPropertyRelative("targetPropertyType");
             SerializedProperty isDiscrete = property.FindPropertyRelative("isDiscrete");
             SerializedProperty isPPtr = property.FindPropertyRelative("isPPtr");
-            if (isPPtr.boolValue)//如果isPPtr为true那么isDiscrete一定为true,参考：https://github.com/Unity-Technologies/UnityCsReference/blob/61f92bd79ae862c4465d35270f9d1d57befd1761/Editor/Mono/Animation/EditorCurveBinding.bindings.cs
+            if (isPPtr.boolValue)
                 return EditorCurveBinding.PPtrCurve(targetPath.stringValue, EasyReflection.FindType(targetPropertyType.stringValue), targetProperty.stringValue);
             else if(isDiscrete.boolValue)
                 return EditorCurveBinding.DiscreteCurve(targetPath.stringValue, EasyReflection.FindType(targetPropertyType.stringValue), targetProperty.stringValue);
@@ -103,20 +130,16 @@ namespace EasyAvatar
             return AnimationUtility.GetEditorCurveValueType(avatar, GetBinding(property)) != null;
         }
 
-        public static void ClearProperty(SerializedProperty property)
+        public static void ClearPropertyGroup(SerializedProperty propertyGroup)
         {
-            //不能清除targetPath
-            property.FindPropertyRelative("targetProperty").stringValue ="";
-            property.FindPropertyRelative("targetPropertyType").stringValue = "";
-            property.FindPropertyRelative("valueType").stringValue = "";
-            property.FindPropertyRelative("isDiscrete").boolValue = false;
-            property.FindPropertyRelative("isPPtr").boolValue = false;
+            string targetPath = propertyGroup.GetArrayElementAtIndex(0).FindPropertyRelative("targetPath").stringValue;
+            propertyGroup.ClearArray();
+            propertyGroup.arraySize++;
+            propertyGroup.GetArrayElementAtIndex(0).FindPropertyRelative("targetPath").stringValue = targetPath;
+            
+            
         }
-
-        public static void NicifyPropertyGroupName()
-        {
-
-        }
+        
     }
 
 
