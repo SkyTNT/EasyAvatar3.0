@@ -13,10 +13,8 @@ namespace EasyAvatar
 
         public static void EditorCurveBindingField(Rect rect, SerializedProperty property, GameObject avatar, GameObject target)
         {
-            SerializedProperty targetPath = property.FindPropertyRelative("targetPath");
             SerializedProperty targetProperty = property.FindPropertyRelative("targetProperty");
             SerializedProperty targetPropertyType = property.FindPropertyRelative("targetPropertyType");
-            SerializedProperty valueType = property.FindPropertyRelative("valueType");
 
             string displayName = targetProperty.stringValue == "" ? "None" : EasyReflection.FindType(targetPropertyType.stringValue).Name + ":" + targetProperty.stringValue;
             if (GUI.Button(rect, displayName))
@@ -91,7 +89,7 @@ namespace EasyAvatar
                 items.Add(new PropertyTreeItem(items.Count +1, 0, name));
                 foreach (EditorCurveBinding binding in bindingsDictionary[name])
                 {
-                    items.Add(new PropertyTreeItem(items.Count + 1, 1, binding.propertyName, binding));
+                    items.Add(new PropertyTreeItem(items.Count + 1, 1,ObjectNames.NicifyVariableName( binding.propertyName), binding));
                 }
             }
             SetupParentsAndChildrenFromDepths(root, items);

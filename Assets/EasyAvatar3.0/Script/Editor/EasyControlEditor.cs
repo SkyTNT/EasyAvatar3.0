@@ -52,6 +52,15 @@ namespace EasyAvatar
             GUILayout.Space(10);
             //打开行为
             onBehaviorsList.DoLayoutList();
+            if (GUILayout.Button("test"))
+            {
+                EasyBehavior.GenerateAnimClip("Assets/test.anim", onBehaviors);
+            }
+            if (GUILayout.Button("anim"))
+            {
+                Animator animator = avatar.GetComponent<Animator>();
+                
+            }
             serializedObject.ApplyModifiedProperties();
         }  
 
@@ -62,7 +71,7 @@ namespace EasyAvatar
             SerializedProperty targetProperty = property.FindPropertyRelative("targetProperty");
             SerializedProperty targetPropertyType = property.FindPropertyRelative("targetPropertyType");
 
-            GameObject tempTarget =null;
+            GameObject tempTarget =null,newTarget = null;
             //获取目标物体
             if (avatar && targetPath.stringValue != "")
             {
@@ -112,24 +121,35 @@ namespace EasyAvatar
 
             //目标物体
             EditorGUI.LabelField(targetLabelRect, Lang.Target);
-            tempTarget =(GameObject) EditorGUI.ObjectField(targetFieldRect, tempTarget, typeof(GameObject),true);
+            newTarget =(GameObject) EditorGUI.ObjectField(targetFieldRect, tempTarget, typeof(GameObject),true);
+            
             if (isMissing)
             {
                 Rect missingRect = new Rect(targetFieldRect) { width = targetFieldRect.width - targetFieldRect.height -2 };
                 GUI.Box(missingRect, GUIContent.none, "Tag MenuItem");
                 EditorGUI.LabelField(missingRect, Lang.Missing +":"+targetPath.stringValue, MyGUIStyle.yellowLabel);
             }
-            if (tempTarget)
+            if (newTarget != tempTarget&&!avatar)
             {
-                targetPath.stringValue = CalculateGameObjectPath(tempTarget);
+                EditorUtility.DisplayDialog("Error", Lang.ErrAvatarNotSet, "ok");
             }
-            
+
+            if(avatar&&newTarget)
+            targetPath.stringValue = CalculateGameObjectPath(newTarget);
+
+            //当修改目标时，检查目标是否具有当前属性
+            if (newTarget != tempTarget)
+            {
+                if (!EasyProperty.CheckProperty(avatar, property))
+                    EasyProperty.ClearProperty(property);
+            }
+            //属性选择
             EditorGUI.LabelField(propertyLabelRect, Lang.Property);
             EasyPropertySelector.EditorCurveBindingField(propertyFieldRect, property, avatar, tempTarget);
             EditorGUI.LabelField(valueLabelRect, Lang.SetTo);
             
 
-            
+            //输入值
             if (property.FindPropertyRelative("valueType").stringValue != "")
             {
                 PropertyValueField(valueFieldRect, behavior);
