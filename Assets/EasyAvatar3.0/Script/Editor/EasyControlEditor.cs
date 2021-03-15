@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEditor;
 using UnityEditorInternal;
 using System;
+using System.Reflection;
 
 namespace EasyAvatar
 {
@@ -75,9 +76,8 @@ namespace EasyAvatar
             if (GUILayout.Button("anim"))
             {
                 //Animator animator = avatar.GetComponent<Animator>();
-                
-
-
+                foreach(MethodInfo info in EasyReflection.FindType("UnityEditor.RotationCurveInterpolation").GetMethods())
+                    Debug.Log(info);
             }
             serializedObject.ApplyModifiedProperties();
         }  
@@ -157,9 +157,7 @@ namespace EasyAvatar
             if (newTarget != tempTarget)
             {
                 if (avatar)
-                {
                     EasyBehavior.PropertyGroupEdit(propertyGroup, "targetPath", CalculateGameObjectPath(newTarget));
-                }
                 //检查目标是否具有当前属性
                 if (!EasyProperty.CheckProperty(avatar, property))
                     EasyProperty.ClearPropertyGroup(propertyGroup);
@@ -172,11 +170,7 @@ namespace EasyAvatar
 
             //输入值
             if (property.FindPropertyRelative("valueType").stringValue != "")
-            {
                 PropertyValueField(valueFieldRect, behavior);
-            }
-            
-
         }
 
         public void PropertyValueField(Rect rect, SerializedProperty behavior)
@@ -189,6 +183,7 @@ namespace EasyAvatar
             {
                 SerializedProperty property = propertyGroup.GetArrayElementAtIndex(i);
                 SerializedProperty propertyValueType = property.FindPropertyRelative("valueType");
+                SerializedProperty isPPtr = property.FindPropertyRelative("isPPtr");
                 SerializedProperty value = null;
 
                 Type valueType = EasyReflection.FindType(propertyValueType.stringValue);
@@ -212,20 +207,17 @@ namespace EasyAvatar
                     EditorGUI.LabelField(lableRect, targetProperty.Substring(targetProperty.Length-1));
                 }
 
-                if (valueType == typeof(bool))
-                {
-                    value = property.FindPropertyRelative("boolValue");
-                    EditorGUI.PropertyField(fieldRect, value, GUIContent.none);
-                }
-                else if (valueType == typeof(float))
+                if (!isPPtr.boolValue)
                 {
                     value = property.FindPropertyRelative("floatValue");
-                    EditorGUI.PropertyField(fieldRect, value, GUIContent.none);
-                }
-                else if (valueType == typeof(int))
-                {
-                    value = property.FindPropertyRelative("intValue");
-                    EditorGUI.PropertyField(fieldRect, value, GUIContent.none);
+                    if (valueType == typeof(bool))
+                        value.floatValue = Convert.ToSingle(EditorGUI.Toggle(fieldRect, Convert.ToBoolean(value.floatValue)));
+                    else if (valueType == typeof(float))
+                        EditorGUI.PropertyField(fieldRect, value, GUIContent.none);
+                    else if (valueType == typeof(int))
+                        value.floatValue = Convert.ToSingle(EditorGUI.IntField(fieldRect, Convert.ToInt32(value.floatValue)));
+                    else if (valueType == typeof(long))
+                        value.floatValue = Convert.ToSingle(EditorGUI.LongField(fieldRect, Convert.ToInt64(value.floatValue)));
                 }
                 else
                 {

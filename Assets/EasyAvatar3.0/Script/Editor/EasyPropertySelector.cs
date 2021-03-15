@@ -25,7 +25,7 @@ namespace EasyAvatar
                 Type properTytype = EasyReflection.FindType(targetPropertyType.stringValue);
                 displayName = properTytype.Name + ":" + EasyBehavior.NicifyPropertyGroupName(properTytype, targetProperty.stringValue);
             }
-            if (GUI.Button(rect, displayName))
+            if (GUI.Button(rect, displayName,EditorStyles.objectField))
             {
                 if(!target)
                 {
@@ -98,24 +98,33 @@ namespace EasyAvatar
                     tempGroup.Clear();
                 }
             }
+
             //构建树
             PropertyTreeItem root = new PropertyTreeItem(0, -1, "Root");
-            List<TreeViewItem> items = new List<TreeViewItem>();
+            int id = 1;
             foreach (string name in bindingsDictionary.Keys)
             {
-                //把Is Active单独列出来
-                if (!name.Contains("GameObject"))
-                    items.Add(new PropertyTreeItem(items.Count +1, 0, name));
+                TreeViewItem typeItem = new PropertyTreeItem(id++, 0, name);
+                List<TreeViewItem> propertyItems = new List<TreeViewItem>();
 
+                //不加GameObject
+                if (!name.Contains("GameObject"))
+                    root.AddChild(typeItem);
+                //先排序
                 foreach (EditorCurveBinding[] bindingGroup in bindingsDictionary[name])
-                {
-                    items.Add(new PropertyTreeItem(items.Count + 1, bindingGroup[0].propertyName == "m_IsActive" ? 0 : 1, EasyBehavior.NicifyPropertyGroupName(bindingGroup[0].type, bindingGroup[0].propertyName), bindingGroup));
-                }
+                    propertyItems.Add(new PropertyTreeItem(id++, bindingGroup[0].propertyName == "m_IsActive" ? 0 : 1, EasyBehavior.NicifyPropertyGroupName(bindingGroup[0].type, bindingGroup[0].propertyName), bindingGroup));
+                propertyItems.Sort();
+                //再把它加到树中
+                foreach (PropertyTreeItem item in propertyItems)
+                    if (item.bindingGroup[0].propertyName == "m_IsActive")
+                        root.AddChild(item);
+                    else
+                        typeItem.AddChild(item);
             }
-            SetupParentsAndChildrenFromDepths(root, items);
+
             return root;
         }
-
+        
         protected override void RowGUI(RowGUIArgs args)
         {
             base.RowGUI(args);
@@ -161,21 +170,58 @@ namespace EasyAvatar
 
         public void ApplyBinding(EditorCurveBinding[] bindingGroup)
         {
+            if (bindingGroup[0].propertyName.Contains("m_LocalRotation"))
+                bindingGroup = ConverRotationBindings(bindingGroup);
+
             propertyGroup.arraySize = bindingGroup.Length;
             for (int i = 0; i < bindingGroup.Length; i++)
             {
                 EditorCurveBinding binding = bindingGroup[i];
+                Type valueType = AnimationUtility.GetEditorCurveValueType(avatar, binding);
                 SerializedProperty property = propertyGroup.GetArrayElementAtIndex(i);
+                property.FindPropertyRelative("targetPath").stringValue = binding.path;
                 property.FindPropertyRelative("targetProperty").stringValue = binding.propertyName;
                 property.FindPropertyRelative("targetPropertyType").stringValue = binding.type.FullName;
-                property.FindPropertyRelative("valueType").stringValue = AnimationUtility.GetEditorCurveValueType(avatar, binding).FullName;
+                property.FindPropertyRelative("valueType").stringValue = valueType.FullName;
                 property.FindPropertyRelative("isDiscrete").boolValue = binding.isDiscreteCurve;
                 property.FindPropertyRelative("isPPtr").boolValue = binding.isPPtrCurve;
 
-                
+                if (binding.isPPtrCurve)
+                {
+                    UnityEngine.Object value;
+                    AnimationUtility.GetObjectReferenceValue(avatar, binding, out value);
+                    property.FindPropertyRelative("objectValue").objectReferenceValue = value;
+                }
+                else
+                {
+                    float value;
+                    AnimationUtility.GetFloatValue(avatar, binding, out value);
+                    property.FindPropertyRelative("floatValue").floatValue = value;
+                }
             }
             propertyGroup.serializedObject.ApplyModifiedProperties();
             propertyGroup.serializedObject.Update();
+        }
+
+        public EditorCurveBinding[] ConverRotationBindings(EditorCurveBinding[] bindingGroup)
+        {
+            List<EditorCurveBinding> reslut = new List<EditorCurveBinding>();
+            foreach(EditorCurveBinding binding in bindingGroup)
+            {
+                EditorCurveBinding newBinding;
+                if (binding.isPPtrCurve)
+                    newBinding = EditorCurveBinding.PPtrCurve(binding.path, binding.type, binding.propertyName);
+                else if (binding.isDiscreteCurve)
+                    newBinding = EditorCurveBinding.DiscreteCurve(binding.path, binding.type, binding.propertyName);
+                else
+                    newBinding = EditorCurveBinding.FloatCurve(binding.path, binding.type, binding.propertyName);
+
+                newBinding.propertyName = newBinding.propertyName.Replace("m_LocalRotation", "localEulerAngles");
+                if (newBinding.propertyName.Substring(newBinding.propertyName.Length - 1) != "w")
+                    reslut.Add(newBinding);
+            }
+            //localEulerAngles
+            return reslut.ToArray();
         }
 
         static Texture2D GetIcon(GameObject avatar, EditorCurveBinding binding)
@@ -193,6 +239,20 @@ namespace EasyAvatar
                 this.id = id;
                 this.depth = depth;
                 this.displayName = displayName;
+            }
+
+            public override int CompareTo(TreeViewItem other)
+            {
+                PropertyTreeItem otherNode = other as PropertyTreeItem;
+                if (otherNode != null)
+                {
+                    //调整Position和Rotation的位置
+                    if (displayName.Contains("Rotation") && otherNode.displayName.Contains("Position"))
+                        return 1;
+                    if (displayName.Contains("Position") && otherNode.displayName.Contains("Rotation"))
+                        return -1;
+                }
+                return base.CompareTo(other);
             }
         }
     }

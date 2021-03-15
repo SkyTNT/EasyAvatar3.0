@@ -23,40 +23,35 @@ namespace EasyAvatar
             clip.frameRate = 60;
             
 
-            int count = behaviors.arraySize;
-            for (int i = 0; i < count; i++)
+            int behaviorsCount = behaviors.arraySize;
+            for (int i = 0; i < behaviorsCount; i++)
             {
                 SerializedProperty behavior = behaviors.GetArrayElementAtIndex(i);
-                SerializedProperty property = behavior.FindPropertyRelative("property");
-                EditorCurveBinding binding = EasyProperty.GetBinding(property);
-                Type valueType = EasyProperty.GetValueType(property);
-                if (valueType == null)
-                    continue;
-                
-                float value = 0;
-                if (valueType == typeof(bool))
+                SerializedProperty propertyGroup = behavior.FindPropertyRelative("propertyGroup");
+                int propertyCount = propertyGroup.arraySize;
+                for (int j = 0; j < propertyCount; j++)
                 {
-                    value =Convert.ToSingle(behavior.FindPropertyRelative("boolValue").boolValue);
-                    AnimationUtility.SetEditorCurve(clip, binding, AnimationCurve.Linear(1.0f / 60, value, 2.0f / 60, value));
-                }
-                else if (valueType == typeof(float))
-                {
-                    value = behavior.FindPropertyRelative("floatValue").floatValue;
-                    AnimationUtility.SetEditorCurve(clip, binding, AnimationCurve.Linear(1.0f / 60, value, 2.0f / 60, value));
-                }
-                else if (valueType == typeof(int))
-                {
-                    value = Convert.ToSingle(behavior.FindPropertyRelative("intValue").intValue);
-                    AnimationUtility.SetEditorCurve(clip, binding, AnimationCurve.Linear(1.0f / 60, value, 2.0f / 60, value));
-                }
-                else//UnityEngine.Object
-                {
-                    UnityEngine.Object obj = behavior.FindPropertyRelative("objectValue").objectReferenceValue;
-                    ObjectReferenceKeyframe[] objectReferenceKeyframes = {
-                        new ObjectReferenceKeyframe() { time = 1.0f / 60, value = obj },
-                        new ObjectReferenceKeyframe() { time = 2.0f / 60, value = obj }
-                    };
-                    AnimationUtility.SetObjectReferenceCurve(clip, binding, objectReferenceKeyframes);
+                    SerializedProperty property = propertyGroup.GetArrayElementAtIndex(j);
+                    SerializedProperty isPPtr = property.FindPropertyRelative("isPPtr");
+                    EditorCurveBinding binding = EasyProperty.GetBinding(property);
+                    Type valueType = EasyProperty.GetValueType(property);
+                    if (valueType == null)
+                        continue;
+
+                    if (!isPPtr.boolValue)
+                    {
+                        float value = property.FindPropertyRelative("floatValue").floatValue;
+                        AnimationUtility.SetEditorCurve(clip, binding, AnimationCurve.Linear(0, value, 1.0f / 60, value));
+                    }
+                    else
+                    {
+                        UnityEngine.Object obj = property.FindPropertyRelative("objectValue").objectReferenceValue;
+                        ObjectReferenceKeyframe[] objectReferenceKeyframes = {
+                        new ObjectReferenceKeyframe() { time = 0, value = obj },
+                        new ObjectReferenceKeyframe() { time = 1.0f / 60, value = obj }
+                        };
+                        AnimationUtility.SetObjectReferenceCurve(clip, binding, objectReferenceKeyframes);
+                    }
                 }
             }
             AssetDatabase.CreateAsset(clip, path);
@@ -97,9 +92,7 @@ namespace EasyAvatar
         public bool isDiscrete, isPPtr;
 
         public UnityEngine.Object objectValue;
-        public bool boolValue;
         public float floatValue;
-        public int intValue;
 
         public static EditorCurveBinding GetBinding(SerializedProperty property)
         {
