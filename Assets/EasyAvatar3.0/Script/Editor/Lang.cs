@@ -26,6 +26,9 @@ namespace EasyAvatar
             MissingTarget,
             Property,
             SetTo,
+            Preview,
+            Copy,
+            Paste,
             BehaviorOff,
             BehaviorOn,
             ErrAvatarMenuLen1,
@@ -70,6 +73,9 @@ namespace EasyAvatar
             MissingTarget = "缺失目标物体";
             Property = "属性";
             SetTo = "设置为";
+            Preview = "预览";
+            Copy = "复制";
+            Paste = "粘贴";
             BehaviorOff = "控件关闭时的行为";
             BehaviorOn = "控件打开时的行为";
             ErrAvatarMenuLen1 = "一个模型中只能有一个主菜单，请考虑创建子菜单";
@@ -99,6 +105,9 @@ namespace EasyAvatar
             MissingTarget = "Missing Target";
             Property = "Property";
             SetTo = "Set Value";
+            Preview = "Preview";
+            Copy = "Copy";
+            Paste = "Paste";
             BehaviorOff = "On Control Switch Off";
             BehaviorOn = "On Control Switch On";
             ErrAvatarMenuLen1 = "There can only be one main menu in a avatar. Consider creating a submenu.";

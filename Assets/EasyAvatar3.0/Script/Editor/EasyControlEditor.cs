@@ -26,8 +26,7 @@ namespace EasyAvatar
             serializedObject.ApplyModifiedProperties();
             offBehaviorsList = new ReorderableList(serializedObject, offBehaviors, true, true, true, true);
             onBehaviorsList  = new ReorderableList(serializedObject, onBehaviors, true, true, true, true);
-            offBehaviorsList.drawHeaderCallback = (Rect rect) => GUI.Label(rect, Lang.BehaviorOff);
-            onBehaviorsList.drawHeaderCallback = (Rect rect) => GUI.Label(rect, Lang.BehaviorOn);
+            offBehaviorsList.drawHeaderCallback = onBehaviorsList.drawHeaderCallback = (Rect rect) => { };
             offBehaviorsList.elementHeight = onBehaviorsList.elementHeight = EditorGUIUtility.singleLineHeight*3 +3*2*3;
             offBehaviorsList.drawElementCallback = (Rect rect, int index, bool selected, bool focused) => DrawBehavior(rect, offBehaviors.GetArrayElementAtIndex(index));
             onBehaviorsList.drawElementCallback = (Rect rect, int index, bool selected, bool focused) => DrawBehavior(rect, onBehaviors.GetArrayElementAtIndex(index));
@@ -65,10 +64,40 @@ namespace EasyAvatar
             //图标设置
             EditorGUILayout.PropertyField(icon, new GUIContent(Lang.Icon));
             //关闭行为
+            GUILayout.Label(Lang.BehaviorOff, EditorStyles.boldLabel);
+            EditorGUILayout.BeginHorizontal();
+            if (GUILayout.Button(Lang.Preview))
+            {
+
+            }
+            if (GUILayout.Button(Lang.Copy))
+            {
+
+            }
+            if (GUILayout.Button(Lang.Paste))
+            {
+
+            }
+            EditorGUILayout.EndHorizontal();
             offBehaviorsList.DoLayoutList();
-            GUILayout.Space(10);
             //打开行为
+            GUILayout.Label(Lang.BehaviorOn, EditorStyles.boldLabel);
+            EditorGUILayout.BeginHorizontal();
+            if (GUILayout.Button(Lang.Preview))
+            {
+            }
+            if (GUILayout.Button(Lang.Copy))
+            {
+
+            }
+            if (GUILayout.Button(Lang.Paste))
+            {
+
+            }
+            EditorGUILayout.EndHorizontal();
             onBehaviorsList.DoLayoutList();
+
+
             if (GUILayout.Button("test"))
             {
                 EasyBehavior.GenerateAnimClip("Assets/test.anim", onBehaviors);
@@ -157,7 +186,7 @@ namespace EasyAvatar
             if (newTarget != tempTarget)
             {
                 if (avatar)
-                    EasyBehavior.PropertyGroupEdit(propertyGroup, "targetPath", CalculateGameObjectPath(newTarget));
+                    EasyProperty.PropertyGroupEdit(propertyGroup, "targetPath", CalculateGameObjectPath(newTarget));
                 //检查目标是否具有当前属性
                 if (!EasyProperty.CheckProperty(avatar, property))
                     EasyProperty.ClearPropertyGroup(propertyGroup);
@@ -170,62 +199,90 @@ namespace EasyAvatar
 
             //输入值
             if (property.FindPropertyRelative("valueType").stringValue != "")
-                PropertyValueField(valueFieldRect, behavior);
+                PropertyValueField(valueFieldRect, behavior.FindPropertyRelative("propertyGroup"));
         }
 
-        public void PropertyValueField(Rect rect, SerializedProperty behavior)
+
+        public void PropertyValueField(Rect rect, SerializedProperty propertyGroup)
         {
-            rect.x -= 3;
-            rect.width += 6;
 
-            SerializedProperty propertyGroup = behavior.FindPropertyRelative("propertyGroup");
-            for(int i=0;i< propertyGroup.arraySize; i++)
+            if(EasyProperty.PropertyGroupIsBlendShape(propertyGroup))//特殊情况Blend Shape
             {
-                SerializedProperty property = propertyGroup.GetArrayElementAtIndex(i);
-                SerializedProperty propertyValueType = property.FindPropertyRelative("valueType");
-                SerializedProperty isPPtr = property.FindPropertyRelative("isPPtr");
-                SerializedProperty value = null;
-
-                Type valueType = EasyReflection.FindType(propertyValueType.stringValue);
-
-                Rect fieldRect = new Rect(rect)
+                SerializedProperty value = propertyGroup.GetArrayElementAtIndex(0).FindPropertyRelative("floatValue");
+                value.floatValue = EditorGUI.Slider(rect, value.floatValue, 0, 100);
+            }
+            else if (EasyProperty.PropertyGroupIsColor(propertyGroup))//特殊情况Color
+            {
+                Dictionary<string, SerializedProperty> colorMap = new Dictionary<string, SerializedProperty>();
+                for (int i = 0; i < propertyGroup.arraySize; i++)
                 {
-                    x = rect.x + i * (rect.width / propertyGroup.arraySize) + 3,
-                    width = rect.width / propertyGroup.arraySize - 6
-                };
-
-                //显示Vector4之类的x,y,z,w或r,g,b,a
-                if (propertyGroup.arraySize > 1)
-                {
-                    Rect lableRect = new Rect(fieldRect)
-                    {
-                        width = fieldRect.height
-                    };
-                    fieldRect.x += lableRect.width;
-                    fieldRect.width -= lableRect.width;
-                    string targetProperty = property.FindPropertyRelative("targetProperty").stringValue;
-                    EditorGUI.LabelField(lableRect, targetProperty.Substring(targetProperty.Length-1));
+                    SerializedProperty property = propertyGroup.GetArrayElementAtIndex(i);
+                    colorMap.Add(EasyProperty.GetPropertyGroupSubname(property), property.FindPropertyRelative("floatValue"));
                 }
+                SerializedProperty valueR = colorMap["r"];
+                SerializedProperty valueG = colorMap["g"];
+                SerializedProperty valueB = colorMap["b"];
+                SerializedProperty valueA = colorMap["a"];
 
-                if (!isPPtr.boolValue)
+                Color tempColor = new Color(valueR.floatValue, valueG.floatValue, valueB.floatValue, valueA.floatValue);
+                Color newColor = EditorGUI.ColorField(rect, tempColor);
+                if (tempColor != newColor)
                 {
-                    value = property.FindPropertyRelative("floatValue");
-                    if (valueType == typeof(bool))
-                        value.floatValue = Convert.ToSingle(EditorGUI.Toggle(fieldRect, Convert.ToBoolean(value.floatValue)));
-                    else if (valueType == typeof(float))
-                        EditorGUI.PropertyField(fieldRect, value, GUIContent.none);
-                    else if (valueType == typeof(int))
-                        value.floatValue = Convert.ToSingle(EditorGUI.IntField(fieldRect, Convert.ToInt32(value.floatValue)));
-                    else if (valueType == typeof(long))
-                        value.floatValue = Convert.ToSingle(EditorGUI.LongField(fieldRect, Convert.ToInt64(value.floatValue)));
-                }
-                else
-                {
-                    value = property.FindPropertyRelative("objectValue");
-                    value.objectReferenceValue = EditorGUI.ObjectField(fieldRect, "", value.objectReferenceValue, valueType, true);
+                    valueR.floatValue = newColor.r;
+                    valueG.floatValue = newColor.g;
+                    valueB.floatValue = newColor.b;
+                    valueA.floatValue = newColor.a;
                 }
             }
-            
+            else //一般情况
+            {
+                rect.x -= 3;
+                rect.width += 6;
+
+                for (int i = 0; i < propertyGroup.arraySize; i++)
+                {
+
+                    SerializedProperty property = propertyGroup.GetArrayElementAtIndex(i);
+                    SerializedProperty propertyValueType = property.FindPropertyRelative("valueType");
+                    SerializedProperty isPPtr = property.FindPropertyRelative("isPPtr");
+                    SerializedProperty value = null;
+
+                    Type valueType = EasyReflection.FindType(propertyValueType.stringValue);
+
+                    Rect fieldRect = new Rect(rect)
+                    {
+                        x = rect.x + i * (rect.width / propertyGroup.arraySize) + 3,
+                        width = rect.width / propertyGroup.arraySize - 6
+                    };
+                    GUIContent label = GUIContent.none;
+                    //显示Vector之类的x,y,z,w或r,g,b,a
+                    if (propertyGroup.arraySize > 1)
+                    {
+                        label = new GUIContent(EasyProperty.GetPropertyGroupSubname(propertyGroup, i).ToUpper());
+                    }
+
+                    float preLabelWidth = EditorGUIUtility.labelWidth;
+                    EditorGUIUtility.labelWidth = EditorStyles.label.CalcSize(label).x;
+                    if (!isPPtr.boolValue)
+                    {
+                        value = property.FindPropertyRelative("floatValue");
+                        if (valueType == typeof(bool))
+                            value.floatValue = Convert.ToSingle(EditorGUI.Toggle(fieldRect, label, Convert.ToBoolean(value.floatValue)));
+                        else if (valueType == typeof(float))
+                            value.floatValue = EditorGUI.FloatField(fieldRect, label, value.floatValue);
+                        else if (valueType == typeof(int))
+                            value.floatValue = Convert.ToSingle(EditorGUI.IntField(fieldRect, label, Convert.ToInt32(value.floatValue)));
+                        else if (valueType == typeof(long))
+                            value.floatValue = Convert.ToSingle(EditorGUI.LongField(fieldRect, label, Convert.ToInt64(value.floatValue)));
+                    }
+                    else
+                    {
+                        value = property.FindPropertyRelative("objectValue");
+                        value.objectReferenceValue = EditorGUI.ObjectField(fieldRect, label, value.objectReferenceValue, valueType, true);
+                    }
+                    EditorGUIUtility.labelWidth = preLabelWidth;
+                }
+            }
         }
 
 

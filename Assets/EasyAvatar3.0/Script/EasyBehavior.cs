@@ -58,30 +58,6 @@ namespace EasyAvatar
             AssetDatabase.SaveAssets();
         }
 
-        public static void PropertyGroupEdit(SerializedProperty propertyGroup ,string relativePath,string value)
-        {
-            for(int i = 0; i < propertyGroup.arraySize; i++)
-            {
-                SerializedProperty property = propertyGroup.GetArrayElementAtIndex(i).FindPropertyRelative(relativePath);
-                property.stringValue =value;
-            }
-        }
-
-        public static void PropertyGroupEdit(SerializedProperty propertyGroup, string relativePath, bool value)
-        {
-            for (int i = 0; i < propertyGroup.arraySize; i++)
-            {
-                SerializedProperty property = propertyGroup.GetArrayElementAtIndex(i).FindPropertyRelative(relativePath);
-                property.boolValue = value;
-            }
-        }
-
-
-        public static string NicifyPropertyGroupName(Type animatableObjectType, string propertyGroupName)
-        {
-            
-            return (string)EasyReflection.internalNicifyPropertyGroupName.Invoke(null, new object[] { animatableObjectType, propertyGroupName });
-        }
 
     }
 
@@ -132,7 +108,55 @@ namespace EasyAvatar
             
             
         }
-        
+        public static void PropertyGroupEdit(SerializedProperty propertyGroup, string relativePath, string value)
+        {
+            for (int i = 0; i < propertyGroup.arraySize; i++)
+            {
+                SerializedProperty property = propertyGroup.GetArrayElementAtIndex(i).FindPropertyRelative(relativePath);
+                property.stringValue = value;
+            }
+        }
+
+        public static void PropertyGroupEdit(SerializedProperty propertyGroup, string relativePath, bool value)
+        {
+            for (int i = 0; i < propertyGroup.arraySize; i++)
+            {
+                SerializedProperty property = propertyGroup.GetArrayElementAtIndex(i).FindPropertyRelative(relativePath);
+                property.boolValue = value;
+            }
+        }
+
+        public static string NicifyPropertyGroupName(Type animatableObjectType, string propertyGroupName)
+        {
+
+            return (string)EasyReflection.internalNicifyPropertyGroupName.Invoke(null, new object[] { animatableObjectType, propertyGroupName });
+        }
+
+        public static string GetPropertyGroupSubname(SerializedProperty propertyGroup, int index)
+        {
+            return GetPropertyGroupSubname(propertyGroup.GetArrayElementAtIndex(index));
+        }
+
+        public static string GetPropertyGroupSubname(SerializedProperty property)
+        {
+            string targetProperty = property.FindPropertyRelative("targetProperty").stringValue;
+            return targetProperty.Substring(targetProperty.Length - 1);
+        }
+
+        public static bool PropertyGroupIsColor(SerializedProperty propertyGroup)
+        {
+            string targetProperty = propertyGroup.GetArrayElementAtIndex(0).FindPropertyRelative("targetProperty").stringValue;
+
+            return targetProperty.ToLower().Contains("color") && propertyGroup.arraySize == 4;
+        }
+
+        public static bool PropertyGroupIsBlendShape(SerializedProperty propertyGroup)
+        {
+            SerializedProperty property = propertyGroup.GetArrayElementAtIndex(0);
+            string targetProperty = property.FindPropertyRelative("targetProperty").stringValue;
+            string targetPropertyType = property.FindPropertyRelative("targetPropertyType").stringValue;
+            return targetPropertyType.Contains("SkinnedMeshRenderer") && targetProperty.ToLower().Contains("blendshape") && propertyGroup.arraySize == 1;
+        }
     }
 
 

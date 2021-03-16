@@ -26,12 +26,10 @@ namespace EasyAvatar
         }
 
         public static MethodInfo internalNicifyPropertyGroupName;
-        public static MethodInfo internalConvertRotationPropertiesToInterpolationType;
 
         static EasyReflection()
         {
             internalNicifyPropertyGroupName = FindType("UnityEditorInternal.AnimationWindowUtility").GetMethod("NicifyPropertyGroupName", BindingFlags.Static | BindingFlags.Public);
-            internalConvertRotationPropertiesToInterpolationType = FindType("UnityEditor.RotationCurveInterpolation").GetMethod("ConvertRotationPropertiesToInterpolationType", BindingFlags.Static | BindingFlags.Public);
         }
             
     }
