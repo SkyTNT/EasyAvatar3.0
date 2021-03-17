@@ -11,11 +11,15 @@ namespace EasyAvatar
     [CustomEditor(typeof(EasyControl))]
     public class EasyControlEditor : Editor
     {
-        SerializedProperty icon,offBehaviors, onBehaviors;
+        //当前复制的Behaviors
+        static EasyControl copiedTarget;
+        static string copiedBehaviorsPath;
+
+        SerializedProperty icon,offBehaviors, onBehaviors , previewingBehaviors;
         GameObject avatar;
         ReorderableList offBehaviorsList, onBehaviorsList;
-        
 
+        
         private void OnEnable()
         {
             
@@ -68,15 +72,18 @@ namespace EasyAvatar
             EditorGUILayout.BeginHorizontal();
             if (GUILayout.Button(Lang.Preview))
             {
-
+                if (previewingBehaviors != offBehaviors)
+                    previewingBehaviors = offBehaviors;
+                else
+                    previewingBehaviors = null;
             }
             if (GUILayout.Button(Lang.Copy))
             {
-
+                CopyBehaviors(offBehaviors);
             }
             if (GUILayout.Button(Lang.Paste))
             {
-
+                PasteBehaviors(offBehaviors);
             }
             EditorGUILayout.EndHorizontal();
             offBehaviorsList.DoLayoutList();
@@ -85,19 +92,23 @@ namespace EasyAvatar
             EditorGUILayout.BeginHorizontal();
             if (GUILayout.Button(Lang.Preview))
             {
+                if (previewingBehaviors != onBehaviors)
+                    previewingBehaviors = onBehaviors;
+                else
+                    previewingBehaviors = null;
             }
             if (GUILayout.Button(Lang.Copy))
             {
-
+                CopyBehaviors(onBehaviors);
             }
             if (GUILayout.Button(Lang.Paste))
             {
-
+                PasteBehaviors(onBehaviors);
             }
             EditorGUILayout.EndHorizontal();
             onBehaviorsList.DoLayoutList();
 
-
+            /*
             if (GUILayout.Button("test"))
             {
                 EasyBehavior.GenerateAnimClip("Assets/test.anim", onBehaviors);
@@ -107,9 +118,32 @@ namespace EasyAvatar
                 //Animator animator = avatar.GetComponent<Animator>();
                 foreach(MethodInfo info in EasyReflection.FindType("UnityEditor.RotationCurveInterpolation").GetMethods())
                     Debug.Log(info);
-            }
+            }*/
+            if (avatar && previewingBehaviors != null)
+                EasyBehavior.Preview(avatar, previewingBehaviors);
             serializedObject.ApplyModifiedProperties();
-        }  
+            
+        }
+
+        public static void CopyBehaviors(SerializedProperty behaviors)
+        {
+            copiedTarget =(EasyControl)behaviors.serializedObject.targetObject;
+            copiedBehaviorsPath = behaviors.propertyPath;
+        }
+
+        public static void PasteBehaviors(SerializedProperty behaviors)
+        {
+            if (!copiedTarget)
+                return;
+            SerializedObject serializedObject = new SerializedObject(copiedTarget);
+            serializedObject.Update();
+            SerializedProperty copiedBehaviors = serializedObject.FindProperty(copiedBehaviorsPath);
+            behaviors.arraySize = copiedBehaviors.arraySize;
+            for (int i = 0; i < behaviors.arraySize; i++)
+            {
+                EasyBehavior.Copy(behaviors.GetArrayElementAtIndex(i), copiedBehaviors.GetArrayElementAtIndex(i));
+            }
+        }
 
         public void DrawBehavior(Rect position, SerializedProperty behavior)
         {

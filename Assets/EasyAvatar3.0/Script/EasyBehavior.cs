@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEditor;
+using UnityEditor.Animations;
 using UnityEngine;
 
 namespace EasyAvatar
@@ -17,7 +18,7 @@ namespace EasyAvatar
 
         }
 
-        public static void GenerateAnimClip(string path, SerializedProperty behaviors)
+        public static AnimationClip GenerateAnimClip(string path, SerializedProperty behaviors)
         {
             AnimationClip clip = new AnimationClip();
             clip.frameRate = 60;
@@ -32,13 +33,12 @@ namespace EasyAvatar
                 for (int j = 0; j < propertyCount; j++)
                 {
                     SerializedProperty property = propertyGroup.GetArrayElementAtIndex(j);
-                    SerializedProperty isPPtr = property.FindPropertyRelative("isPPtr");
-                    EditorCurveBinding binding = EasyProperty.GetBinding(property);
-                    Type valueType = EasyProperty.GetValueType(property);
-                    if (valueType == null)
+                    if (property.FindPropertyRelative("targetProperty").stringValue == "")
                         continue;
 
-                    if (!isPPtr.boolValue)
+                    EditorCurveBinding binding = EasyProperty.GetBinding(property);
+
+                    if (! binding.isPPtrCurve)
                     {
                         float value = property.FindPropertyRelative("floatValue").floatValue;
                         AnimationUtility.SetEditorCurve(clip, binding, AnimationCurve.Linear(0, value, 1.0f / 60, value));
@@ -56,9 +56,107 @@ namespace EasyAvatar
             }
             AssetDatabase.CreateAsset(clip, path);
             AssetDatabase.SaveAssets();
+            return clip;
         }
 
 
+        /*public static void Preview(GameObject root, SerializedProperty behaviors)
+        {
+            Animator animator = root.GetOrAddComponent<Animator>();
+            AnimationClip clip = GenerateAnimClip("Assets/preview.anim", behaviors);
+
+            AnimatorController animatorController = AnimatorController.CreateAnimatorControllerAtPathWithClip("Assets/preview.controller", clip);
+            animator.runtimeAnimatorController = animatorController;
+            animator.Play("preview",0,1);
+        }*/
+
+
+        ///TODO : Render中的material不能预览，transform的欧拉角不能预览
+        public static void Preview(GameObject root, SerializedProperty behaviors)
+        {
+            int behaviorsCount = behaviors.arraySize;
+
+            for (int i = 0; i < behaviorsCount; i++)
+            {
+                SerializedProperty behavior = behaviors.GetArrayElementAtIndex(i);
+                SerializedProperty propertyGroup = behavior.FindPropertyRelative("propertyGroup");
+                int propertyCount = propertyGroup.arraySize;
+                for (int j = 0; j < propertyCount; j++)
+                {
+                    SerializedProperty property = propertyGroup.GetArrayElementAtIndex(j);
+                    if (property.FindPropertyRelative("targetProperty").stringValue == "")
+                        continue;
+
+                    EditorCurveBinding binding = EasyProperty.GetBinding(property);
+                    UnityEngine.Object target = root.transform.Find(binding.path).gameObject;
+                    if (binding.type != typeof(GameObject))
+                        target = ((GameObject)target).GetComponent(binding.type);
+
+                    SerializedObject serializedObject = new SerializedObject(target);
+                    serializedObject.Update();
+                    SerializedProperty targetValue;
+                    if (true)//list情况
+                    {
+                        SerializedProperty temp = null;
+                        foreach (string subpath in binding.propertyName.Split('.'))
+                        {
+                            if (temp == null)
+                                temp = serializedObject.FindProperty(subpath);
+                            else
+                            {
+                                if (subpath.Contains("["))
+                                {
+                                    int startInext = subpath.IndexOf('[') + 1;
+                                    temp = temp.GetArrayElementAtIndex(Convert.ToInt32(subpath.Substring(startInext, subpath.Length -startInext - 1)));
+                                }
+                                else
+                                    temp = temp.FindPropertyRelative(subpath);
+                                
+                            }
+                            //Debug.Log(binding.propertyName);
+                            //Debug.Log(subpath);
+                            //Debug.Log(temp.type);
+                        }
+                        targetValue = temp;
+                    }
+                    //else
+                        //targetValue = serializedObject.FindProperty(binding.propertyName);
+
+                    SerializedProperty value;
+                    Type valueType = EasyProperty.GetValueType(property);
+
+                    if (!binding.isPPtrCurve)
+                    {
+                        value = property.FindPropertyRelative("floatValue");
+                        if (valueType == typeof(bool))
+                            targetValue.boolValue = Convert.ToBoolean(value.floatValue);
+                        else if (valueType == typeof(float))
+                            targetValue.floatValue = value.floatValue;
+                        else if (valueType == typeof(int))
+                            targetValue.intValue = Convert.ToInt32(value.floatValue);
+                        else if (valueType == typeof(long))
+                            targetValue.longValue = Convert.ToInt64(value.floatValue);
+                    }
+                    else
+                    {
+                        targetValue.objectReferenceValue = property.FindPropertyRelative("objectValue").objectReferenceValue;
+                    }
+                    serializedObject.ApplyModifiedProperties();
+                }
+            }
+        }
+
+        public static void Copy(SerializedProperty dest, SerializedProperty src)
+        {
+            SerializedProperty destPropertyGroup = dest.FindPropertyRelative("propertyGroup");
+            SerializedProperty srcPropertyGroup = src.FindPropertyRelative("propertyGroup");
+            destPropertyGroup.arraySize = srcPropertyGroup.arraySize;
+
+            for (int i = 0; i < destPropertyGroup.arraySize; i++)
+            {
+                EasyProperty.Copy(destPropertyGroup.GetArrayElementAtIndex(i), srcPropertyGroup.GetArrayElementAtIndex(i));
+            }
+        }
     }
 
     [Serializable]
@@ -69,6 +167,18 @@ namespace EasyAvatar
 
         public UnityEngine.Object objectValue;
         public float floatValue;
+
+        public static void Copy(SerializedProperty dest, SerializedProperty src)
+        {
+            dest.FindPropertyRelative("targetPath").stringValue = src.FindPropertyRelative("targetPath").stringValue;
+            dest.FindPropertyRelative("targetProperty").stringValue = src.FindPropertyRelative("targetProperty").stringValue;
+            dest.FindPropertyRelative("targetPropertyType").stringValue = src.FindPropertyRelative("targetPropertyType").stringValue;
+            dest.FindPropertyRelative("valueType").stringValue = src.FindPropertyRelative("valueType").stringValue;
+            dest.FindPropertyRelative("isDiscrete").boolValue = src.FindPropertyRelative("isDiscrete").boolValue;
+            dest.FindPropertyRelative("isPPtr").boolValue = src.FindPropertyRelative("isPPtr").boolValue;
+            dest.FindPropertyRelative("objectValue").objectReferenceValue = src.FindPropertyRelative("objectValue").objectReferenceValue;
+            dest.FindPropertyRelative("floatValue").floatValue = src.FindPropertyRelative("floatValue").floatValue;
+        }
 
         public static EditorCurveBinding GetBinding(SerializedProperty property)
         {

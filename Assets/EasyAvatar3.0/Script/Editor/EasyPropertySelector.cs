@@ -217,14 +217,7 @@ namespace EasyAvatar
             List<EditorCurveBinding> reslut = new List<EditorCurveBinding>();
             foreach(EditorCurveBinding binding in bindingGroup)
             {
-                EditorCurveBinding newBinding;
-                if (binding.isPPtrCurve)
-                    newBinding = EditorCurveBinding.PPtrCurve(binding.path, binding.type, binding.propertyName);
-                else if (binding.isDiscreteCurve)
-                    newBinding = EditorCurveBinding.DiscreteCurve(binding.path, binding.type, binding.propertyName);
-                else
-                    newBinding = EditorCurveBinding.FloatCurve(binding.path, binding.type, binding.propertyName);
-
+                EditorCurveBinding newBinding = EditorCurveBinding.FloatCurve(binding.path, binding.type, binding.propertyName);
                 newBinding.propertyName = newBinding.propertyName.Replace("m_LocalRotation", "localEulerAngles");
                 if (newBinding.propertyName.Substring(newBinding.propertyName.Length - 1) != "w")
                     reslut.Add(newBinding);
