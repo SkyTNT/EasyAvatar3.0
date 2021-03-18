@@ -18,8 +18,10 @@ namespace EasyAvatar
         SerializedProperty icon,offBehaviors, onBehaviors , previewingBehaviors;
         GameObject avatar;
         ReorderableList offBehaviorsList, onBehaviorsList;
+        SkinnedMeshRenderer testObject;
 
-        
+
+
         private void OnEnable()
         {
             
@@ -49,7 +51,6 @@ namespace EasyAvatar
                     ReorderableList.defaultBehaviours.DoAddButton(list);
                 }
             };
-
             serializedObject.ApplyModifiedProperties();
         }
 
@@ -85,6 +86,10 @@ namespace EasyAvatar
             {
                 PasteBehaviors(offBehaviors);
             }
+            if (GUILayout.Button("gen"))
+            {
+                EasyBehavior.GenerateAnimClip("Assets/test.anim", offBehaviors);
+            }
             EditorGUILayout.EndHorizontal();
             offBehaviorsList.DoLayoutList();
             //打开行为
@@ -105,22 +110,27 @@ namespace EasyAvatar
             {
                 PasteBehaviors(onBehaviors);
             }
-            EditorGUILayout.EndHorizontal();
-            onBehaviorsList.DoLayoutList();
-
-            /*
-            if (GUILayout.Button("test"))
+            if (GUILayout.Button("gen"))
             {
                 EasyBehavior.GenerateAnimClip("Assets/test.anim", onBehaviors);
             }
-            if (GUILayout.Button("anim"))
+            EditorGUILayout.EndHorizontal();
+            onBehaviorsList.DoLayoutList();
+
+            testObject =(SkinnedMeshRenderer) EditorGUILayout.ObjectField(testObject, typeof(SkinnedMeshRenderer),true);
+            if (GUILayout.Button("log"))
             {
-                //Animator animator = avatar.GetComponent<Animator>();
-                foreach(MethodInfo info in EasyReflection.FindType("UnityEditor.RotationCurveInterpolation").GetMethods())
-                    Debug.Log(info);
-            }*/
+                SerializedObject testSObj = new SerializedObject(testObject);
+                SerializedProperty property = testSObj.GetIterator();
+                do
+                {
+                    Debug.Log(property.propertyPath);
+                } while (property.Next(true));
+            }
+
             if (avatar && previewingBehaviors != null)
                 EasyBehavior.Preview(avatar, previewingBehaviors);
+
             serializedObject.ApplyModifiedProperties();
             
         }
