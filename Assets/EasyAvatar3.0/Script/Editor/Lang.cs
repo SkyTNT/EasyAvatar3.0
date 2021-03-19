@@ -32,6 +32,7 @@ namespace EasyAvatar
             BehaviorOff,
             BehaviorOn,
             ErrAvatarMenuLen1,
+            ErrAvatarMenuLen0,
             ErrMenuItemLen8,
             ErrMenuInControl,
             ErrControlInControl,
@@ -59,7 +60,7 @@ namespace EasyAvatar
         {
             Avatar = "模型";
             AvatarHelper = "[模型]";
-            AvatarApply = "应用到模型";
+            AvatarApply = "生成菜单并应用到模型";
             Name = "名称";
             Add = "添加";
             Clear = "清空";
@@ -79,6 +80,7 @@ namespace EasyAvatar
             BehaviorOff = "控件关闭时的行为";
             BehaviorOn = "控件打开时的行为";
             ErrAvatarMenuLen1 = "一个模型中只能有一个主菜单，请考虑创建子菜单";
+            ErrAvatarMenuLen0 = "没有主菜单，请先创建";
             ErrMenuItemLen8 = "菜单中的项目数量不能超过8，请考虑创建子菜单";
             ErrMenuInControl = "控件中不能加菜单";
             ErrControlInControl = "控件中不能加控件";
@@ -91,7 +93,7 @@ namespace EasyAvatar
         {
             Avatar = "Avatar";
             AvatarHelper = "[Easy Avatar]";
-            AvatarApply = "Apply to avatar";
+            AvatarApply = "Build expression menu and apply to avatar";
             Add = "Add";
             Name = "Name";
             Clear = "Clear";
@@ -111,6 +113,7 @@ namespace EasyAvatar
             BehaviorOff = "On Control Switch Off";
             BehaviorOn = "On Control Switch On";
             ErrAvatarMenuLen1 = "There can only be one main menu in a avatar. Consider creating a submenu.";
+            ErrAvatarMenuLen0 = "There is no main menu. Please create it first.";
             ErrMenuItemLen8 = "The number of items in the menu can not exceed 8. Consider creating a submenu.";
             ErrMenuInControl = "Cannot add menu to control";
             ErrControlInControl = "Cannot add control to control";

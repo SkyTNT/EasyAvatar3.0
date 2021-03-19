@@ -16,7 +16,7 @@ namespace EasyAvatar
             EditorGUILayout.PropertyField(avatar, new GUIContent(Lang.Avatar));
             if(avatar.objectReferenceValue) target.name =Lang.AvatarHelper + avatar.objectReferenceValue.name;
             if (GUILayout.Button(Lang.AvatarApply)){
-
+                EasyAvatarTool.Builder.BuildExpressionMenu((EasyAvatarHelper)target);
             }
             serializedObject.ApplyModifiedProperties();
         }

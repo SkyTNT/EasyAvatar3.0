@@ -4,7 +4,8 @@ using UnityEngine;
 using UnityEditor;
 using UnityEditorInternal;
 using System;
-using System.Reflection;
+using AnimatorController = UnityEditor.Animations.AnimatorController;
+using System.IO;
 
 namespace EasyAvatar
 {
@@ -54,6 +55,11 @@ namespace EasyAvatar
             serializedObject.ApplyModifiedProperties();
         }
 
+        private void OnDestroy()
+        {
+            StopPreview();
+        }
+
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
@@ -67,17 +73,24 @@ namespace EasyAvatar
                 target.name = Lang.Control;
             EditorGUILayout.EndHorizontal();
             //图标设置
-            EditorGUILayout.PropertyField(icon, new GUIContent(Lang.Icon));
+            EditorGUILayout.BeginHorizontal();
+            GUILayout.Label(Lang.Icon);
+            EditorGUILayout.PropertyField(icon, GUIContent.none);
+            EditorGUILayout.EndHorizontal();
             //关闭行为
             GUILayout.Label(Lang.BehaviorOff, EditorStyles.boldLabel);
             EditorGUILayout.BeginHorizontal();
+            Color preBg = GUI.backgroundColor;
+            GUI.backgroundColor = previewingBehaviors == offBehaviors ? MyGUIStyle.activeButtonColor : preBg;
             if (GUILayout.Button(Lang.Preview))
             {
                 if (previewingBehaviors != offBehaviors)
-                    previewingBehaviors = offBehaviors;
+                    StartPreview(offBehaviors);
                 else
-                    previewingBehaviors = null;
+                    StopPreview();
             }
+            GUI.backgroundColor = preBg;
+
             if (GUILayout.Button(Lang.Copy))
             {
                 CopyBehaviors(offBehaviors);
@@ -86,22 +99,22 @@ namespace EasyAvatar
             {
                 PasteBehaviors(offBehaviors);
             }
-            if (GUILayout.Button("gen"))
-            {
-                EasyBehavior.GenerateAnimClip("Assets/test.anim", offBehaviors);
-            }
             EditorGUILayout.EndHorizontal();
             offBehaviorsList.DoLayoutList();
+
             //打开行为
             GUILayout.Label(Lang.BehaviorOn, EditorStyles.boldLabel);
             EditorGUILayout.BeginHorizontal();
+            GUI.backgroundColor = previewingBehaviors == onBehaviors ? MyGUIStyle.activeButtonColor : preBg;
             if (GUILayout.Button(Lang.Preview))
             {
                 if (previewingBehaviors != onBehaviors)
-                    previewingBehaviors = onBehaviors;
+                    StartPreview(onBehaviors);
                 else
-                    previewingBehaviors = null;
+                    StopPreview();
+
             }
+            GUI.backgroundColor = preBg;
             if (GUILayout.Button(Lang.Copy))
             {
                 CopyBehaviors(onBehaviors);
@@ -110,29 +123,53 @@ namespace EasyAvatar
             {
                 PasteBehaviors(onBehaviors);
             }
-            if (GUILayout.Button("gen"))
-            {
-                EasyBehavior.GenerateAnimClip("Assets/test.anim", onBehaviors);
-            }
             EditorGUILayout.EndHorizontal();
             onBehaviorsList.DoLayoutList();
+            
 
-            testObject =(SkinnedMeshRenderer) EditorGUILayout.ObjectField(testObject, typeof(SkinnedMeshRenderer),true);
-            if (GUILayout.Button("log"))
-            {
-                SerializedObject testSObj = new SerializedObject(testObject);
-                SerializedProperty property = testSObj.GetIterator();
-                do
-                {
-                    Debug.Log(property.propertyPath);
-                } while (property.Next(true));
-            }
-
-            if (avatar && previewingBehaviors != null)
-                EasyBehavior.Preview(avatar, previewingBehaviors);
+            if (previewingBehaviors != null)
+            Preview(previewingBehaviors);
 
             serializedObject.ApplyModifiedProperties();
             
+        }
+
+        public void StartPreview(SerializedProperty behaviors)
+        {
+            Animator animator = avatar.GetComponent<Animator>();
+            if(!animator)
+            {
+                animator = avatar.AddComponent<Animator>();
+            }
+            animator.applyRootMotion = false;
+            //没有Controller会崩溃
+            if (!animator.runtimeAnimatorController)
+            {
+                if (!Directory.Exists("Assets/EasyAvatar3.0/Build/"))
+                    Directory.CreateDirectory("Assets/EasyAvatar3.0/Build/");
+                AnimatorController controller = AnimatorController.CreateAnimatorControllerAtPath("Assets/EasyAvatar3.0/Build/preview.controller");
+                animator.runtimeAnimatorController = controller;
+            }
+            previewingBehaviors = behaviors;
+            if (!AnimationMode.InAnimationMode())
+                AnimationMode.StartAnimationMode();
+        }
+
+        public void StopPreview()
+        {
+            previewingBehaviors = null;
+            if (AnimationMode.InAnimationMode())
+                AnimationMode.StopAnimationMode();
+        }
+
+        public void Preview(SerializedProperty behaviors)
+        {
+            if (!AnimationMode.InAnimationMode() || !avatar)
+                return;
+
+            AnimationMode.BeginSampling();
+            AnimationMode.SampleAnimationClip(avatar, EasyBehavior.GenerateAnimClip(behaviors), 0);
+            AnimationMode.EndSampling();
         }
 
         public static void CopyBehaviors(SerializedProperty behaviors)

@@ -9,6 +9,7 @@ namespace EasyAvatar
     {
         public static GUIStyle centerBoldLable;
         public static GUIStyle yellowLabel;
+        public static Color activeButtonColor = new Color(0.5f, 1, 0.5f, 1);
 
         static MyGUIStyle()
         {

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using System;
+using System.IO;
+using VRC.SDK3.Avatars.ScriptableObjects;
 
 namespace EasyAvatar
 {
@@ -133,6 +135,106 @@ namespace EasyAvatar
             return count;
         }
 
+
+        public class Builder
+        {
+            static int buttonCount = 0;
+            public static void BuildExpressionMenu(EasyAvatarHelper helper)
+            {
+                GameObject avatar = helper.avatar;
+                if (!avatar)
+                {
+                    EditorUtility.DisplayDialog("Error", Lang.ErrAvatarNotSet, "ok");
+                    return;
+                }
+                EasyMenu mainMenu = null;
+                foreach (Transform child in helper.gameObject.transform)
+                {
+                    EasyMenu temp = child.GetComponent<EasyMenu>();
+                    if (temp)
+                    {
+                        if (mainMenu)//检测是否有多个主菜单
+                        {
+                            EditorUtility.DisplayDialog("Error", Lang.ErrAvatarMenuLen1, "ok");
+                            return;
+                        }
+                        mainMenu = temp;
+                    }
+                }
+                if (!mainMenu)//检测是否有主菜单
+                {
+                    EditorUtility.DisplayDialog("Error", Lang.ErrAvatarMenuLen0, "ok");
+                    return;
+                }
+
+                if (Directory.Exists("Assets/EasyAvatar3.0/Build/Anim/"))
+                    Directory.Delete("Assets/EasyAvatar3.0/Build/Anim/", true);
+                if (Directory.Exists("Assets/EasyAvatar3.0/Build/Menu/"))
+                    Directory.Delete("Assets/EasyAvatar3.0/Build/Menu/", true);
+                Directory.CreateDirectory("Assets/EasyAvatar3.0/Build/Anim/");
+                Directory.CreateDirectory("Assets/EasyAvatar3.0/Build/Menu/");
+                List<VRCExpressionParameters.Parameter> parameters = new List<VRCExpressionParameters.Parameter>();
+                VRCExpressionParameters expressionParameters = ScriptableObject.CreateInstance<VRCExpressionParameters>();
+                parameters.Add(new VRCExpressionParameters.Parameter() {name = "VRCEmote",valueType = VRCExpressionParameters.ValueType.Int });
+                parameters.Add(new VRCExpressionParameters.Parameter() { name = "button", valueType = VRCExpressionParameters.ValueType.Int });
+                expressionParameters.parameters = parameters.ToArray();
+                AssetDatabase.CreateAsset(expressionParameters, "Assets/EasyAvatar3.0/Build/Menu/Parameters.asset");
+                AssetDatabase.SaveAssets();
+                buttonCount = 0;
+                BuildExpressionMenu(avatar, mainMenu, "M");
+            }
+
+            private static VRCExpressionsMenu BuildExpressionMenu(GameObject avatar, EasyMenu menu, string prefix)
+            {
+                if (GetMenuItemCount(menu.gameObject.transform) > 8)
+                {
+                    EditorUtility.DisplayDialog("Error", Lang.ErrMenuItemLen8, "ok");
+                    return null;
+                }
+
+                VRCExpressionsMenu expressionsMenu = ScriptableObject.CreateInstance<VRCExpressionsMenu>();
+                AssetDatabase.CreateAsset(expressionsMenu, "Assets/EasyAvatar3.0/Build/Menu/" + prefix + ".asset");
+
+                int count = 0;
+                foreach (Transform child in menu.gameObject.transform)
+                {
+                    count++;
+                    EasyMenu subMenu = child.GetComponent<EasyMenu>();
+                    EasyControl control = child.GetComponent<EasyControl>();
+                    if (control)
+                    {
+                        buttonCount++;
+                        SerializedObject serializedObject = new SerializedObject(control);
+                        serializedObject.Update();
+                        //加_count_避免重名
+                        EasyBehavior.GenerateAnimClip("Assets/EasyAvatar3.0/Build/Anim/" + prefix + "_" + count + "_" + control.name + "_off.anim", serializedObject.FindProperty("offBehaviors"));
+                        EasyBehavior.GenerateAnimClip("Assets/EasyAvatar3.0/Build/Anim/" + prefix + "_" + count + "_" + control.name + "_on.anim", serializedObject.FindProperty("onBehaviors"));
+
+                        VRCExpressionsMenu.Control vrcControl = new VRCExpressionsMenu.Control();
+                        vrcControl.name = control.name;
+                        vrcControl.type = VRCExpressionsMenu.Control.ControlType.Button;
+                        vrcControl.icon = (Texture2D)serializedObject.FindProperty("icon").objectReferenceValue;
+                        
+                        expressionsMenu.controls.Add(vrcControl);
+                    }
+
+                    if (subMenu)
+                    {
+
+                        VRCExpressionsMenu.Control vrcControl = new VRCExpressionsMenu.Control();
+                        vrcControl.name = subMenu.name;
+                        vrcControl.type = VRCExpressionsMenu.Control.ControlType.SubMenu;
+                        vrcControl.subMenu = BuildExpressionMenu(avatar, subMenu, prefix + "_" + count + "_" + subMenu.name);
+                        expressionsMenu.controls.Add(vrcControl);
+                    }
+                }
+
+                AssetDatabase.SaveAssets();
+                return expressionsMenu;
+            }
+        }
+
     }
+
 }
 
