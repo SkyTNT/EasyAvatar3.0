@@ -15,6 +15,8 @@ namespace EasyAvatar
     public class EasyAvatarTool
     {
 
+        public static string workingDirectory = "Assets/EasyAvatar3.0/";
+
         [MenuItem("GameObject/EasyAvatar3.0/Avatar Helper", priority = 0)]
         public static bool CreateAvatarInfo()
         {
@@ -142,7 +144,7 @@ namespace EasyAvatar
         public class Builder
         {
             static int buttonCount = 0;
-            static AnimatorController controller;
+            static AnimatorController controllerFx, controllerAction;
             public static void Build(EasyAvatarHelper helper)
             {
                 buttonCount = 0;
@@ -173,31 +175,35 @@ namespace EasyAvatar
                 }
 
                 //清除目录
-                if (Directory.Exists("Assets/EasyAvatar3.0/Build/Anim/"))
+                if (Directory.Exists(workingDirectory+"Build/Anim/"))
                 {
-                    Directory.Delete("Assets/EasyAvatar3.0/Build/Anim/", true);
-                    File.Delete("Assets/EasyAvatar3.0/Build/Anim.meta");
+                    Directory.Delete(workingDirectory + "Build/Anim/", true);
+                    File.Delete(workingDirectory + "Build/Anim.meta");
                 }
                     
                 if (Directory.Exists("Assets/EasyAvatar3.0/Build/Menu/"))
                 {
-                    Directory.Delete("Assets/EasyAvatar3.0/Build/Menu/", true);
-                    File.Delete("Assets/EasyAvatar3.0/Build/Menu.meta");
+                    Directory.Delete(workingDirectory + "Build/Menu/", true);
+                    File.Delete(workingDirectory + "Build/Menu.meta");
                 }
                     
-                Directory.CreateDirectory("Assets/EasyAvatar3.0/Build/Anim/");
-                Directory.CreateDirectory("Assets/EasyAvatar3.0/Build/Menu/");
+                Directory.CreateDirectory(workingDirectory + "Build/Anim/");
+                Directory.CreateDirectory(workingDirectory + "Build/Menu/");
 
                 //初始化AnimatorController
-                controller = AnimatorController.CreateAnimatorControllerAtPath("Assets/EasyAvatar3.0/Build/Anim/FXLayer.controller");
-                controller.AddParameter("button", AnimatorControllerParameterType.Int);
-                //初始化VRCExpressionParameters
+                controllerFx = AnimatorController.CreateAnimatorControllerAtPath(workingDirectory + "Build/Anim/FXLayer.controller");
+                controllerFx.AddParameter("button", AnimatorControllerParameterType.Int);
+                AssetDatabase.CopyAsset(workingDirectory + "Res/TemplateActionLayer.controller", workingDirectory + "Build/Anim/ActionLayer.controller");
+                controllerAction = AssetDatabase.LoadAssetAtPath<AnimatorController>(workingDirectory + "Build/Anim/ActionLayer.controller");
+
+                controllerAction.AddParameter("button", AnimatorControllerParameterType.Int);
+                //构建VRCExpressionParameters
                 List<VRCExpressionParameters.Parameter> parameters = new List<VRCExpressionParameters.Parameter>();
                 VRCExpressionParameters expressionParameters = ScriptableObject.CreateInstance<VRCExpressionParameters>();
                 parameters.Add(new VRCExpressionParameters.Parameter() {name = "VRCEmote",valueType = VRCExpressionParameters.ValueType.Int });
                 parameters.Add(new VRCExpressionParameters.Parameter() { name = "button", valueType = VRCExpressionParameters.ValueType.Int ,saved = false});
                 expressionParameters.parameters = parameters.ToArray();
-                AssetDatabase.CreateAsset(expressionParameters, "Assets/EasyAvatar3.0/Build/Menu/Parameters.asset");
+                AssetDatabase.CreateAsset(expressionParameters, workingDirectory + "Build/Menu/Parameters.asset");
                 //构建菜单
                 VRCExpressionsMenu VRCMenu = BuildMenu(avatar, mainMenu, "Menu");
                 //设置VRCAvatarDescriptor
@@ -210,9 +216,10 @@ namespace EasyAvatar
                     new CustomAnimLayer(){type = AnimLayerType.Base ,isDefault = true},
                     new CustomAnimLayer(){type = AnimLayerType.Additive ,isDefault = true},
                     new CustomAnimLayer(){type = AnimLayerType.Gesture ,isDefault = true},
-                    new CustomAnimLayer(){type = AnimLayerType.Action ,isDefault = true},
-                    new CustomAnimLayer(){type = AnimLayerType.FX ,isDefault = false,animatorController = controller},
+                    new CustomAnimLayer(){type = AnimLayerType.Action ,isDefault = false , animatorController = controllerAction },
+                    new CustomAnimLayer(){type = AnimLayerType.FX ,isDefault = false,animatorController = controllerFx},
                 };
+
                 //保存
                 AssetDatabase.SaveAssets();
             }
@@ -226,7 +233,7 @@ namespace EasyAvatar
                 }
 
                 VRCExpressionsMenu expressionsMenu = ScriptableObject.CreateInstance<VRCExpressionsMenu>();
-                AssetDatabase.CreateAsset(expressionsMenu, "Assets/EasyAvatar3.0/Build/Menu/" + prefix + ".asset");
+                AssetDatabase.CreateAsset(expressionsMenu, workingDirectory + "Build/Menu/" + prefix + ".asset");
 
                 int count = 0;
                 foreach (Transform child in menu.gameObject.transform)
@@ -267,18 +274,47 @@ namespace EasyAvatar
 
             private static void BuildButtonLayer(string name, SerializedObject control)
             {
-                AnimationClip offClip = Utility.GenerateAnimClip("Assets/EasyAvatar3.0/Build/Anim/" + name + "_off.anim", control.FindProperty("offBehaviors"));
-                AnimationClip onClip = Utility.GenerateAnimClip("Assets/EasyAvatar3.0/Build/Anim/" + name + "_on.anim", control.FindProperty("onBehaviors"));
-                AnimatorControllerLayer layer = new AnimatorControllerLayer() { name = name, stateMachine = new AnimatorStateMachine(), defaultWeight = 1 };
-                controller.AddLayer(layer);
-                AnimatorStateMachine stateMachine = layer.stateMachine;
-                AnimatorState stateOff = stateMachine.AddState("off");
-                AnimatorState statePre = stateMachine.AddState("pre");
-                AnimatorState stateOn = stateMachine.AddState("on");
-                AnimatorState stateOut = stateMachine.AddState("out");
+                //EasyBehaviors生成动画
+                AnimationClip offClip = Utility.GenerateAnimClip(control.FindProperty("offBehaviors"));
+                AnimationClip onClip = Utility.GenerateAnimClip(control.FindProperty("onBehaviors"));
+                //使用动画文件
+                if (control.FindProperty("useAnimClip").boolValue)
+                {
+                    //先将动画文件合并，在与Behaviors生成动画合并
+                    offClip = Utility.MergeAnimClip(Utility.MergeAnimClip(control.FindProperty("offAnims")), offClip);
+                    onClip = Utility.MergeAnimClip(Utility.MergeAnimClip(control.FindProperty("onAnims")), onClip);
+                }
+                //分离action动画
+                AnimationClip[] offClips = Utility.SeparateActionAnimation(offClip);
+                AnimationClip[] onClips = Utility.SeparateActionAnimation(onClip);
+                AnimationClip offClipNonAction = offClips[1];
+                AnimationClip onClipAction = onClips[0];
+                AnimationClip onClipNonAction = onClips[1];
+                
+                Utility.SaveAnimClip(workingDirectory + "Build/Anim/" + name + "_off_fx.anim", offClipNonAction);
+                Utility.SaveAnimClip(workingDirectory + "Build/Anim/" + name + "_on_fx.anim", onClipNonAction);
+                BuildFxSwitch(name, offClipNonAction, onClipNonAction);
+
+                //有action动画才加进去
+                if (AnimationUtility.GetCurveBindings(onClipAction).Length > 0)
+                {
+                    Utility.SaveAnimClip(workingDirectory + "Build/Anim/" + name + "_on_action.anim", onClipAction);
+                    BuildActionSwitch(name, onClipAction);
+                }
+            }
+
+            private static void BuildFxSwitch(string name,AnimationClip offClip,AnimationClip onClip)
+            {
+                AnimatorControllerLayer fxLayer = new AnimatorControllerLayer() { name = name, stateMachine = new AnimatorStateMachine(), defaultWeight = 1 };
+                controllerFx.AddLayer(fxLayer);
+                AnimatorStateMachine fxStateMachine = fxLayer.stateMachine;
+                AnimatorState stateOff = fxStateMachine.AddState("off");
+                AnimatorState statePre = fxStateMachine.AddState("pre");
+                AnimatorState stateOn = fxStateMachine.AddState("on");
+                AnimatorState stateOut = fxStateMachine.AddState("out");
                 stateOff.motion = offClip;
                 stateOn.motion = onClip;
-                stateMachine.defaultState = stateOff;
+                fxStateMachine.defaultState = stateOff;
                 AnimatorStateTransition off_pre = stateOff.AddTransition(statePre);
                 off_pre.AddCondition(AnimatorConditionMode.Equals, buttonCount, "button");
                 off_pre.duration = 0;
@@ -292,16 +328,48 @@ namespace EasyAvatar
                 out_off.AddCondition(AnimatorConditionMode.Equals, 0, "button");
                 out_off.duration = 0;
             }
-            
+
+            private static void BuildActionSwitch(string name, AnimationClip onClip)
+            {
+                AnimatorControllerLayer actionLayer = controllerAction.layers[0];
+                AnimatorStateMachine actionStateMachine = actionLayer.stateMachine;
+                AnimatorState waitForActionOrAFK = Utility.findState(actionStateMachine, "WaitForActionOrAFK");
+                AnimatorState templatePre = Utility.findState(actionStateMachine, "easy_avatar_pre");
+                AnimatorState templateOut = Utility.findState(actionStateMachine, "easy_avatar_out");
+
+                AnimatorState statePre = actionStateMachine.AddState(name + "_pre");
+                statePre.motion = templatePre.motion;
+                statePre.behaviours = templatePre.behaviours;
+                AnimatorState stateOn = actionStateMachine.AddState(name + "_on");
+                stateOn.motion = onClip;
+                AnimatorState stateOut = actionStateMachine.AddState(name + "_out");
+                stateOut.motion = templateOut.motion;
+                stateOut.behaviours = templateOut.behaviours;
+
+                AnimatorStateTransition off_pre = waitForActionOrAFK.AddTransition(statePre);
+                off_pre.AddCondition(AnimatorConditionMode.Equals, buttonCount, "button");
+                off_pre.duration = 0;
+                AnimatorStateTransition pre_on = statePre.AddTransition(stateOn);
+                pre_on.AddCondition(AnimatorConditionMode.Equals, 0, "button");
+                pre_on.duration = 0;
+                AnimatorStateTransition on_out = stateOn.AddTransition(stateOut);
+                on_out.AddCondition(AnimatorConditionMode.Equals, buttonCount, "button");
+                on_out.duration = 0;
+                AnimatorStateTransition out_off = stateOut.AddTransition(waitForActionOrAFK);
+                out_off.AddCondition(AnimatorConditionMode.Equals, 0, "button");
+                out_off.duration = 0;
+
+            }
         }
+
+
         #endregion
 
         #region Utility
         public class Utility
         {
-            public static AnimationClip GenerateAnimClip(string path, SerializedProperty behaviors)
+            public static AnimationClip SaveAnimClip(string path, AnimationClip clip)
             {
-                AnimationClip clip = GenerateAnimClip(behaviors);
                 AssetDatabase.CreateAsset(clip, path);
                 AssetDatabase.SaveAssets();
                 return clip;
@@ -344,6 +412,73 @@ namespace EasyAvatar
                     }
                 }
                 return clip;
+            }
+            
+
+            public static AnimationClip MergeAnimClip(SerializedProperty clips)
+            {
+                AnimationClip result = new AnimationClip();
+                result.frameRate = 60;
+
+                for (int i = 0; i < clips.arraySize; i++)
+                {
+                    AnimationClip clip = (AnimationClip)clips.GetArrayElementAtIndex(i).objectReferenceValue;
+                    if (!clip)
+                        continue;
+                    foreach(EditorCurveBinding binding in AnimationUtility.GetCurveBindings(clip))
+                        AnimationUtility.SetEditorCurve(result, binding, AnimationUtility.GetEditorCurve(clip, binding));
+                    foreach (EditorCurveBinding binding in AnimationUtility.GetObjectReferenceCurveBindings(clip))
+                        AnimationUtility.SetObjectReferenceCurve(result, binding, AnimationUtility.GetObjectReferenceCurve(clip, binding));
+                }
+                return result;
+            }
+
+            public static AnimationClip MergeAnimClip(params AnimationClip[] clips)
+            {
+                AnimationClip result = new AnimationClip();
+                result.frameRate = 60;
+
+                foreach (AnimationClip clip in clips)
+                {
+                    if (!clip)
+                        continue;
+                    foreach (EditorCurveBinding binding in AnimationUtility.GetCurveBindings(clip))
+                        AnimationUtility.SetEditorCurve(result, binding, AnimationUtility.GetEditorCurve(clip, binding));
+                    foreach (EditorCurveBinding binding in AnimationUtility.GetObjectReferenceCurveBindings(clip))
+                        AnimationUtility.SetObjectReferenceCurve(result, binding, AnimationUtility.GetObjectReferenceCurve(clip, binding));
+                }
+                return result;
+            }
+
+            public static AnimationClip[] SeparateActionAnimation(AnimationClip clip)
+            {
+                AnimationClip action = new AnimationClip();
+                action.frameRate = 60;
+                AnimationClip nonAction = new AnimationClip();
+                nonAction.frameRate = 60;
+                foreach (EditorCurveBinding binding in AnimationUtility.GetCurveBindings(clip))
+                {
+                    //一般在根物体也就是avatar上只用了animator
+                    if (binding.path == "")
+                        AnimationUtility.SetEditorCurve(action, binding, AnimationUtility.GetEditorCurve(clip, binding));
+                    else
+                        AnimationUtility.SetEditorCurve(nonAction, binding, AnimationUtility.GetEditorCurve(clip, binding));
+                }
+                //Object类型的曲线一定不是animator动画
+                foreach (EditorCurveBinding binding in AnimationUtility.GetObjectReferenceCurveBindings(clip))
+                    AnimationUtility.SetObjectReferenceCurve(nonAction, binding, AnimationUtility.GetObjectReferenceCurve(clip, binding));
+
+                return new AnimationClip[] {action,nonAction };
+            }
+
+            public static AnimatorState findState(AnimatorStateMachine stateMachine, string name)
+            {
+                foreach(var childState in stateMachine.states)
+                {
+                    if (name == childState.state.name)
+                        return childState.state;
+                }
+                return null;
             }
 
             public static void CopyBehavior(SerializedProperty dest, SerializedProperty src)

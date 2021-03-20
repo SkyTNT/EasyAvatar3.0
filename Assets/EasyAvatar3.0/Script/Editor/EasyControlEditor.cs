@@ -12,16 +12,24 @@ namespace EasyAvatar
     [CustomEditor(typeof(EasyControl))]
     public class EasyControlEditor : Editor
     {
+
+        public enum PreviewType
+        {
+            None,
+            Behaviors,
+            AnimationClips
+        }
         //当前复制的Behaviors
         static EasyControl copiedTarget;
         static string copiedBehaviorsPath;
+        static List<AnimationClip> copidClips;
+        AnimationClip testClip;
 
-        SerializedProperty icon,offBehaviors, onBehaviors , previewingBehaviors;
+        SerializedProperty icon, offBehaviors, onBehaviors, useAnimClip, offAnims, onAnims, previewing;
+        PreviewType previewType;
         GameObject avatar;
-        ReorderableList offBehaviorsList, onBehaviorsList;
+        ReorderableList offBehaviorsList, onBehaviorsList, offAnimsList, onAnimsList;
         SkinnedMeshRenderer testObject;
-
-
 
         private void OnEnable()
         {
@@ -30,11 +38,14 @@ namespace EasyAvatar
             icon = serializedObject.FindProperty("icon");
             offBehaviors = serializedObject.FindProperty("offBehaviors");
             onBehaviors = serializedObject.FindProperty("onBehaviors");
-            serializedObject.ApplyModifiedProperties();
+            useAnimClip = serializedObject.FindProperty("useAnimClip");
+            offAnims = serializedObject.FindProperty("offAnims");
+            onAnims = serializedObject.FindProperty("onAnims");
+
             offBehaviorsList = new ReorderableList(serializedObject, offBehaviors, true, true, true, true);
             onBehaviorsList  = new ReorderableList(serializedObject, onBehaviors, true, true, true, true);
             offBehaviorsList.drawHeaderCallback = onBehaviorsList.drawHeaderCallback = (Rect rect) => { };
-            offBehaviorsList.elementHeight = onBehaviorsList.elementHeight = EditorGUIUtility.singleLineHeight*3 +3*2*3;
+            offBehaviorsList.elementHeight = onBehaviorsList.elementHeight = (EditorGUIUtility.singleLineHeight + 6) * 3;
             offBehaviorsList.drawElementCallback = (Rect rect, int index, bool selected, bool focused) => DrawBehavior(rect, offBehaviors.GetArrayElementAtIndex(index));
             onBehaviorsList.drawElementCallback = (Rect rect, int index, bool selected, bool focused) => DrawBehavior(rect, onBehaviors.GetArrayElementAtIndex(index));
             offBehaviorsList.onAddCallback = onBehaviorsList.onAddCallback = (ReorderableList list) => {
@@ -52,6 +63,13 @@ namespace EasyAvatar
                     ReorderableList.defaultBehaviours.DoAddButton(list);
                 }
             };
+
+            offAnimsList = new ReorderableList(serializedObject, offAnims, true, true, true, true);
+            onAnimsList = new ReorderableList(serializedObject, onAnims, true, true, true, true);
+            offAnimsList.drawHeaderCallback = onAnimsList.drawHeaderCallback = (Rect rect) => { };
+            offAnimsList.elementHeight = onAnimsList.elementHeight = EditorGUIUtility.singleLineHeight + 6;
+            offAnimsList.drawElementCallback = (Rect rect, int index, bool selected, bool focused) => DrawAnimClip(rect,offAnims.GetArrayElementAtIndex(index));
+            onAnimsList.drawElementCallback = (Rect rect, int index, bool selected, bool focused) => DrawAnimClip(rect, onAnims.GetArrayElementAtIndex(index));
             serializedObject.ApplyModifiedProperties();
         }
 
@@ -81,11 +99,11 @@ namespace EasyAvatar
             GUILayout.Label(Lang.BehaviorOff, EditorStyles.boldLabel);
             EditorGUILayout.BeginHorizontal();
             Color preBg = GUI.backgroundColor;
-            GUI.backgroundColor = previewingBehaviors == offBehaviors ? MyGUIStyle.activeButtonColor : preBg;
+            GUI.backgroundColor = previewing == offBehaviors ? MyGUIStyle.activeButtonColor : preBg;
             if (GUILayout.Button(Lang.Preview))
             {
-                if (previewingBehaviors != offBehaviors)
-                    StartPreview(offBehaviors);
+                if (previewing != offBehaviors)
+                    StartPreview(offBehaviors, PreviewType.Behaviors);
                 else
                     StopPreview();
             }
@@ -105,11 +123,11 @@ namespace EasyAvatar
             //打开行为
             GUILayout.Label(Lang.BehaviorOn, EditorStyles.boldLabel);
             EditorGUILayout.BeginHorizontal();
-            GUI.backgroundColor = previewingBehaviors == onBehaviors ? MyGUIStyle.activeButtonColor : preBg;
+            GUI.backgroundColor = previewing == onBehaviors ? MyGUIStyle.activeButtonColor : preBg;
             if (GUILayout.Button(Lang.Preview))
             {
-                if (previewingBehaviors != onBehaviors)
-                    StartPreview(onBehaviors);
+                if (previewing != onBehaviors)
+                    StartPreview(onBehaviors, PreviewType.Behaviors);
                 else
                     StopPreview();
 
@@ -126,49 +144,104 @@ namespace EasyAvatar
             EditorGUILayout.EndHorizontal();
             onBehaviorsList.DoLayoutList();
             
+            useAnimClip.boolValue = EditorGUILayout.ToggleLeft(Lang.UseAnimClip, useAnimClip.boolValue);
 
-            if (previewingBehaviors != null)
-            Preview(previewingBehaviors);
+            if (useAnimClip.boolValue)
+            {
+                //关闭动画
+                GUILayout.Label(Lang.AnimClipOff, EditorStyles.boldLabel);
+                EditorGUILayout.BeginHorizontal();
+                GUI.backgroundColor = previewing == offAnims ? MyGUIStyle.activeButtonColor : preBg;
+                if (GUILayout.Button(Lang.Preview))
+                {
+                    if (previewing != offAnims)
+                        StartPreview(offAnims, PreviewType.AnimationClips);
+                    else
+                        StopPreview();
+                }
+                GUI.backgroundColor = preBg;
+                if (GUILayout.Button(Lang.Copy))
+                {
+                    CopyAnimClips(offAnims);
+                }
+                if (GUILayout.Button(Lang.Paste))
+                {
+                    PasteAnimClips(offAnims);
+                }
+                EditorGUILayout.EndHorizontal();
+                offAnimsList.DoLayoutList();
 
+                EditorGUILayout.HelpBox(Lang.AnimClipOffNote, MessageType.Info);
+                //打开动画
+                GUILayout.Label(Lang.AnimClipOn, EditorStyles.boldLabel);
+                EditorGUILayout.BeginHorizontal();
+                GUI.backgroundColor = previewing == onAnims ? MyGUIStyle.activeButtonColor : preBg;
+                if (GUILayout.Button(Lang.Preview))
+                {
+                    if (previewing != onAnims)
+                        StartPreview(onAnims, PreviewType.AnimationClips);
+                    else
+                        StopPreview();
+                }
+                GUI.backgroundColor = preBg;
+                if (GUILayout.Button(Lang.Copy))
+                {
+                    CopyAnimClips(onAnims);
+                }
+                if (GUILayout.Button(Lang.Paste))
+                {
+                    PasteAnimClips(onAnims);
+                }
+                EditorGUILayout.EndHorizontal();
+                onAnimsList.DoLayoutList();
+                
+            }
+
+            
+            Preview();
             serializedObject.ApplyModifiedProperties();
             
         }
 
-        public void StartPreview(SerializedProperty behaviors)
+        public void StartPreview(SerializedProperty prev , PreviewType type)
         {
             Animator animator = avatar.GetComponent<Animator>();
             if(!animator)
             {
                 animator = avatar.AddComponent<Animator>();
             }
-            animator.applyRootMotion = false;
             //没有Controller会崩溃
             if (!animator.runtimeAnimatorController)
             {
-                if (!Directory.Exists("Assets/EasyAvatar3.0/Build/"))
-                    Directory.CreateDirectory("Assets/EasyAvatar3.0/Build/");
-                AnimatorController controller = AnimatorController.CreateAnimatorControllerAtPath("Assets/EasyAvatar3.0/Build/preview.controller");
+                if (!Directory.Exists(EasyAvatarTool.workingDirectory + "Build/"))
+                    Directory.CreateDirectory(EasyAvatarTool.workingDirectory +"Build/");
+                AnimatorController controller = AnimatorController.CreateAnimatorControllerAtPath(EasyAvatarTool.workingDirectory + "Build/preview.controller");
                 animator.runtimeAnimatorController = controller;
             }
-            previewingBehaviors = behaviors;
+            previewing = prev;
+            previewType = type;
             if (!AnimationMode.InAnimationMode())
                 AnimationMode.StartAnimationMode();
         }
 
         public void StopPreview()
         {
-            previewingBehaviors = null;
+            previewing = null;
+            previewType = PreviewType.None;
             if (AnimationMode.InAnimationMode())
                 AnimationMode.StopAnimationMode();
         }
 
-        public void Preview(SerializedProperty behaviors)
+        public void Preview()
         {
-            if (!AnimationMode.InAnimationMode() || !avatar)
+            if (!AnimationMode.InAnimationMode() || !avatar ||previewType == PreviewType.None)
                 return;
-
+            
             AnimationMode.BeginSampling();
-            AnimationMode.SampleAnimationClip(avatar, EasyAvatarTool.Utility.GenerateAnimClip(behaviors), 0);
+            if (previewType == PreviewType.Behaviors)
+                AnimationMode.SampleAnimationClip(avatar, EasyAvatarTool.Utility.GenerateAnimClip(previewing), 0);
+            else if(previewType == PreviewType.AnimationClips)
+                AnimationMode.SampleAnimationClip(avatar, EasyAvatarTool.Utility.MergeAnimClip(previewing), 0);
             AnimationMode.EndSampling();
         }
 
@@ -190,6 +263,23 @@ namespace EasyAvatar
             {
                 EasyAvatarTool.Utility.CopyBehavior(behaviors.GetArrayElementAtIndex(i), copiedBehaviors.GetArrayElementAtIndex(i));
             }
+        }
+
+        public static void CopyAnimClips(SerializedProperty animClips)
+        {
+            copidClips = new List<AnimationClip>();
+            for (int i = 0; i < animClips.arraySize; i++)
+                copidClips.Add((AnimationClip)animClips.GetArrayElementAtIndex(i).objectReferenceValue);
+
+        }
+
+        public static void PasteAnimClips(SerializedProperty animClips)
+        {
+            if (copidClips == null)
+                return;
+            animClips.arraySize = copidClips.Count;
+            for (int i = 0; i < animClips.arraySize; i++)
+                animClips.GetArrayElementAtIndex(i).objectReferenceValue = copidClips[i];
         }
 
         public void DrawBehavior(Rect position, SerializedProperty behavior)
@@ -283,7 +373,23 @@ namespace EasyAvatar
                 PropertyValueField(valueFieldRect, behavior.FindPropertyRelative("propertyGroup"));
         }
 
-
+        public void DrawAnimClip(Rect position, SerializedProperty clip)
+        {
+            position.y += 3;
+            position.height = EditorGUIUtility.singleLineHeight;
+            Rect labelRect = new Rect(position)
+            {
+                width = Mathf.Max(position.width / 4, 50)
+            };
+            Rect fieldRect = new Rect(position)
+            {
+                x = labelRect.x + labelRect.width,
+                width = position.width - labelRect.width
+            };
+            EditorGUI.LabelField(labelRect, Lang.AnimClip);
+            EditorGUI.PropertyField(fieldRect, clip, GUIContent.none);
+        }
+        
         public void PropertyValueField(Rect rect, SerializedProperty propertyGroup)
         {
 
@@ -366,8 +472,6 @@ namespace EasyAvatar
             }
         }
 
-
-
         public GameObject GetAvatar()
         {
             EasyAvatarHelper avatarHelper = ((MonoBehaviour)target).GetComponentInParent<EasyAvatarHelper>();
@@ -380,8 +484,7 @@ namespace EasyAvatar
                 return null;
             return avatar;
         }
-
-
+        
         public string CalculateGameObjectPath(GameObject gameObject)
         {
             if (!gameObject)
@@ -391,4 +494,3 @@ namespace EasyAvatar
         
     }
 }
-
