@@ -6,10 +6,6 @@ namespace EasyAvatar
 {
     public class EasyControl : MonoBehaviour
     {
-        enum Type{
-            Button,
-            Toggle,
-        }
         [SerializeField]
         public Texture2D icon;
         [SerializeField]

@@ -13,6 +13,7 @@ namespace EasyAvatar
             Avatar,
             AvatarHelper,
             AvatarApply,
+            AvataNoDescriptor,
             Name,
             Add,
             Clear,
@@ -61,11 +62,12 @@ namespace EasyAvatar
             Avatar = "模型";
             AvatarHelper = "[模型]";
             AvatarApply = "生成菜单并应用到模型";
+            AvataNoDescriptor = "模型没有检测到VRCAvatarDescriptor，点击添加";
             Name = "名称";
             Add = "添加";
             Clear = "清空";
             Delete = "删除";
-            MainMenu = "[菜单]";
+            MainMenu = "主菜单";
             SubMenu = "子菜单";
             Control = "控件";
             Icon = "图标";
@@ -94,11 +96,12 @@ namespace EasyAvatar
             Avatar = "Avatar";
             AvatarHelper = "[Easy Avatar]";
             AvatarApply = "Build expression menu and apply to avatar";
+            AvataNoDescriptor = "VRCAvatarDescriptor is not detected in the avatar. Click to add";
             Add = "Add";
             Name = "Name";
             Clear = "Clear";
             Delete = "Delete";
-            MainMenu = "[Expression Menu]";
+            MainMenu = "Expression Menu";
             SubMenu = "Sub Menu";
             Control = "Control";
             Icon = "Icon";
