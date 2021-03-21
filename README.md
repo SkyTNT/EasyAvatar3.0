@@ -1,22 +1,22 @@
-# EasyAvatar3.0
+# EasyAvatar3.0--A easy way to make vrchat avatar3.0
 
 通常avatar3.0制作流程包含了菜单创建，参数表设置，动画状态机的设置，这样avatar3.0的制作门槛就太高了。
 而EasyAvatar3.0,省略参数表设置，动画状态机的设置这两步，让菜单直接控制动画。从而大大降低制作门槛。
 对萌新来说很友好。
 
-#### 下载
+## 下载
 
 1. [下载最新VRChatAvatarSDK](https://vrchat.com/download/sdk3-avatars/ "下载")
 
 2. [下载最新EasyAvatar3.0](https://github.com/SkyTNT/EasyAvatar3.0/releases/latest "下载")
 
-#### 安装
+## 安装
 
 1. 导入VRCAvatarSDK
 
 2. 导入EasyAvatar3.0
 
-#### 使用
+## 使用
 
 1. 在最上方的工具栏中，点击`EasyAvatar3.0/Language`可以选择语言
 [![Language](https://fs.fab.moe/?explorer/share/file&hash=e686XaRLEC2MJF6SUsu7cY9uaIZSDxUnG318F0TJMzY7HVkR6xT6qgu7&name=1.png "Language")](https://fs.fab.moe/?explorer/share/file&hash=e686XaRLEC2MJF6SUsu7cY9uaIZSDxUnG318F0TJMzY7HVkR6xT6qgu7&name=1.png "Language")
@@ -62,6 +62,6 @@
 
 13. 最后打开VRC控制面板上传模型
 
-#### 演示
+## 演示
 
 [演示视频](https://www.bilibili.com/video/BV1uZ4y1w76G/)
