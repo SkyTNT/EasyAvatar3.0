@@ -14259,8 +14259,9 @@ MonoBehaviour:
   portraitCameraPositionOffset: {x: 0, y: 0, z: 0}
   portraitCameraRotationOffset: {x: 0, y: 1, z: 0, w: -0.00000004371139}
   customExpressions: 1
-  expressionsMenu: {fileID: 0}
-  expressionParameters: {fileID: 0}
+  expressionsMenu: {fileID: 11400000, guid: 02e565a7102b2c44ab3a504ef84462c3, type: 2}
+  expressionParameters: {fileID: 11400000, guid: 39d25f1fe88c7ff4a8bb13ca6a7ef890,
+    type: 2}
   enableEyeLook: 1
   customEyeLookSettings:
     eyeMovement:
@@ -14350,13 +14351,13 @@ MonoBehaviour:
     isDefault: 1
   - isEnabled: 0
     type: 4
-    animatorController: {fileID: 9100000, guid: a186ca4c1a1d4af4c99196674d4e21e2,
+    animatorController: {fileID: 9100000, guid: b052012329a6e1b46a023d985ec32a63,
       type: 2}
     mask: {fileID: 0}
     isDefault: 0
   - isEnabled: 0
     type: 5
-    animatorController: {fileID: 9100000, guid: 908488f1d406b2c48b534c4a24c1f4ff,
+    animatorController: {fileID: 9100000, guid: 0d643a8963c32594db48e1c8ad4fd167,
       type: 2}
     mask: {fileID: 0}
     isDefault: 0
@@ -14446,52 +14447,28 @@ MonoBehaviour:
     name: "Menu_5_\u83DC\u53551_2_\u63A7\u4EF62_out"
   - hash: -1252752576
     name: off
-  - hash: 361357794
-    name: pre
   - hash: -2046981681
     name: on
-  - hash: 654488474
-    name: out
   - hash: -1252752576
     name: off
-  - hash: 361357794
-    name: pre
   - hash: -2046981681
     name: on
-  - hash: 654488474
-    name: out
   - hash: -1252752576
     name: off
-  - hash: 361357794
-    name: pre
   - hash: -2046981681
     name: on
-  - hash: 654488474
-    name: out
   - hash: -1252752576
     name: off
-  - hash: 361357794
-    name: pre
   - hash: -2046981681
     name: on
-  - hash: 654488474
-    name: out
   - hash: -1252752576
     name: off
-  - hash: 361357794
-    name: pre
   - hash: -2046981681
     name: on
-  - hash: 654488474
-    name: out
   - hash: -1252752576
     name: off
-  - hash: 361357794
-    name: pre
   - hash: -2046981681
     name: on
-  - hash: 654488474
-    name: out
   autoFootsteps: 1
   autoLocomotion: 1
 --- !u!4 &8291672233256770049
@@ -16106,7 +16083,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8291672233256601465}
-  m_LocalRotation: {x: -0.00051841093, y: 0.00064097514, z: -0.00037806152, w: 0.9999996}
+  m_LocalRotation: {x: -0.00051841105, y: 0.00064097514, z: -0.00037806158, w: 0.9999996}
   m_LocalPosition: {x: 0.0000000660686, y: 0.009963396, z: 0.00000001071603}
   m_LocalScale: {x: 1, y: 1, z: 0.99999994}
   m_Children: []
@@ -16120,7 +16097,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8291672233256601467}
-  m_LocalRotation: {x: -0.00051841093, y: -0.00064097514, z: 0.00037806152, w: 0.9999996}
+  m_LocalRotation: {x: -0.00051841105, y: -0.00064097514, z: 0.00037806158, w: 0.9999996}
   m_LocalPosition: {x: -0.0000000660686, y: 0.009963396, z: 0.00000001071603}
   m_LocalScale: {x: 1, y: 1, z: 0.99999994}
   m_Children: []
@@ -21020,7 +20997,7 @@ Animator:
   m_GameObject: {fileID: 8291672233256601435}
   m_Enabled: 1
   m_Avatar: {fileID: 9000000, guid: 4578c6ee7c228fe41b3e52af536840f8, type: 3}
-  m_Controller: {fileID: 9100000, guid: d6c6c7ee3e1aca249a4bc94e99780e11, type: 2}
+  m_Controller: {fileID: 9100000, guid: 345e78e8bcdcc294194039606d986c40, type: 2}
   m_CullingMode: 1
   m_UpdateMode: 0
   m_ApplyRootMotion: 1

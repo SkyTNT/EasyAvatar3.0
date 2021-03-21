@@ -172,7 +172,7 @@ namespace EasyAvatar
         #region Builder
         public class Builder
         {
-            static int buttonCount = 0;
+            static int toggleCount = 0;
             static AnimatorController controllerFx, controllerAction;
 
             /// <summary>
@@ -181,7 +181,7 @@ namespace EasyAvatar
             /// <param name="helper">AvatarHelper</param>
             public static void Build(EasyAvatarHelper helper)
             {
-                buttonCount = 0;
+                toggleCount = 0;
                 GameObject avatar = helper.avatar;
                 if (!avatar)
                 {
@@ -226,20 +226,23 @@ namespace EasyAvatar
 
                 //初始化AnimatorController
                 controllerFx = AnimatorController.CreateAnimatorControllerAtPath(workingDirectory + "Build/Anim/FXLayer.controller");
-                controllerFx.AddParameter("button", AnimatorControllerParameterType.Int);
                 AssetDatabase.CopyAsset(workingDirectory + "Res/TemplateActionLayer.controller", workingDirectory + "Build/Anim/ActionLayer.controller");
                 controllerAction = AssetDatabase.LoadAssetAtPath<AnimatorController>(workingDirectory + "Build/Anim/ActionLayer.controller");
+                
+                //构建菜单
+                VRCExpressionsMenu VRCMenu = BuildMenu(avatar, mainMenu, "Menu");
 
-                controllerAction.AddParameter("button", AnimatorControllerParameterType.Int);
                 //构建VRCExpressionParameters
                 List<VRCExpressionParameters.Parameter> parameters = new List<VRCExpressionParameters.Parameter>();
                 VRCExpressionParameters expressionParameters = ScriptableObject.CreateInstance<VRCExpressionParameters>();
-                parameters.Add(new VRCExpressionParameters.Parameter() {name = "VRCEmote",valueType = VRCExpressionParameters.ValueType.Int });
-                parameters.Add(new VRCExpressionParameters.Parameter() { name = "button", valueType = VRCExpressionParameters.ValueType.Int ,saved = false});
+                parameters.Add(new VRCExpressionParameters.Parameter() { name = "VRCEmote", valueType = VRCExpressionParameters.ValueType.Int });
+
+                for (int i = 0; i < toggleCount; i++)
+                    parameters.Add(new VRCExpressionParameters.Parameter() { name = "toggle"+(i+1), valueType = VRCExpressionParameters.ValueType.Bool });
+
                 expressionParameters.parameters = parameters.ToArray();
                 AssetDatabase.CreateAsset(expressionParameters, workingDirectory + "Build/Menu/Parameters.asset");
-                //构建菜单
-                VRCExpressionsMenu VRCMenu = BuildMenu(avatar, mainMenu, "Menu");
+
                 //设置VRCAvatarDescriptor
                 VRCAvatarDescriptor avatarDescriptor = avatar.GetComponent<VRCAvatarDescriptor>();
                 avatarDescriptor.customExpressions = true;
@@ -285,18 +288,17 @@ namespace EasyAvatar
                     EasyControl control = child.GetComponent<EasyControl>();
                     if (control)
                     {
-                        buttonCount++;
+                        toggleCount++;
                         SerializedObject serializedObject = new SerializedObject(control);
                         serializedObject.Update();
                         //加_count_避免重名
-                        BuildButton(prefix + "_" + count + "_" + control.name, serializedObject);
+                        BuildToggle(prefix + "_" + count + "_" + control.name, serializedObject);
 
                         VRCExpressionsMenu.Control vrcControl = new VRCExpressionsMenu.Control();
                         vrcControl.name = control.name;
-                        vrcControl.type = VRCExpressionsMenu.Control.ControlType.Button;
+                        vrcControl.type = VRCExpressionsMenu.Control.ControlType.Toggle;
                         vrcControl.icon = (Texture2D)serializedObject.FindProperty("icon").objectReferenceValue;
-                        vrcControl.parameter = new VRCExpressionsMenu.Control.Parameter() { name = "button" };
-                        vrcControl.value = buttonCount;
+                        vrcControl.parameter = new VRCExpressionsMenu.Control.Parameter() { name = "toggle" + toggleCount };
                         expressionsMenu.controls.Add(vrcControl);
                     }
 
@@ -320,7 +322,7 @@ namespace EasyAvatar
             /// </summary>
             /// <param name="name">名字</param>
             /// <param name="control">序列化的控件</param>
-            private static void BuildButton(string name, SerializedObject control)
+            private static void BuildToggle(string name, SerializedObject control)
             {
                 //EasyBehaviors生成动画
                 AnimationClip offClip = Utility.GenerateAnimClip(control.FindProperty("offBehaviors"));
@@ -359,28 +361,21 @@ namespace EasyAvatar
             /// <param name="onClip">按钮打开时的动画</param>
             private static void BuildFxSwitch(string name,AnimationClip offClip,AnimationClip onClip)
             {
+                controllerFx.AddParameter("toggle" + toggleCount, AnimatorControllerParameterType.Bool);
                 AnimatorControllerLayer fxLayer = new AnimatorControllerLayer() { name = name, stateMachine = new AnimatorStateMachine(), defaultWeight = 1 };
                 controllerFx.AddLayer(fxLayer);
                 AnimatorStateMachine fxStateMachine = fxLayer.stateMachine;
                 AnimatorState stateOff = fxStateMachine.AddState("off");
-                AnimatorState statePre = fxStateMachine.AddState("pre");
                 AnimatorState stateOn = fxStateMachine.AddState("on");
-                AnimatorState stateOut = fxStateMachine.AddState("out");
                 stateOff.motion = offClip;
                 stateOn.motion = onClip;
                 fxStateMachine.defaultState = stateOff;
-                AnimatorStateTransition off_pre = stateOff.AddTransition(statePre);
-                off_pre.AddCondition(AnimatorConditionMode.Equals, buttonCount, "button");
-                off_pre.duration = 0;
-                AnimatorStateTransition pre_on = statePre.AddTransition(stateOn);
-                pre_on.AddCondition(AnimatorConditionMode.Equals, 0, "button");
-                pre_on.duration = 0;
-                AnimatorStateTransition on_out = stateOn.AddTransition(stateOut);
-                on_out.AddCondition(AnimatorConditionMode.Equals, buttonCount, "button");
-                on_out.duration = 0;
-                AnimatorStateTransition out_off = stateOut.AddTransition(stateOff);
-                out_off.AddCondition(AnimatorConditionMode.Equals, 0, "button");
-                out_off.duration = 0;
+                AnimatorStateTransition off_on = stateOff.AddTransition(stateOn);
+                off_on.AddCondition(AnimatorConditionMode.If, 0, "toggle" + toggleCount);
+                off_on.duration = 0;
+                AnimatorStateTransition on_off = stateOn.AddTransition(stateOff);
+                on_off.AddCondition(AnimatorConditionMode.IfNot, 0, "toggle" + toggleCount);
+                on_off.duration = 0;
             }
 
             /// <summary>
@@ -390,6 +385,7 @@ namespace EasyAvatar
             /// <param name="onClip">按钮打开时的动画</param>
             private static void BuildActionSwitch(string name, AnimationClip onClip)
             {
+                controllerAction.AddParameter("toggle" + toggleCount, AnimatorControllerParameterType.Bool);
                 AnimatorControllerLayer actionLayer = controllerAction.layers[0];
                 AnimatorStateMachine actionStateMachine = actionLayer.stateMachine;
                 AnimatorState waitForActionOrAFK = Utility.findState(actionStateMachine, "WaitForActionOrAFK");
@@ -406,16 +402,16 @@ namespace EasyAvatar
                 stateOut.behaviours = templateOut.behaviours;
 
                 AnimatorStateTransition off_pre = waitForActionOrAFK.AddTransition(statePre);
-                off_pre.AddCondition(AnimatorConditionMode.Equals, buttonCount, "button");
+                off_pre.AddCondition(AnimatorConditionMode.If, 0, "toggle" + toggleCount);
                 off_pre.duration = 0;
                 AnimatorStateTransition pre_on = statePre.AddTransition(stateOn);
-                pre_on.AddCondition(AnimatorConditionMode.Equals, 0, "button");
+                pre_on.AddCondition(AnimatorConditionMode.If, 0, "toggle" + toggleCount);
                 pre_on.duration = 0;
                 AnimatorStateTransition on_out = stateOn.AddTransition(stateOut);
-                on_out.AddCondition(AnimatorConditionMode.Equals, buttonCount, "button");
+                on_out.AddCondition(AnimatorConditionMode.IfNot, 0, "toggle" + toggleCount);
                 on_out.duration = 0;
                 AnimatorStateTransition out_off = stateOut.AddTransition(waitForActionOrAFK);
-                out_off.AddCondition(AnimatorConditionMode.Equals, 0, "button");
+                out_off.AddCondition(AnimatorConditionMode.IfNot, 0, "toggle" + toggleCount);
                 out_off.duration = 0;
 
             }
