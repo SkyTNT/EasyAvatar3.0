@@ -30,7 +30,7 @@
 4. 选中刚才添加的控件，在Inspector视图中对它进行设置
 [![Inspector Control](https://fs.fab.moe/?explorer/share/file&hash=fcaaagVgNDf8Cl0mJfuT2iZeVwwUvY_bqDls_HIW0x4XxrljWadhSe2l&name=3.png "Inspector Control")](https://fs.fab.moe/?explorer/share/file&hash=fcaaagVgNDf8Cl0mJfuT2iZeVwwUvY_bqDls_HIW0x4XxrljWadhSe2l&name=3.png "Inspector Control")
 
-5. `名称`处可以设置控件显示的名称，当然也可以直接该控件物体的名字。
+5. `名称`处可以设置控件显示的名称，当然也可以直接修改该控件物体的名字。
 `图标`处设置控件显示的图标。
 `控件关闭时的行为`指当控件在关闭状态下做的事。
 这里可以添加多个行为，点击`+`以添加一个行为。
