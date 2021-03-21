@@ -38,6 +38,7 @@ namespace EasyAvatar
             AnimClipOn,
             AnimClipOffNote,
             BuildSucceed,
+            About,
             ErrAvatarMenuLen1,
             ErrAvatarMenuLen0,
             ErrMenuItemLen8,
@@ -100,6 +101,7 @@ namespace EasyAvatar
             AnimClipOn = "控件打开时播放的动画";
             AnimClipOffNote = "控件关闭时的动画只有非人体动画部分会播放";
             BuildSucceed = "成功";
+            About = "由SkyTNT制作\n项目地址：https://github.com/SkyTNT/EasyAvatar3.0/";
             ErrAvatarMenuLen1 = "一个模型中只能有一个主菜单，请考虑创建子菜单";
             ErrAvatarMenuLen0 = "没有主菜单，请先创建";
             ErrMenuItemLen8 = "菜单中的项目数量不能超过8，请考虑创建子菜单";
@@ -143,6 +145,7 @@ namespace EasyAvatar
             AnimClipOn = "On Control Switch On";
             AnimClipOffNote = "When the control is switched off, only the non human animation is played";
             BuildSucceed = "Succeed";
+            About = " Made by SkyTNT\nProject:https://github.com/SkyTNT/EasyAvatar3.0/";
             ErrAvatarMenuLen1 = "There can only be one main menu in a avatar. Consider creating a submenu.";
             ErrAvatarMenuLen0 = "There is no main menu. Please create it first.";
             ErrMenuItemLen8 = "The number of items in the menu can not exceed 8. Consider creating a submenu.";

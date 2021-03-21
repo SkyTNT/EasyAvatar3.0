@@ -126,6 +126,13 @@ namespace EasyAvatar
             return true;
         }
 
+        [MenuItem("EasyAvatar3.0/About", priority = 0)]
+        public static void showAbout()
+        {
+            EditorUtility.DisplayDialog("About", Lang.About, "ok");
+            Debug.Log(Lang.About);
+        }
+
         /// <summary>
         /// 获取菜单下项目的数量
         /// </summary>
