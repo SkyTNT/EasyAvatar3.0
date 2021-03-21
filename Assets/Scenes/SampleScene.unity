@@ -14273,7 +14273,7 @@ MonoBehaviour:
     isDefault: 1
   - isEnabled: 0
     type: 4
-    animatorController: {fileID: 9100000, guid: 9f7510f01a233c548b40710a17d8a815,
+    animatorController: {fileID: 9100000, guid: c3135675b04d72341995b8c5b2aa7bf7,
       type: 2}
     mask: {fileID: 0}
     isDefault: 0
@@ -14367,30 +14367,6 @@ MonoBehaviour:
     name: "Menu_5_\u5B50\u83DC\u5355_2_\u63A7\u4EF6_on"
   - hash: 510184725
     name: "Menu_5_\u5B50\u83DC\u5355_2_\u63A7\u4EF6_out"
-  - hash: -1252752576
-    name: off
-  - hash: -2046981681
-    name: on
-  - hash: -1252752576
-    name: off
-  - hash: -2046981681
-    name: on
-  - hash: -1252752576
-    name: off
-  - hash: -2046981681
-    name: on
-  - hash: -1252752576
-    name: off
-  - hash: -2046981681
-    name: on
-  - hash: -1252752576
-    name: off
-  - hash: -2046981681
-    name: on
-  - hash: -1252752576
-    name: off
-  - hash: -2046981681
-    name: on
   autoFootsteps: 1
   autoLocomotion: 1
 --- !u!4 &8291672233256770049
@@ -16005,7 +15981,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8291672233256601465}
-  m_LocalRotation: {x: -0.0005184111, y: 0.00064097514, z: -0.0003780616, w: 0.9999996}
+  m_LocalRotation: {x: -0.00051841117, y: 0.00064097514, z: -0.00037806164, w: 0.9999996}
   m_LocalPosition: {x: 0.0000000660686, y: 0.009963396, z: 0.00000001071603}
   m_LocalScale: {x: 1, y: 1, z: 0.99999994}
   m_Children: []
@@ -16019,7 +15995,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8291672233256601467}
-  m_LocalRotation: {x: -0.0005184111, y: -0.00064097514, z: 0.0003780616, w: 0.9999996}
+  m_LocalRotation: {x: -0.00051841117, y: -0.00064097514, z: 0.00037806164, w: 0.9999996}
   m_LocalPosition: {x: -0.0000000660686, y: 0.009963396, z: 0.00000001071603}
   m_LocalScale: {x: 1, y: 1, z: 0.99999994}
   m_Children: []

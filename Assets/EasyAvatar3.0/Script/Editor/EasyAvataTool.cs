@@ -362,9 +362,16 @@ namespace EasyAvatar
             private static void BuildFxSwitch(string name,AnimationClip offClip,AnimationClip onClip)
             {
                 controllerFx.AddParameter("toggle" + toggleCount, AnimatorControllerParameterType.Bool);
-                AnimatorControllerLayer fxLayer = new AnimatorControllerLayer() { name = name, stateMachine = new AnimatorStateMachine(), defaultWeight = 1 };
+                AnimatorControllerLayer fxLayer = new AnimatorControllerLayer();
+                AnimatorStateMachine fxStateMachine = new AnimatorStateMachine();
+                fxLayer.name = name;
+                fxLayer.stateMachine = fxStateMachine;
+                fxLayer.defaultWeight = 1;
+                fxStateMachine.name = name;
+                fxStateMachine.hideFlags = HideFlags.HideInHierarchy;
+                //不加这个unity重启后FxLayer里的内容会消失
+                AssetDatabase.AddObjectToAsset(fxLayer.stateMachine, AssetDatabase.GetAssetPath(controllerFx));
                 controllerFx.AddLayer(fxLayer);
-                AnimatorStateMachine fxStateMachine = fxLayer.stateMachine;
                 AnimatorState stateOff = fxStateMachine.AddState("off");
                 AnimatorState stateOn = fxStateMachine.AddState("on");
                 stateOff.motion = offClip;
