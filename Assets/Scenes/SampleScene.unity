@@ -211,6 +211,15 @@ MonoBehaviour:
       isPPtr: 1
       objectValue: {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
       floatValue: 0
+  - propertyGroup:
+    - targetPath: 
+      targetProperty: 
+      targetPropertyType: 
+      valueType: 
+      isDiscrete: 0
+      isPPtr: 0
+      objectValue: {fileID: 0}
+      floatValue: 0
   onBehaviors:
   - propertyGroup:
     - targetPath: Cube (1)
@@ -469,7 +478,7 @@ GameObject:
   - component: {fileID: 881371571}
   - component: {fileID: 881371572}
   m_Layer: 0
-  m_Name: "\u5B50\u83DC\u5355"
+  m_Name: "\u83DC\u53551"
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -14250,9 +14259,8 @@ MonoBehaviour:
   portraitCameraPositionOffset: {x: 0, y: 0, z: 0}
   portraitCameraRotationOffset: {x: 0, y: 1, z: 0, w: -0.00000004371139}
   customExpressions: 1
-  expressionsMenu: {fileID: 11400000, guid: 4ca7855e40e617543b66b18821906ad2, type: 2}
-  expressionParameters: {fileID: 11400000, guid: ecd644923fbfba544b7ca8db04f3dc12,
-    type: 2}
+  expressionsMenu: {fileID: 0}
+  expressionParameters: {fileID: 0}
   enableEyeLook: 1
   customEyeLookSettings:
     eyeMovement:
@@ -14342,7 +14350,7 @@ MonoBehaviour:
     isDefault: 1
   - isEnabled: 0
     type: 4
-    animatorController: {fileID: 9100000, guid: d2e955f0ca5ccee438f7d9cbb4fb66ab,
+    animatorController: {fileID: 9100000, guid: 059c6e512049dbb4594e0c28731e8b09,
       type: 2}
     mask: {fileID: 0}
     isDefault: 0
@@ -14430,12 +14438,12 @@ MonoBehaviour:
     name: easy_avatar_pre
   - hash: 1411757826
     name: easy_avatar_out
-  - hash: 1124194380
-    name: "Menu_5_\u5B50\u83DC\u5355_2_\u63A7\u4EF62_pre"
-  - hash: -1107294982
-    name: "Menu_5_\u5B50\u83DC\u5355_2_\u63A7\u4EF62_on"
-  - hash: 1904904756
-    name: "Menu_5_\u5B50\u83DC\u5355_2_\u63A7\u4EF62_out"
+  - hash: -983287864
+    name: "Menu_5_\u83DC\u53551_2_\u63A7\u4EF62_pre"
+  - hash: 138236970
+    name: "Menu_5_\u83DC\u53551_2_\u63A7\u4EF62_on"
+  - hash: -135305808
+    name: "Menu_5_\u83DC\u53551_2_\u63A7\u4EF62_out"
   - hash: -1252752576
     name: off
   - hash: 361357794

@@ -203,6 +203,11 @@ namespace EasyAvatar
             
         }
 
+        /// <summary>
+        /// 准备预览
+        /// </summary>
+        /// <param name="prev">序列化的behaviors或者animationClips</param>
+        /// <param name="type">类型</param>
         public void StartPreview(SerializedProperty prev , PreviewType type)
         {
             Animator animator = avatar.GetComponent<Animator>();
@@ -224,6 +229,9 @@ namespace EasyAvatar
                 AnimationMode.StartAnimationMode();
         }
 
+        /// <summary>
+        /// 停止预览
+        /// </summary>
         public void StopPreview()
         {
             previewing = null;
@@ -232,6 +240,9 @@ namespace EasyAvatar
                 AnimationMode.StopAnimationMode();
         }
 
+        /// <summary>
+        /// 预览
+        /// </summary>
         public void Preview()
         {
             if (!AnimationMode.InAnimationMode() || !avatar ||previewType == PreviewType.None)
@@ -245,12 +256,20 @@ namespace EasyAvatar
             AnimationMode.EndSampling();
         }
 
+        /// <summary>
+        /// 复制Behaviors
+        /// </summary>
+        /// <param name="behaviors"></param>
         public static void CopyBehaviors(SerializedProperty behaviors)
         {
             copiedTarget =(EasyControl)behaviors.serializedObject.targetObject;
             copiedBehaviorsPath = behaviors.propertyPath;
         }
 
+        /// <summary>
+        /// 粘贴Behaviors
+        /// </summary>
+        /// <param name="behaviors"></param>
         public static void PasteBehaviors(SerializedProperty behaviors)
         {
             if (!copiedTarget)
@@ -265,6 +284,10 @@ namespace EasyAvatar
             }
         }
 
+        /// <summary>
+        /// 复制AnimationClips
+        /// </summary>
+        /// <param name="animClips"></param>
         public static void CopyAnimClips(SerializedProperty animClips)
         {
             copidClips = new List<AnimationClip>();
@@ -273,6 +296,10 @@ namespace EasyAvatar
 
         }
 
+        /// <summary>
+        /// 粘贴AnimationClips
+        /// </summary>
+        /// <param name="animClips"></param>
         public static void PasteAnimClips(SerializedProperty animClips)
         {
             if (copidClips == null)
@@ -282,6 +309,11 @@ namespace EasyAvatar
                 animClips.GetArrayElementAtIndex(i).objectReferenceValue = copidClips[i];
         }
 
+        /// <summary>
+        /// 绘制Behavior界面
+        /// </summary>
+        /// <param name="position">位置</param>
+        /// <param name="behavior">Behavior</param>
         public void DrawBehavior(Rect position, SerializedProperty behavior)
         {
             SerializedProperty propertyGroup = behavior.FindPropertyRelative("propertyGroup");
@@ -373,6 +405,12 @@ namespace EasyAvatar
                 PropertyValueField(valueFieldRect, behavior.FindPropertyRelative("propertyGroup"));
         }
 
+
+        /// <summary>
+        /// 绘制AnimationClip界面
+        /// </summary>
+        /// <param name="position">位置</param>
+        /// <param name="clip">AnimationClip</param>
         public void DrawAnimClip(Rect position, SerializedProperty clip)
         {
             position.y += 3;
@@ -389,7 +427,13 @@ namespace EasyAvatar
             EditorGUI.LabelField(labelRect, Lang.AnimClip);
             EditorGUI.PropertyField(fieldRect, clip, GUIContent.none);
         }
-        
+
+
+        /// <summary>
+        /// 绘制PropertyGroup的值输入框
+        /// </summary>
+        /// <param name="rect">位置</param>
+        /// <param name="propertyGroup">PropertyGroup</param>
         public void PropertyValueField(Rect rect, SerializedProperty propertyGroup)
         {
 
@@ -472,6 +516,11 @@ namespace EasyAvatar
             }
         }
 
+
+        /// <summary>
+        /// 获取avatar
+        /// </summary>
+        /// <returns></returns>
         public GameObject GetAvatar()
         {
             EasyAvatarHelper avatarHelper = ((MonoBehaviour)target).GetComponentInParent<EasyAvatarHelper>();
@@ -484,7 +533,13 @@ namespace EasyAvatar
                 return null;
             return avatar;
         }
-        
+
+
+        /// <summary>
+        /// 计算相对于avatar的路径
+        /// </summary>
+        /// <param name="gameObject">物体</param>
+        /// <returns>相对路径</returns>
         public string CalculateGameObjectPath(GameObject gameObject)
         {
             if (!gameObject)

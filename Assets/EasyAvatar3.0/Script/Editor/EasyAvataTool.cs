@@ -17,8 +17,12 @@ namespace EasyAvatar
 
         public static string workingDirectory = "Assets/EasyAvatar3.0/";
 
+        /// <summary>
+        /// 创建AvatarHelper
+        /// </summary>
+        /// <returns>是否成功</returns>
         [MenuItem("GameObject/EasyAvatar3.0/Avatar Helper", priority = 0)]
-        public static bool CreateAvatarInfo()
+        public static bool CreateAvatarHelper()
         {
             GameObject gameObject = new GameObject(Lang.AvatarHelper);
             Undo.RegisterCreatedObjectUndo(gameObject, "Create Avatar Helper");
@@ -31,6 +35,10 @@ namespace EasyAvatar
             return true;
         }
 
+        /// <summary>
+        /// 创建菜单
+        /// </summary>
+        /// <returns>是否成功</returns>
         [MenuItem("GameObject/EasyAvatar3.0/Expression Menu", priority = 0)]
         public static bool CreateExpressionMenu()
         {
@@ -65,7 +73,7 @@ namespace EasyAvatar
 
             //检查是否直接创建
             if (!Selection.activeGameObject || (!Selection.activeGameObject.transform.GetComponent<EasyAvatarHelper>() && !Selection.activeGameObject.transform.GetComponent<EasyMenu>()))
-                if (!CreateAvatarInfo())
+                if (!CreateAvatarHelper())
                     return false;
 
 
@@ -80,6 +88,10 @@ namespace EasyAvatar
             return true;
         }
 
+        /// <summary>
+        /// 创建控件
+        /// </summary>
+        /// <returns>是否成功</returns>
         [MenuItem("GameObject/EasyAvatar3.0/Expression Menu Control", priority = 0)]
         public static bool CreateExpressionMenuControl()
         {
@@ -114,6 +126,11 @@ namespace EasyAvatar
             return true;
         }
 
+        /// <summary>
+        /// 获取菜单下项目的数量
+        /// </summary>
+        /// <param name="transform">查询的菜单</param>
+        /// <returns>数量</returns>
         public static int GetMenuItemCount(Transform transform)
         {
             int count = 0;
@@ -127,6 +144,11 @@ namespace EasyAvatar
             return count;
         }
 
+        /// <summary>
+        /// transform下获取菜单的数量
+        /// </summary>
+        /// <param name="transform">要查询的transform</param>
+        /// <returns>数量</returns>
         public static int GetMenuCount(Transform transform)
         {
             int count = 0;
@@ -145,6 +167,11 @@ namespace EasyAvatar
         {
             static int buttonCount = 0;
             static AnimatorController controllerFx, controllerAction;
+
+            /// <summary>
+            /// 构建所有
+            /// </summary>
+            /// <param name="helper">AvatarHelper</param>
             public static void Build(EasyAvatarHelper helper)
             {
                 buttonCount = 0;
@@ -222,8 +249,16 @@ namespace EasyAvatar
 
                 //保存
                 AssetDatabase.SaveAssets();
+                EditorUtility.DisplayDialog("Info", Lang.BuildSucceed, "ok");
             }
 
+            /// <summary>
+            /// 构建菜单
+            /// </summary>
+            /// <param name="avatar">模型物体</param>
+            /// <param name="menu">根菜单</param>
+            /// <param name="prefix">名字前缀</param>
+            /// <returns>vrc菜单</returns>
             private static VRCExpressionsMenu BuildMenu(GameObject avatar, EasyMenu menu, string prefix)
             {
                 if (GetMenuItemCount(menu.gameObject.transform) > 8)
@@ -233,7 +268,7 @@ namespace EasyAvatar
                 }
 
                 VRCExpressionsMenu expressionsMenu = ScriptableObject.CreateInstance<VRCExpressionsMenu>();
-                AssetDatabase.CreateAsset(expressionsMenu, workingDirectory + "Build/Menu/" + prefix + ".asset");
+                expressionsMenu.controls = new List<VRCExpressionsMenu.Control>();
 
                 int count = 0;
                 foreach (Transform child in menu.gameObject.transform)
@@ -247,7 +282,7 @@ namespace EasyAvatar
                         SerializedObject serializedObject = new SerializedObject(control);
                         serializedObject.Update();
                         //加_count_避免重名
-                        BuildButtonLayer(prefix + "_" + count + "_" + control.name, serializedObject);
+                        BuildButton(prefix + "_" + count + "_" + control.name, serializedObject);
 
                         VRCExpressionsMenu.Control vrcControl = new VRCExpressionsMenu.Control();
                         vrcControl.name = control.name;
@@ -268,11 +303,17 @@ namespace EasyAvatar
                         expressionsMenu.controls.Add(vrcControl);
                     }
                 }
-                
+                AssetDatabase.CreateAsset(expressionsMenu, workingDirectory + "Build/Menu/" + prefix + ".asset");
+
                 return expressionsMenu;
             }
 
-            private static void BuildButtonLayer(string name, SerializedObject control)
+            /// <summary>
+            /// 构建按钮
+            /// </summary>
+            /// <param name="name">名字</param>
+            /// <param name="control">序列化的控件</param>
+            private static void BuildButton(string name, SerializedObject control)
             {
                 //EasyBehaviors生成动画
                 AnimationClip offClip = Utility.GenerateAnimClip(control.FindProperty("offBehaviors"));
@@ -303,6 +344,12 @@ namespace EasyAvatar
                 }
             }
 
+            /// <summary>
+            /// 构建按钮在fx层的状态机
+            /// </summary>
+            /// <param name="name">名字</param>
+            /// <param name="offClip">按钮关闭时的动画</param>
+            /// <param name="onClip">按钮打开时的动画</param>
             private static void BuildFxSwitch(string name,AnimationClip offClip,AnimationClip onClip)
             {
                 AnimatorControllerLayer fxLayer = new AnimatorControllerLayer() { name = name, stateMachine = new AnimatorStateMachine(), defaultWeight = 1 };
@@ -329,6 +376,11 @@ namespace EasyAvatar
                 out_off.duration = 0;
             }
 
+            /// <summary>
+            /// 构建按钮在action层的状态机
+            /// </summary>
+            /// <param name="name">名字</param>
+            /// <param name="onClip">按钮打开时的动画</param>
             private static void BuildActionSwitch(string name, AnimationClip onClip)
             {
                 AnimatorControllerLayer actionLayer = controllerAction.layers[0];
@@ -368,6 +420,12 @@ namespace EasyAvatar
         #region Utility
         public class Utility
         {
+            /// <summary>
+            /// 保存动画文件
+            /// </summary>
+            /// <param name="path">路径</param>
+            /// <param name="clip">动画</param>
+            /// <returns>原动画</returns>
             public static AnimationClip SaveAnimClip(string path, AnimationClip clip)
             {
                 AssetDatabase.CreateAsset(clip, path);
@@ -375,6 +433,11 @@ namespace EasyAvatar
                 return clip;
             }
 
+            /// <summary>
+            /// 通过behaviors生成动画
+            /// </summary>
+            /// <param name="behaviors">序列化的EasyBehvior列表</param>
+            /// <returns>生成的动画</returns>
             public static AnimationClip GenerateAnimClip(SerializedProperty behaviors)
             {
                 AnimationClip clip = new AnimationClip();
@@ -414,7 +477,11 @@ namespace EasyAvatar
                 return clip;
             }
             
-
+            /// <summary>
+            /// 合并动画
+            /// </summary>
+            /// <param name="clips">序列化的动画列表</param>
+            /// <returns>动画</returns>
             public static AnimationClip MergeAnimClip(SerializedProperty clips)
             {
                 AnimationClip result = new AnimationClip();
@@ -433,6 +500,11 @@ namespace EasyAvatar
                 return result;
             }
 
+            /// <summary>
+            /// 合并动画
+            /// </summary>
+            /// <param name="clips">多个动画</param>
+            /// <returns>合并的动画</returns>
             public static AnimationClip MergeAnimClip(params AnimationClip[] clips)
             {
                 AnimationClip result = new AnimationClip();
@@ -450,6 +522,11 @@ namespace EasyAvatar
                 return result;
             }
 
+            /// <summary>
+            /// 分离人体动画
+            /// </summary>
+            /// <param name="clip">动画</param>
+            /// <returns>[0]人体动画，[1]非人体动画</returns>
             public static AnimationClip[] SeparateActionAnimation(AnimationClip clip)
             {
                 AnimationClip action = new AnimationClip();
@@ -471,6 +548,12 @@ namespace EasyAvatar
                 return new AnimationClip[] {action,nonAction };
             }
 
+            /// <summary>
+            /// 通过名字寻找动画状态机中的状态
+            /// </summary>
+            /// <param name="stateMachine">动画状态机</param>
+            /// <param name="name">名字</param>
+            /// <returns>找到的状态</returns>
             public static AnimatorState findState(AnimatorStateMachine stateMachine, string name)
             {
                 foreach(var childState in stateMachine.states)
@@ -481,6 +564,12 @@ namespace EasyAvatar
                 return null;
             }
 
+
+            /// <summary>
+            /// 复制序列化的EasyBehavior
+            /// </summary>
+            /// <param name="dest">目标Behavior</param>
+            /// <param name="src">源Behavior</param>
             public static void CopyBehavior(SerializedProperty dest, SerializedProperty src)
             {
                 SerializedProperty destPropertyGroup = dest.FindPropertyRelative("propertyGroup");
@@ -493,7 +582,11 @@ namespace EasyAvatar
                 }
             }
 
-
+            /// <summary>
+            /// 复制序列化的EasyProperty
+            /// </summary>
+            /// <param name="dest">目标Property</param>
+            /// <param name="src">源Property</param>
             public static void CopyProperty(SerializedProperty dest, SerializedProperty src)
             {
                 dest.FindPropertyRelative("targetPath").stringValue = src.FindPropertyRelative("targetPath").stringValue;
@@ -506,6 +599,12 @@ namespace EasyAvatar
                 dest.FindPropertyRelative("floatValue").floatValue = src.FindPropertyRelative("floatValue").floatValue;
             }
 
+
+            /// <summary>
+            /// 获取binding
+            /// </summary>
+            /// <param name="property">序列化的EasyProperty</param>
+            /// <returns>对应binding</returns>
             public static EditorCurveBinding GetBinding(SerializedProperty property)
             {
                 SerializedProperty targetPath = property.FindPropertyRelative("targetPath");
@@ -520,7 +619,11 @@ namespace EasyAvatar
                 return EditorCurveBinding.FloatCurve(targetPath.stringValue, EasyReflection.FindType(targetPropertyType.stringValue), targetProperty.stringValue);
             }
 
-
+            /// <summary>
+            /// 获取欧拉角
+            /// </summary>
+            /// <param name="propertyGroup">序列化的EasyProperty列表</param>
+            /// <returns>欧拉角</returns>
             public static Vector3 GetEulerAngles(SerializedProperty propertyGroup)
             {
                 Dictionary<string, SerializedProperty> rotationMap = new Dictionary<string, SerializedProperty>();
@@ -533,12 +636,23 @@ namespace EasyAvatar
                 return new Vector3(rotationMap["x"].floatValue, rotationMap["y"].floatValue, rotationMap["z"].floatValue);
             }
 
+            /// <summary>
+            /// 获取EasyProperty的值类型
+            /// </summary>
+            /// <param name="property">序列化的EasyProperty</param>
+            /// <returns>值类型</returns>
             public static Type GetValueType(SerializedProperty property)
             {
                 string valueTypeName = property.FindPropertyRelative("valueType").stringValue;
                 return valueTypeName == "" ? null : EasyReflection.FindType(valueTypeName);
             }
-
+            
+            /// <summary>
+            /// 检测物体是否具有该属性
+            /// </summary>
+            /// <param name="avatar">根物体</param>
+            /// <param name="property">序列化的EasyProperty</param>
+            /// <returns></returns>
             public static bool CheckProperty(GameObject avatar, SerializedProperty property)
             {
 
@@ -547,6 +661,10 @@ namespace EasyAvatar
                 return AnimationUtility.GetEditorCurveValueType(avatar, GetBinding(property)) != null;
             }
 
+            /// <summary>
+            /// 清除PropertyGroup只保留一个空的Property
+            /// </summary>
+            /// <param name="propertyGroup">序列化的EasyProperty列表</param>
             public static void ClearPropertyGroup(SerializedProperty propertyGroup)
             {
                 string targetPath = propertyGroup.GetArrayElementAtIndex(0).FindPropertyRelative("targetPath").stringValue;
@@ -556,6 +674,13 @@ namespace EasyAvatar
 
 
             }
+
+            /// <summary>
+            /// 修改PropertyGroup中每一个Property
+            /// </summary>
+            /// <param name="propertyGroup">序列化的EasyProperty列表</param>
+            /// <param name="relativePath">要修改的字段名</param>
+            /// <param name="value">修改的值</param>
             public static void PropertyGroupEdit(SerializedProperty propertyGroup, string relativePath, string value)
             {
                 for (int i = 0; i < propertyGroup.arraySize; i++)
@@ -565,6 +690,12 @@ namespace EasyAvatar
                 }
             }
 
+            /// <summary>
+            /// 修改PropertyGroup中每一个Property
+            /// </summary>
+            /// <param name="propertyGroup">序列化的EasyProperty列表</param>
+            /// <param name="relativePath">要修改的字段名</param>
+            /// <param name="value">修改的值</param>
             public static void PropertyGroupEdit(SerializedProperty propertyGroup, string relativePath, bool value)
             {
                 for (int i = 0; i < propertyGroup.arraySize; i++)
@@ -574,23 +705,46 @@ namespace EasyAvatar
                 }
             }
 
+
+            /// <summary>
+            /// 美化PropertyGroup名
+            /// </summary>
+            /// <param name="animatableObjectType">Property的类型</param>
+            /// <param name="propertyGroupName">原名</param>
+            /// <returns>美化名</returns>
             public static string NicifyPropertyGroupName(Type animatableObjectType, string propertyGroupName)
             {
 
                 return (string)EasyReflection.internalNicifyPropertyGroupName.Invoke(null, new object[] { animatableObjectType, propertyGroupName });
             }
 
+            /// <summary>
+            /// 获取Property在PropertyGroup中的后缀名
+            /// </summary>
+            /// <param name="propertyGroup">序列化的EasyProperty列表</param>
+            /// <param name="index">Property的索引</param>
+            /// <returns>后缀名</returns>
             public static string GetPropertyGroupSubname(SerializedProperty propertyGroup, int index)
             {
                 return GetPropertyGroupSubname(propertyGroup.GetArrayElementAtIndex(index));
             }
 
+            /// <summary>
+            /// 获取Property在PropertyGroup中的后缀名
+            /// </summary>
+            /// <param name="property">序列化的EasyProperty</param>
+            /// <returns>后缀名</returns>
             public static string GetPropertyGroupSubname(SerializedProperty property)
             {
                 string targetProperty = property.FindPropertyRelative("targetProperty").stringValue;
                 return targetProperty.Substring(targetProperty.Length - 1);
             }
 
+            /// <summary>
+            /// 检测PropertyGroup是否为颜色
+            /// </summary>
+            /// <param name="propertyGroup">序列化的EasyProperty列表</param>
+            /// <returns></returns>
             public static bool PropertyGroupIsColor(SerializedProperty propertyGroup)
             {
                 string targetProperty = propertyGroup.GetArrayElementAtIndex(0).FindPropertyRelative("targetProperty").stringValue;
@@ -598,6 +752,11 @@ namespace EasyAvatar
                 return targetProperty.ToLower().Contains("color") && propertyGroup.arraySize == 4;
             }
 
+            /// <summary>
+            /// 检测EasyProperty是否为形态键
+            /// </summary>
+            /// <param name="propertyGroup">序列化的EasyProperty列表</param>
+            /// <returns></returns>
             public static bool PropertyGroupIsBlendShape(SerializedProperty propertyGroup)
             {
                 SerializedProperty property = propertyGroup.GetArrayElementAtIndex(0);

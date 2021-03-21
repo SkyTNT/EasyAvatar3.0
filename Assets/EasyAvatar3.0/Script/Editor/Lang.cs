@@ -37,6 +37,7 @@ namespace EasyAvatar
             AnimClipOff,
             AnimClipOn,
             AnimClipOffNote,
+            BuildSucceed,
             ErrAvatarMenuLen1,
             ErrAvatarMenuLen0,
             ErrMenuItemLen8,
@@ -55,12 +56,19 @@ namespace EasyAvatar
                 UseEnglish();
         }
 
+        /// <summary>
+        /// 判断是否为中文环境
+        /// </summary>
+        /// <returns></returns>
         private static bool IsChinese()
         {
             string lang = System.Threading.Thread.CurrentThread.CurrentCulture.Name;
             return  lang== "zh-CN"||lang== "zh-TW";
         }
 
+        /// <summary>
+        /// 切换中文
+        /// </summary>
         [MenuItem("EasyAvatar3.0/Language/Chinese", priority = 0)]
         public static void UseChinese()
         {
@@ -91,6 +99,7 @@ namespace EasyAvatar
             AnimClipOff = "控件关闭时播放的动画";
             AnimClipOn = "控件打开时播放的动画";
             AnimClipOffNote = "控件关闭时的动画只有非人体动画部分会播放";
+            BuildSucceed = "成功";
             ErrAvatarMenuLen1 = "一个模型中只能有一个主菜单，请考虑创建子菜单";
             ErrAvatarMenuLen0 = "没有主菜单，请先创建";
             ErrMenuItemLen8 = "菜单中的项目数量不能超过8，请考虑创建子菜单";
@@ -100,6 +109,9 @@ namespace EasyAvatar
             ErrAvatarNotSet = "请确保模型助手绑定了模型";
         }
 
+        /// <summary>
+        /// 切换英文
+        /// </summary>
         [MenuItem("EasyAvatar3.0/Language/English", priority = 0)]
         public static void UseEnglish()
         {
@@ -130,6 +142,7 @@ namespace EasyAvatar
             AnimClipOff = "On Control Switch Off";
             AnimClipOn = "On Control Switch On";
             AnimClipOffNote = "When the control is switched off, only the non human animation is played";
+            BuildSucceed = "Succeed";
             ErrAvatarMenuLen1 = "There can only be one main menu in a avatar. Consider creating a submenu.";
             ErrAvatarMenuLen0 = "There is no main menu. Please create it first.";
             ErrMenuItemLen8 = "The number of items in the menu can not exceed 8. Consider creating a submenu.";

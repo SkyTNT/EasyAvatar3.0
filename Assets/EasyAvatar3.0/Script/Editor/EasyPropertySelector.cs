@@ -12,6 +12,13 @@ namespace EasyAvatar
         
         EasyPropertyTree tree;
 
+        /// <summary>
+        /// 绘制Property选择框
+        /// </summary>
+        /// <param name="rect">位置</param>
+        /// <param name="propertyGroup">PropertyGroup</param>
+        /// <param name="avatar">avatar</param>
+        /// <param name="target">target</param>
         public static void DoSelect(Rect rect, SerializedProperty propertyGroup, GameObject avatar, GameObject target)
         {
             SerializedProperty property = propertyGroup.GetArrayElementAtIndex(0);
@@ -47,12 +54,18 @@ namespace EasyAvatar
                 editorWindow.ShowAsDropDown(screenFixedRect, new Vector2(width * 2, width * 3));
             }
         }
-        
 
+        /// <summary>
+        /// EasyPropertySelector窗口初始化
+        /// </summary>
+        /// <param name="propertyGroup">PropertyGroup</param>
+        /// <param name="avatar">avatar</param>
+        /// <param name="target">target</param>
         public void Init(SerializedProperty propertyGroup, GameObject avatar, GameObject target)
         {
             tree = new EasyPropertyTree(propertyGroup, avatar, target, new TreeViewState());
         }
+
         public void OnGUI()
         {
             Rect rect = new Rect(position) { x = 0, y = 0 };
@@ -68,6 +81,13 @@ namespace EasyAvatar
         EditorCurveBinding[] bindings;
         Dictionary<string, List<EditorCurveBinding[]>> bindingsDictionary;
 
+        /// <summary>
+        /// EasyPropertyTree构造函数
+        /// </summary>
+        /// <param name="propertyGroup">要选择的PropertyGroup</param>
+        /// <param name="avatar">avatar</param>
+        /// <param name="target">target</param>
+        /// <param name="treeViewState">treeViewState</param>
         public EasyPropertyTree(SerializedProperty propertyGroup, GameObject avatar, GameObject target, TreeViewState treeViewState)
         : base(treeViewState)
         {
@@ -102,6 +122,11 @@ namespace EasyAvatar
             Reload();
         }
 
+
+        /// <summary>
+        /// 构建树
+        /// </summary>
+        /// <returns></returns>
         protected override TreeViewItem BuildRoot()
         {
             
@@ -131,6 +156,10 @@ namespace EasyAvatar
             return root;
         }
         
+        /// <summary>
+        /// 绘制每行
+        /// </summary>
+        /// <param name="args"></param>
         protected override void RowGUI(RowGUIArgs args)
         {
             Rect position = args.rowRect;
@@ -166,6 +195,11 @@ namespace EasyAvatar
             
         }
 
+
+        /// <summary>
+        /// 双击
+        /// </summary>
+        /// <param name="id">击中Item的id</param>
         protected override void DoubleClickedItem(int id)
         {
             PropertyTreeItem item = (PropertyTreeItem)FindItem(id,rootItem);
@@ -176,6 +210,11 @@ namespace EasyAvatar
             }
         }
 
+
+        /// <summary>
+        /// 应用选择
+        /// </summary>
+        /// <param name="bindingGroup">选择的bindingGroup</param>
         public void ApplyBinding(EditorCurveBinding[] bindingGroup)
         {
             //获取到的旋转是四元数，把它转换成欧拉角
@@ -212,6 +251,11 @@ namespace EasyAvatar
             propertyGroup.serializedObject.Update();
         }
 
+        /// <summary>
+        /// 把四元数Bindings转换成欧拉角Bindings
+        /// </summary>
+        /// <param name="bindingGroup"></param>
+        /// <returns></returns>
         public static EditorCurveBinding[] ConvertRotationBindings(EditorCurveBinding[] bindingGroup)
         {
             List<EditorCurveBinding> reslut = new List<EditorCurveBinding>();
