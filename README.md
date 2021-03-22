@@ -1,4 +1,4 @@
-# EasyAvatar3.0 [[中文]](#EasyAvatar30[English] "[中文]")
+# EasyAvatar3.0 [[中文]](#easyavatar30-english "[中文]")
 
 Making vrchat avatar3.0 without animatior controllers and parameters.
 
@@ -71,7 +71,7 @@ It will automatically generate menus and animations and set them in VRC Avatar D
 
 3. support chage gesture animations.
 
-# EasyAvatar3.0 [[English]](#EasyAvatar30[中文] "[English]")
+# EasyAvatar3.0 [[English]](#easyavatar30-中文 "[English]")
 不使用AnimatorController和参数来制作vrchat avatar3.0。
 
 ## 背景
