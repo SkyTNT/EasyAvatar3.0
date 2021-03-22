@@ -74,7 +74,7 @@ namespace EasyAvatar
         public static void UseChinese()
         {
             Avatar = "模型";
-            AvatarHelper = "[模型]";
+            AvatarHelper = "[Easy Avatar]";
             AvatarApply = "生成菜单并应用到模型";
             AvataNoDescriptor = "模型没有检测到VRCAvatarDescriptor，点击添加";
             Name = "名称";
