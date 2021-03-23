@@ -44,8 +44,8 @@ namespace EasyAvatar
             ErrMenuItemLen8,
             ErrMenuInControl,
             ErrControlInControl,
-            ErrNotInAvatarHelper,
-            ErrAvatarNotSet;
+            ErrAvatarNotSet,
+            ErrAvatarHelperInAvatar;
 
 
 
@@ -74,7 +74,7 @@ namespace EasyAvatar
         public static void UseChinese()
         {
             Avatar = "模型";
-            AvatarHelper = "[Easy Avatar]";
+            AvatarHelper = "[模型]";
             AvatarApply = "生成菜单并应用到模型";
             AvataNoDescriptor = "模型没有检测到VRCAvatarDescriptor，点击添加";
             Name = "名称";
@@ -107,8 +107,8 @@ namespace EasyAvatar
             ErrMenuItemLen8 = "菜单中的项目数量不能超过8，请考虑创建子菜单";
             ErrMenuInControl = "控件中不能加菜单";
             ErrControlInControl = "控件中不能加控件";
-            ErrNotInAvatarHelper = "请确保控件或菜单在模型助手中";
             ErrAvatarNotSet = "请确保模型助手绑定了模型";
+            ErrAvatarHelperInAvatar = "模型助手不能包含在模型里，请放在模型的外边";
         }
 
         /// <summary>
@@ -151,8 +151,8 @@ namespace EasyAvatar
             ErrMenuItemLen8 = "The number of items in the menu can not exceed 8. Consider creating a submenu.";
             ErrMenuInControl = "Cannot add menu to control";
             ErrControlInControl = "Cannot add control to control";
-            ErrNotInAvatarHelper = "Make sure that the control or menu is in a Avatar Helper";
             ErrAvatarNotSet = "Make sure your avatar is setted in the Avatar Helper";
+            ErrAvatarHelperInAvatar = "Avatar Helper cannot be included in a avatar, Please put it outside the avatar.";
         }
 
     }

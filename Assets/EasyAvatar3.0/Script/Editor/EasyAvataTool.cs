@@ -174,6 +174,7 @@ namespace EasyAvatar
         {
             static int toggleCount = 0;
             static AnimatorController controllerFx, controllerAction;
+            static string rootBuildDir, menuBuildDir, animBuildDir;
 
             /// <summary>
             /// 构建所有
@@ -208,26 +209,23 @@ namespace EasyAvatar
                     return;
                 }
 
+                rootBuildDir = workingDirectory + "Build/" + Utility.GetGoodFileName(avatar.name);
+                menuBuildDir = rootBuildDir + "/Menu/";
+                animBuildDir = rootBuildDir + "/Anim/";
+
                 //清除目录
-                if (Directory.Exists(workingDirectory+"Build/Anim/"))
+                if (Directory.Exists(rootBuildDir))
                 {
-                    Directory.Delete(workingDirectory + "Build/Anim/", true);
-                    File.Delete(workingDirectory + "Build/Anim.meta");
+                    Directory.Delete(rootBuildDir, true);
                 }
-                    
-                if (Directory.Exists("Assets/EasyAvatar3.0/Build/Menu/"))
-                {
-                    Directory.Delete(workingDirectory + "Build/Menu/", true);
-                    File.Delete(workingDirectory + "Build/Menu.meta");
-                }
-                    
-                Directory.CreateDirectory(workingDirectory + "Build/Anim/");
-                Directory.CreateDirectory(workingDirectory + "Build/Menu/");
+                Directory.CreateDirectory(rootBuildDir);
+                Directory.CreateDirectory(menuBuildDir);
+                Directory.CreateDirectory(animBuildDir);
 
                 //初始化AnimatorController
-                controllerFx = AnimatorController.CreateAnimatorControllerAtPath(workingDirectory + "Build/Anim/FXLayer.controller");
-                AssetDatabase.CopyAsset(workingDirectory + "Res/TemplateActionLayer.controller", workingDirectory + "Build/Anim/ActionLayer.controller");
-                controllerAction = AssetDatabase.LoadAssetAtPath<AnimatorController>(workingDirectory + "Build/Anim/ActionLayer.controller");
+                controllerFx = AnimatorController.CreateAnimatorControllerAtPath(animBuildDir + "FXLayer.controller");
+                AssetDatabase.CopyAsset(workingDirectory + "Res/TemplateActionLayer.controller", animBuildDir + "ActionLayer.controller");
+                controllerAction = AssetDatabase.LoadAssetAtPath<AnimatorController>(animBuildDir + "ActionLayer.controller");
                 
                 //构建菜单
                 VRCExpressionsMenu VRCMenu = BuildMenu(avatar, mainMenu, "Menu");
@@ -241,7 +239,7 @@ namespace EasyAvatar
                     parameters.Add(new VRCExpressionParameters.Parameter() { name = "toggle"+(i+1), valueType = VRCExpressionParameters.ValueType.Bool });
 
                 expressionParameters.parameters = parameters.ToArray();
-                AssetDatabase.CreateAsset(expressionParameters, workingDirectory + "Build/Menu/Parameters.asset");
+                AssetDatabase.CreateAsset(expressionParameters, menuBuildDir + "Parameters.asset");
 
                 //设置VRCAvatarDescriptor
                 VRCAvatarDescriptor avatarDescriptor = avatar.GetComponent<VRCAvatarDescriptor>();
@@ -267,7 +265,7 @@ namespace EasyAvatar
             /// </summary>
             /// <param name="avatar">模型物体</param>
             /// <param name="menu">根菜单</param>
-            /// <param name="prefix">名字前缀</param>
+            /// <param name="prefix">菜单名字累加前缀</param>
             /// <returns>vrc菜单</returns>
             private static VRCExpressionsMenu BuildMenu(GameObject avatar, EasyMenu menu, string prefix)
             {
@@ -312,7 +310,7 @@ namespace EasyAvatar
                         expressionsMenu.controls.Add(vrcControl);
                     }
                 }
-                AssetDatabase.CreateAsset(expressionsMenu, workingDirectory + "Build/Menu/" + prefix + ".asset");
+                AssetDatabase.CreateAsset(expressionsMenu, menuBuildDir + prefix + ".asset");
 
                 return expressionsMenu;
             }
@@ -341,15 +339,15 @@ namespace EasyAvatar
                 AnimationClip onClipAction = onClips[0];
                 AnimationClip onClipNonAction = onClips[1];
                 
-                Utility.SaveAnimClip(workingDirectory + "Build/Anim/" + name + "_off_fx.anim", offClipNonAction);
-                Utility.SaveAnimClip(workingDirectory + "Build/Anim/" + name + "_on_fx.anim", onClipNonAction);
-                BuildFxSwitch(name, offClipNonAction, onClipNonAction);
+                Utility.SaveAnimClip(animBuildDir + name + "_off_fx.anim", offClipNonAction);
+                Utility.SaveAnimClip(animBuildDir + name + "_on_fx.anim", onClipNonAction);
+                BuildFxLayer(name, offClipNonAction, onClipNonAction);
 
                 //有action动画才加进去
                 if (AnimationUtility.GetCurveBindings(onClipAction).Length > 0)
                 {
                     Utility.SaveAnimClip(workingDirectory + "Build/Anim/" + name + "_on_action.anim", onClipAction);
-                    BuildActionSwitch(name, onClipAction);
+                    BuildActionLayer(name, onClipAction);
                 }
             }
 
@@ -359,7 +357,7 @@ namespace EasyAvatar
             /// <param name="name">名字</param>
             /// <param name="offClip">按钮关闭时的动画</param>
             /// <param name="onClip">按钮打开时的动画</param>
-            private static void BuildFxSwitch(string name,AnimationClip offClip,AnimationClip onClip)
+            private static void BuildFxLayer(string name,AnimationClip offClip,AnimationClip onClip)
             {
                 controllerFx.AddParameter("toggle" + toggleCount, AnimatorControllerParameterType.Bool);
                 AnimatorControllerLayer fxLayer = new AnimatorControllerLayer();
@@ -390,7 +388,7 @@ namespace EasyAvatar
             /// </summary>
             /// <param name="name">名字</param>
             /// <param name="onClip">按钮打开时的动画</param>
-            private static void BuildActionSwitch(string name, AnimationClip onClip)
+            private static void BuildActionLayer(string name, AnimationClip onClip)
             {
                 controllerAction.AddParameter("toggle" + toggleCount, AnimatorControllerParameterType.Bool);
                 AnimatorControllerLayer actionLayer = controllerAction.layers[0];
@@ -430,6 +428,19 @@ namespace EasyAvatar
         #region Utility
         public class Utility
         {
+            /// <summary>
+            /// 去除文件名的非法字符
+            /// </summary>
+            /// <param name="fileName">文件名</param>
+            /// <returns></returns>
+            public static string GetGoodFileName(string fileName)
+            {
+                string result = fileName;
+                foreach (char ichar in Path.GetInvalidFileNameChars())
+                    result.Replace(ichar.ToString(), "");
+                return result;
+            }
+
             /// <summary>
             /// 保存动画文件
             /// </summary>

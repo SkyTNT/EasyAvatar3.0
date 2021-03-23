@@ -14,11 +14,22 @@ namespace EasyAvatar
         {
             serializedObject.Update();
             avatar = serializedObject.FindProperty("avatar");
-            EditorGUILayout.PropertyField(avatar, new GUIContent(Lang.Avatar));
             GameObject avatarObj = (GameObject)avatar.objectReferenceValue;
-            if(avatar.objectReferenceValue) target.name =Lang.AvatarHelper + avatar.objectReferenceValue.name;
+            GameObject temp = (GameObject)EditorGUILayout.ObjectField(Lang.Avatar, avatarObj, typeof(GameObject), true);
+
+            if(temp!= avatarObj)
+            {
+                //检测Avatar Helper是否包含在Avatar中，vrchat是不允许avatar包含非白名单内的脚本的。
+                if (temp && ((EasyAvatarHelper)target).transform.IsChildOf(temp.transform))
+                    EditorUtility.DisplayDialog("Error", Lang.ErrAvatarHelperInAvatar, "ok");
+                else
+                    avatar.objectReferenceValue = avatarObj = temp;
+            }
+            
+            
             if (avatarObj)
             {
+                target.name = Lang.AvatarHelper + avatar.objectReferenceValue.name;
                 if (!avatarObj.GetComponent<VRCAvatarDescriptor>())
                 {
                     if (GUILayout.Button(Lang.AvataNoDescriptor))
@@ -34,7 +45,7 @@ namespace EasyAvatar
                     }
                 }
             }
-            
+
             serializedObject.ApplyModifiedProperties();
         }
     }
