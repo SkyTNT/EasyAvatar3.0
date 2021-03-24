@@ -30,8 +30,10 @@ namespace EasyAvatar
             Preview,
             Copy,
             Paste,
-            BehaviorOff,
-            BehaviorOn,
+            OnSwitchOff,
+            OnSwitchOn,
+            BehaviorListLabel,
+            AnimClipListLabel,
             UseAnimClip,
             AnimClip,
             AnimClipOff,
@@ -93,8 +95,10 @@ namespace EasyAvatar
             Preview = "预览";
             Copy = "复制";
             Paste = "粘贴";
-            BehaviorOff = "控件关闭时的行为";
-            BehaviorOn = "控件打开时的行为";
+            OnSwitchOff = "控件关闭时";
+            OnSwitchOn = "控件打开时";
+            BehaviorListLabel = "进行的修改";
+            AnimClipListLabel = "播放的动画";
             UseAnimClip = "使用动画文件";
             AnimClip = "动画文件";
             AnimClipOff = "控件关闭时播放的动画";
@@ -137,8 +141,10 @@ namespace EasyAvatar
             Preview = "Preview";
             Copy = "Copy";
             Paste = "Paste";
-            BehaviorOff = "On Control Switch Off";
-            BehaviorOn = "On Control Switch On";
+            OnSwitchOff = "On Control Switch Off";
+            OnSwitchOn = "On Control Switch On";
+            BehaviorListLabel = "Behaviors";
+            AnimClipListLabel = "Animation Clips";
             UseAnimClip = "Use Animation Clip";
             AnimClip = "Animation Clip";
             AnimClipOff = "On Control Switch Off";

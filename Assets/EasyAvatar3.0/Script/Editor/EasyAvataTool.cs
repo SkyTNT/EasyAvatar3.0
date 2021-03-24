@@ -769,7 +769,7 @@ namespace EasyAvatar
             public static bool PropertyGroupIsColor(SerializedProperty propertyGroup)
             {
                 string targetProperty = propertyGroup.GetArrayElementAtIndex(0).FindPropertyRelative("targetProperty").stringValue;
-
+                //简单地判断一下
                 return targetProperty.ToLower().Contains("color") && propertyGroup.arraySize == 4;
             }
 
