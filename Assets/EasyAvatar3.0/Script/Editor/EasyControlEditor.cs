@@ -43,7 +43,7 @@ namespace EasyAvatar
         {
             serializedObject.Update();
             
-            avatar = GetAvatar();
+            avatar = EasyAvatarTool.Utility.GetAvatar(((EasyControl)target).gameObject);
             offEditor.avatar = avatar;
             onEditor.avatar = avatar;
             //名字设置
@@ -77,24 +77,6 @@ namespace EasyAvatar
 
             serializedObject.ApplyModifiedProperties();
             
-        }
-        
-
-        /// <summary>
-        /// 获取avatar
-        /// </summary>
-        /// <returns></returns>
-        public GameObject GetAvatar()
-        {
-            EasyAvatarHelper avatarHelper = ((EasyControl)target).GetComponentInParent<EasyAvatarHelper>();
-            //检测是否本控件在是否在Avatar Helper中
-            if (!avatarHelper)
-                return null;
-            GameObject avatar = avatarHelper.avatar;
-            //检测是否在Avatar Helper中设置了avatar
-            if (!avatar)
-                return null;
-            return avatar;
         }
         
     }

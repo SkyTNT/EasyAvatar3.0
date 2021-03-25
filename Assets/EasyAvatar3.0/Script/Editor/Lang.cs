@@ -39,6 +39,20 @@ namespace EasyAvatar
             AnimClipOff,
             AnimClipOn,
             AnimClipOffNote,
+            Gestures,
+            GestureType,
+            HandType,
+            OnGesture,
+            GestureFist,
+            GestureHandOpen,
+            GestureFingerPoint,
+            GestureVictory,
+            GestureRockNRoll,
+            GestureHandGun,
+            GestureThumbsUp,
+            LeftHand,
+            RightHand,
+            AnyHand,
             BuildSucceed,
             About,
             ErrAvatarMenuLen1,
@@ -104,6 +118,20 @@ namespace EasyAvatar
             AnimClipOff = "控件关闭时播放的动画";
             AnimClipOn = "控件打开时播放的动画";
             AnimClipOffNote = "控件关闭时的动画只有非人体动画部分会播放";
+            Gestures = "手势";
+            GestureType = "手势类型";
+            HandType = "手类型";
+            OnGesture = "当做手势时";
+            GestureFist = "握拳";
+            GestureHandOpen = "张手";
+            GestureFingerPoint = "指人";
+            GestureVictory = "剪刀手";
+            GestureRockNRoll = "摇滚🤟";
+            GestureHandGun = "手枪";
+            GestureThumbsUp = "大拇指";
+            LeftHand = "左手";
+            RightHand = "右手";
+            AnyHand = "任何手";
             BuildSucceed = "成功";
             About = "由SkyTNT制作\n项目地址：https://github.com/SkyTNT/EasyAvatar3.0/";
             ErrAvatarMenuLen1 = "一个模型中只能有一个主菜单，请考虑创建子菜单";
@@ -150,6 +178,20 @@ namespace EasyAvatar
             AnimClipOff = "On Control Switch Off";
             AnimClipOn = "On Control Switch On";
             AnimClipOffNote = "When the control is switched off, only the non human animation is played";
+            Gestures = "Gesture Menu";
+            GestureType = "Gesture Type";
+            HandType = "Hand Type";
+            OnGesture = "On Gesture";
+            GestureFist = "Fist";
+            GestureHandOpen = "HandOpen";
+            GestureFingerPoint = "FingerPoint";
+            GestureVictory = "Victory";
+            GestureRockNRoll = "RockNRoll";
+            GestureHandGun = "HandGun";
+            GestureThumbsUp = "ThumbsUp";
+            LeftHand = "LeftHand";
+            RightHand = "RightHand";
+            AnyHand = "AnyHand";
             BuildSucceed = "Succeed";
             About = " Made by SkyTNT\nProject:https://github.com/SkyTNT/EasyAvatar3.0/";
             ErrAvatarMenuLen1 = "There can only be one main menu in a avatar. Consider creating a submenu.";

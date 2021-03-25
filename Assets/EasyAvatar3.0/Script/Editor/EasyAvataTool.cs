@@ -126,6 +126,44 @@ namespace EasyAvatar
             return true;
         }
 
+        [MenuItem("GameObject/EasyAvatar3.0/Gesture Menu", priority = 0)]
+        public static bool CreateGestureMenu()
+        {
+            if (Selection.activeGameObject)
+            {
+                
+
+            }
+
+            GameObject gameObject = new GameObject(Lang.Control);
+            Undo.RegisterCreatedObjectUndo(gameObject, "Create Gesture Menu");
+            gameObject.AddComponent<EasyGestureMenu>();
+            if (Selection.activeGameObject)
+                gameObject.transform.parent = Selection.activeGameObject.transform;
+            Selection.activeGameObject = gameObject;
+
+            return true;
+        }
+
+        [MenuItem("GameObject/EasyAvatar3.0/Gesture Control", priority = 0)]
+        public static bool CreateGestureControl()
+        {
+            if (Selection.activeGameObject)
+            {
+
+
+            }
+
+            GameObject gameObject = new GameObject(Lang.Control);
+            Undo.RegisterCreatedObjectUndo(gameObject, "Create Gesture Control");
+            gameObject.AddComponent<EasyGesture>();
+            if (Selection.activeGameObject)
+                gameObject.transform.parent = Selection.activeGameObject.transform;
+            Selection.activeGameObject = gameObject;
+
+            return true;
+        }
+
         [MenuItem("EasyAvatar3.0/About", priority = 0)]
         public static void showAbout()
         {
@@ -784,6 +822,24 @@ namespace EasyAvatar
                 string targetProperty = property.FindPropertyRelative("targetProperty").stringValue;
                 string targetPropertyType = property.FindPropertyRelative("targetPropertyType").stringValue;
                 return targetPropertyType.Contains("SkinnedMeshRenderer") && targetProperty.Contains("blendShape") && propertyGroup.arraySize == 1;
+            }
+
+            /// <summary>
+            /// 获取target的avatar
+            /// </summary>
+            /// <param name="target"></param>
+            /// <returns></returns>
+            public static GameObject GetAvatar(GameObject target)
+            {
+                EasyAvatarHelper avatarHelper = target.GetComponentInParent<EasyAvatarHelper>();
+                //检测是否在Avatar Helper中
+                if (!avatarHelper)
+                    return null;
+                GameObject avatar = avatarHelper.avatar;
+                //检测是否在Avatar Helper中设置了avatar
+                if (!avatar)
+                    return null;
+                return avatar;
             }
         }
         #endregion
