@@ -13,7 +13,7 @@ namespace EasyAvatar
         EasyBehaviorAndAnimEditor behaviorAndAnimEditor;
 
         int[] handTypeIndex = { 0, 1, 2 };
-        int[] gestureTypeIndex = { 0, 1, 2, 3, 4, 5, 6 };
+        int[] gestureTypeIndex = { 0, 1, 2, 3, 4, 5, 6, 7 };
         string[] handTypeLabels;
         string[] gestureTypeLabels;
 
@@ -27,7 +27,7 @@ namespace EasyAvatar
             useAnimClip = serializedObject.FindProperty("useAnimClip");
             behaviorAndAnimEditor = new EasyBehaviorAndAnimEditor(behaviors, animations);
             handTypeLabels = new string[] { Lang.LeftHand, Lang.RightHand, Lang.AnyHand };
-            gestureTypeLabels = new string[] { Lang.GestureFist, Lang.GestureHandOpen, Lang.GestureFingerPoint, Lang.GestureVictory, Lang.GestureRockNRoll, Lang.GestureHandGun, Lang.GestureThumbsUp };
+            gestureTypeLabels = new string[] {Lang.GestureNeutral, Lang.GestureFist, Lang.GestureHandOpen, Lang.GestureFingerPoint, Lang.GestureVictory, Lang.GestureRockNRoll, Lang.GestureHandGun, Lang.GestureThumbsUp };
             serializedObject.ApplyModifiedProperties();
         }
 

@@ -8,6 +8,7 @@ namespace EasyAvatar
     {
         public enum GestureType
         {
+            Neutral,
             Fist,
             HandOpen,
             FingerPoint,

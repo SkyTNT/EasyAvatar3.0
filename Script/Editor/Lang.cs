@@ -21,6 +21,9 @@ namespace EasyAvatar
             MainMenu,
             SubMenu,
             Control,
+            ControlType,
+            Toggle,
+            RadialPuppet,
             Icon,
             Target,
             Missing,
@@ -32,18 +35,19 @@ namespace EasyAvatar
             Paste,
             OnSwitchOff,
             OnSwitchOn,
+            OnRadialPuppet0,
+            OnRadialPuppet1,
             BehaviorListLabel,
             AnimClipListLabel,
             UseAnimClip,
             AnimClip,
-            AnimClipOff,
-            AnimClipOn,
             AnimClipOffNote,
             GestureManager,
             Gesture,
             GestureType,
             HandType,
             OnGesture,
+            GestureNeutral,
             GestureFist,
             GestureHandOpen,
             GestureFingerPoint,
@@ -103,6 +107,9 @@ namespace EasyAvatar
             MainMenu = "主菜单";
             SubMenu = "子菜单";
             Control = "控件";
+            ControlType = "控件类型";
+            Toggle = "开关";
+            RadialPuppet = "旋钮";
             Icon = "图标";
             Target = "目标";
             Missing = "缺失";
@@ -112,20 +119,21 @@ namespace EasyAvatar
             Preview = "预览";
             Copy = "复制";
             Paste = "粘贴";
-            OnSwitchOff = "控件关闭时";
-            OnSwitchOn = "控件打开时";
+            OnSwitchOff = "开关关闭时";
+            OnSwitchOn = "开关打开时";
+            OnRadialPuppet0 = "旋钮值为零时";
+            OnRadialPuppet1 = "旋钮旋满时";
             BehaviorListLabel = "进行的修改";
             AnimClipListLabel = "播放的动画";
             UseAnimClip = "使用动画文件";
             AnimClip = "动画文件";
-            AnimClipOff = "控件关闭时播放的动画";
-            AnimClipOn = "控件打开时播放的动画";
             AnimClipOffNote = "控件关闭时的动画只有非人体动画部分会播放";
             GestureManager = "手势管理";
             Gesture = "手势";
             GestureType = "手势类型";
             HandType = "手类型";
             OnGesture = "当做手势时";
+            GestureNeutral = "普通";
             GestureFist = "握拳";
             GestureHandOpen = "张手";
             GestureFingerPoint = "指人";
@@ -166,6 +174,9 @@ namespace EasyAvatar
             MainMenu = "Expression Menu";
             SubMenu = "Sub Menu";
             Control = "Control";
+            ControlType = "Control Type";
+            Toggle = "Toggle";
+            RadialPuppet = "Radial Puppet";
             Icon = "Icon";
             Target = "Target";
             Missing = "Missing";
@@ -177,18 +188,19 @@ namespace EasyAvatar
             Paste = "Paste";
             OnSwitchOff = "On Control Switch Off";
             OnSwitchOn = "On Control Switch On";
+            OnRadialPuppet0 = "On Value Is 0%";
+            OnRadialPuppet1 = "On Value Is 100%";
             BehaviorListLabel = "Behaviors";
             AnimClipListLabel = "Animation Clips";
             UseAnimClip = "Use Animation Clip";
             AnimClip = "Animation Clip";
-            AnimClipOff = "On Control Switch Off";
-            AnimClipOn = "On Control Switch On";
             AnimClipOffNote = "When the control is switched off, only the non human animation is played";
             GestureManager = "Gesture Manager";
             Gesture = "Gesture";
             GestureType = "Gesture Type";
             HandType = "Hand Type";
             OnGesture = "On Gesture";
+            GestureNeutral = "Neutral";
             GestureFist = "Fist";
             GestureHandOpen = "HandOpen";
             GestureFingerPoint = "FingerPoint";

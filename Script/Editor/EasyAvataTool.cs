@@ -199,9 +199,10 @@ namespace EasyAvatar
         #region Builder
         public class Builder
         {
-            static int toggleCount = 0;
+            static int toggleCount, driverCount;
             static AnimatorController controllerFx, controllerAction;
             static string rootBuildDir, menuBuildDir, animBuildDir;
+            static AnimationClip fxInitClip;
 
             /// <summary>
             /// 构建所有
@@ -209,7 +210,8 @@ namespace EasyAvatar
             /// <param name="helper">AvatarHelper</param>
             public static void Build(EasyAvatarHelper helper)
             {
-                toggleCount = 0;
+                toggleCount = driverCount = 0;
+                
                 GameObject avatar = helper.avatar;
                 if (!avatar)
                 {
@@ -259,9 +261,10 @@ namespace EasyAvatar
 
                 //初始化AnimatorController
                 controllerFx = AnimatorController.CreateAnimatorControllerAtPath(animBuildDir + "FXLayer.controller");
+                controllerFx.AddParameter("driver", AnimatorControllerParameterType.Int);
                 AssetDatabase.CopyAsset(workingDirectory + "Res/TemplateActionLayer.controller", animBuildDir + "ActionLayer.controller");
                 controllerAction = AssetDatabase.LoadAssetAtPath<AnimatorController>(animBuildDir + "ActionLayer.controller");
-
+                fxInitClip = new AnimationClip();
 
                 if (gestureManager)
                     BuildGestures(gestureManager);
@@ -274,11 +277,11 @@ namespace EasyAvatar
                     //构建VRCExpressionParameters
                     List<VRCExpressionParameters.Parameter> parameters = new List<VRCExpressionParameters.Parameter>();
                     VRCExpressionParameters expressionParameters = ScriptableObject.CreateInstance<VRCExpressionParameters>();
-                    parameters.Add(new VRCExpressionParameters.Parameter() { name = "VRCEmote", valueType = VRCExpressionParameters.ValueType.Int });
-
+                    parameters.Add(new VRCExpressionParameters.Parameter() { name = "driver", valueType = VRCExpressionParameters.ValueType.Int });
+                    parameters.Add(new VRCExpressionParameters.Parameter() { name = "float1", valueType = VRCExpressionParameters.ValueType.Float });
+                    parameters.Add(new VRCExpressionParameters.Parameter() { name = "float2", valueType = VRCExpressionParameters.ValueType.Float });
                     for (int i = 0; i < toggleCount; i++)
                         parameters.Add(new VRCExpressionParameters.Parameter() { name = "toggle" + (i + 1), valueType = VRCExpressionParameters.ValueType.Bool });
-
                     expressionParameters.parameters = parameters.ToArray();
                     AssetDatabase.CreateAsset(expressionParameters, menuBuildDir + "Parameters.asset");
 
@@ -292,6 +295,12 @@ namespace EasyAvatar
                     avatarDescriptor.expressionParameters = null;
                     avatarDescriptor.expressionsMenu = null;
                 }
+
+                Utility.SaveAnimClip(animBuildDir + "FxInit.anim", fxInitClip);
+                AnimatorStateMachine fxState = controllerFx.layers[0].stateMachine;
+                fxState.defaultState = fxState.AddState("Init");
+                fxState.defaultState.writeDefaultValues = false;
+                fxState.defaultState.motion = fxInitClip;
 
                 //设置CustomizeAnimationLayers
                 avatarDescriptor.customizeAnimationLayers = true;
@@ -333,21 +342,34 @@ namespace EasyAvatar
                     EasyControl control = child.GetComponent<EasyControl>();
                     if (control)
                     {
-                        toggleCount++;
+                        
                         SerializedObject serializedObject = new SerializedObject(control);
                         serializedObject.Update();
-                        //加_count_避免重名
-                        BuildToggle(prefix + "_" + count + "_" + control.name, serializedObject);
-
+                        EasyControl.Type controlType =(EasyControl.Type)serializedObject.FindProperty("type").enumValueIndex;
+                        
                         VRCExpressionsMenu.Control vrcControl = new VRCExpressionsMenu.Control();
                         vrcControl.name = control.name;
-                        vrcControl.type = VRCExpressionsMenu.Control.ControlType.Toggle;
                         vrcControl.icon = (Texture2D)serializedObject.FindProperty("icon").objectReferenceValue;
-                        vrcControl.parameter = new VRCExpressionsMenu.Control.Parameter() { name = "toggle" + toggleCount };
+                        if(controlType == EasyControl.Type.Toggle)
+                        {
+                            toggleCount++;
+                            vrcControl.type = VRCExpressionsMenu.Control.ControlType.Toggle;
+                            vrcControl.parameter = new VRCExpressionsMenu.Control.Parameter() { name = "toggle" + toggleCount };
+                            BuildToggle(prefix + "_" + count + "_" + control.name, serializedObject);
+                        }
+                        else if(controlType == EasyControl.Type.RadialPuppet)
+                        {
+                            /*puppetCount++;
+                            vrcControl.type = VRCExpressionsMenu.Control.ControlType.RadialPuppet;
+                            vrcControl.parameter = new VRCExpressionsMenu.Control.Parameter() { name = "puppet" };
+                            vrcControl.value = puppetCount; 
+                            vrcControl.subParameters = new VRCExpressionsMenu.Control.Parameter[] { new VRCExpressionsMenu.Control.Parameter() { name = "float1"} };
+                            BuildRadialPuppet(prefix + "_" + count + "_" + control.name, serializedObject);*/
+                        }
+
                         expressionsMenu.controls.Add(vrcControl);
                     }
-
-                    if (subMenu)
+                    else if (subMenu)
                     {
 
                         VRCExpressionsMenu.Control vrcControl = new VRCExpressionsMenu.Control();
@@ -364,18 +386,33 @@ namespace EasyAvatar
 
             private static void BuildGestures( EasyGestureManager gestures)
             {
-                AnimatorControllerLayer fxLayer = new AnimatorControllerLayer();
-                AnimatorStateMachine fxStateMachine = new AnimatorStateMachine();
-                fxLayer.name = "Gesture";
-                fxLayer.stateMachine = fxStateMachine;
-                fxLayer.defaultWeight = 1;
-                fxStateMachine.name = "Gesture";
-                fxStateMachine.hideFlags = HideFlags.HideInHierarchy;
+                AnimatorControllerLayer fxLayerL = new AnimatorControllerLayer();
+                AnimatorStateMachine fxStateMachineL = new AnimatorStateMachine();
+                fxLayerL.name = "GestureL";
+                fxLayerL.stateMachine = fxStateMachineL;
+                fxLayerL.defaultWeight = 1;
+                fxStateMachineL.name = "GestureL";
+                fxStateMachineL.hideFlags = HideFlags.HideInHierarchy;
                 //不加这个unity重启后FxLayer里的内容会消失
-                AssetDatabase.AddObjectToAsset(fxLayer.stateMachine, AssetDatabase.GetAssetPath(controllerFx));
-                controllerFx.AddLayer(fxLayer);
-                AnimatorState stateOff = fxStateMachine.AddState("off");
-                fxStateMachine.defaultState = stateOff;
+                AssetDatabase.AddObjectToAsset(fxLayerL.stateMachine, AssetDatabase.GetAssetPath(controllerFx));
+                controllerFx.AddLayer(fxLayerL);
+                AnimatorState stateOffL = fxStateMachineL.AddState("off");
+                stateOffL.writeDefaultValues = false;
+                fxStateMachineL.defaultState = stateOffL;
+
+                AnimatorControllerLayer fxLayerR = new AnimatorControllerLayer();
+                AnimatorStateMachine fxStateMachineR = new AnimatorStateMachine();
+                fxLayerR.name = "GestureR";
+                fxLayerR.stateMachine = fxStateMachineR;
+                fxLayerR.defaultWeight = 1;
+                fxStateMachineR.name = "GestureR";
+                fxStateMachineR.hideFlags = HideFlags.HideInHierarchy;
+                //不加这个unity重启后FxLayer里的内容会消失
+                AssetDatabase.AddObjectToAsset(fxLayerR.stateMachine, AssetDatabase.GetAssetPath(controllerFx));
+                controllerFx.AddLayer(fxLayerR);
+                AnimatorState stateOffR = fxStateMachineR.AddState("off");
+                stateOffR.writeDefaultValues = false;
+                fxStateMachineR.defaultState = stateOffR;
 
                 int count = 0;
                 foreach (Transform child in gestures.gameObject.transform)
@@ -409,20 +446,22 @@ namespace EasyAvatar
 
                     if (handType.enumValueIndex == (int)EasyGesture.HandType.Left || handType.enumValueIndex == (int)EasyGesture.HandType.Any)
                     {
-                        AnimatorState stateOn = fxStateMachine.AddState(name + "_L");
+                        AnimatorState stateOn = fxStateMachineL.AddState(name);
+                        stateOn.writeDefaultValues = false;
                         stateOn.motion = nonActionAnim;
-                        BuildFxStateTransitions(new AnimatorState[] { stateOff, stateOn }, "GestureLeft", gestureType.enumValueIndex + 1);
+                        BuildFxStateTransitions(new AnimatorState[] { stateOffL, stateOn }, "GestureLeft", gestureType.enumValueIndex );
                         if(hasActionAnim)
-                            BuildActionStateTransitions(BuildActionStates(name + "_L", actionAnim), "GestureLeft", gestureType.enumValueIndex + 1);
+                            BuildActionStateTransitions(BuildActionStates(name, actionAnim), "GestureLeft", gestureType.enumValueIndex );
                     }
                         
                     if (handType.enumValueIndex == (int)EasyGesture.HandType.Right || handType.enumValueIndex == (int)EasyGesture.HandType.Any)
                     {
-                        AnimatorState stateOn = fxStateMachine.AddState(name + "_R");
+                        AnimatorState stateOn = fxStateMachineR.AddState(name);
+                        stateOn.writeDefaultValues = false;
                         stateOn.motion = nonActionAnim;
-                        BuildFxStateTransitions(new AnimatorState[] { stateOff, stateOn }, "GestureRight", gestureType.enumValueIndex + 1);
+                        BuildFxStateTransitions(new AnimatorState[] { stateOffR, stateOn }, "GestureRight", gestureType.enumValueIndex);
                         if (hasActionAnim)
-                            BuildActionStateTransitions(BuildActionStates(name + "_R", actionAnim), "GestureRight", gestureType.enumValueIndex + 1);
+                            BuildActionStateTransitions(BuildActionStates(name, actionAnim), "GestureRight", gestureType.enumValueIndex);
                     }
                     
                 }
@@ -436,14 +475,14 @@ namespace EasyAvatar
             private static void BuildToggle(string name, SerializedObject control)
             {
                 //EasyBehaviors生成动画
-                AnimationClip offClip = Utility.GenerateAnimClip(control.FindProperty("offBehaviors"));
-                AnimationClip onClip = Utility.GenerateAnimClip(control.FindProperty("onBehaviors"));
+                AnimationClip offClip = Utility.GenerateAnimClip(control.FindProperty("behaviors1"));
+                AnimationClip onClip = Utility.GenerateAnimClip(control.FindProperty("behaviors2"));
                 //使用动画文件
                 if (control.FindProperty("useAnimClip").boolValue)
                 {
                     //先将动画文件合并，在与Behaviors生成动画合并
-                    offClip = Utility.MergeAnimClip(Utility.MergeAnimClip(control.FindProperty("offAnims")), offClip);
-                    onClip = Utility.MergeAnimClip(Utility.MergeAnimClip(control.FindProperty("onAnims")), onClip);
+                    offClip = Utility.MergeAnimClip(Utility.MergeAnimClip(control.FindProperty("anims1")), offClip);
+                    onClip = Utility.MergeAnimClip(Utility.MergeAnimClip(control.FindProperty("anims2")), onClip);
                 }
                 //分离action动画
                 AnimationClip[] offClips = Utility.SeparateActionAnimation(offClip);
@@ -451,17 +490,34 @@ namespace EasyAvatar
                 AnimationClip offClipNonAction = offClips[1];
                 AnimationClip onClipAction = onClips[0];
                 AnimationClip onClipNonAction = onClips[1];
-                
+                fxInitClip = Utility.MergeAnimClip(fxInitClip, offClipNonAction);
+
                 Utility.SaveAnimClip(animBuildDir + name + "_off_fx.anim", offClipNonAction);
                 Utility.SaveAnimClip(animBuildDir + name + "_on_fx.anim", onClipNonAction);
-                BuildFxStateTransitions(BuildFxStates(name, offClipNonAction, onClipNonAction), "toggle" + toggleCount);
+
+                int driverId = BuildDriver(name, "toggle" + toggleCount);
+
+                AnimatorStateMachine fxStateMachine = controllerFx.layers[0].stateMachine;
+                AnimatorState stateOff = fxStateMachine.AddState(name + "off");
+                AnimatorState stateOn = fxStateMachine.AddState(name + "on");
+                stateOff.writeDefaultValues = false;
+                stateOn.writeDefaultValues = false;
+                stateOff.motion = offClipNonAction;
+                stateOn.motion = onClipNonAction;
+                AnimatorStateTransition any_off = fxStateMachine.AddAnyStateTransition(stateOff);
+                any_off.AddCondition(AnimatorConditionMode.Equals, driverId + 1, "driver");
+                any_off.duration = 0.1f;
+                AnimatorStateTransition any_on = fxStateMachine.AddAnyStateTransition(stateOn);
+                any_on.AddCondition(AnimatorConditionMode.Equals, driverId, "driver");
+                any_on.duration = 0.1f;
+                //BuildFxStateTransitions(BuildFxStates(name, offClipNonAction, onClipNonAction), "toggle" + toggleCount);
 
                 //有action动画才加进去
-                if (AnimationUtility.GetCurveBindings(onClipAction).Length > 0)
+                /*if (AnimationUtility.GetCurveBindings(onClipAction).Length > 0)
                 {
                     Utility.SaveAnimClip(animBuildDir + name + "_on_action.anim", onClipAction);
                     BuildActionStateTransitions(BuildActionStates(name, onClipAction), "toggle" + toggleCount);
-                }
+                }*/
             }
 
             private static bool checkControllerParameter(AnimatorController controller,string paramaName)
@@ -477,7 +533,61 @@ namespace EasyAvatar
                 return false;
             }
 
-            private static AnimatorState[] BuildFxStates(string name, AnimationClip offClip, AnimationClip onClip)
+            private static int BuildDriver(string name, string paramName)
+            {
+                
+                int driverId = driverCount*2 +1;
+                driverCount++;
+                if (!checkControllerParameter(controllerFx, paramName))
+                    controllerFx.AddParameter(paramName, AnimatorControllerParameterType.Bool);
+
+                AnimatorControllerLayer fxLayer = new AnimatorControllerLayer();
+                AnimatorStateMachine stateMachine = new AnimatorStateMachine();
+                fxLayer.name = name;
+                fxLayer.stateMachine = stateMachine;
+                fxLayer.defaultWeight = 1;
+                stateMachine.name = name;
+                stateMachine.hideFlags = HideFlags.HideInHierarchy;
+                //不加这个unity重启后FxLayer里的内容会消失
+                AssetDatabase.AddObjectToAsset(fxLayer.stateMachine, AssetDatabase.GetAssetPath(controllerFx));
+                controllerFx.AddLayer(fxLayer);
+                AnimatorState stateOff = stateMachine.AddState("off");
+                AnimatorState statePre = stateMachine.AddState("pre");
+                AnimatorState stateOn = stateMachine.AddState("on");
+                AnimatorState stateOut = stateMachine.AddState("out");
+                stateOff.writeDefaultValues = false;
+                statePre.writeDefaultValues = false;
+                stateOn.writeDefaultValues = false;
+                stateOut.writeDefaultValues = false;
+                VRCAvatarParameterDriver offDriver = stateOff.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
+                offDriver.parameters.Add(new VRC.SDKBase.VRC_AvatarParameterDriver.Parameter() { name = "driver", value = 0, type = VRC.SDKBase.VRC_AvatarParameterDriver.ChangeType.Set });
+                VRCAvatarParameterDriver preDriver = statePre.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
+                preDriver.parameters.Add(new VRC.SDKBase.VRC_AvatarParameterDriver.Parameter() { name = "driver", value = driverId, type = VRC.SDKBase.VRC_AvatarParameterDriver.ChangeType.Set });
+                VRCAvatarParameterDriver onDriver = stateOn.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
+                onDriver.parameters.Add(new VRC.SDKBase.VRC_AvatarParameterDriver.Parameter() { name = "driver", value = 0, type = VRC.SDKBase.VRC_AvatarParameterDriver.ChangeType.Set });
+                VRCAvatarParameterDriver outDriver = stateOut.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
+                outDriver.parameters.Add(new VRC.SDKBase.VRC_AvatarParameterDriver.Parameter() { name = "driver", value = driverId+1, type = VRC.SDKBase.VRC_AvatarParameterDriver.ChangeType.Set });
+                
+                AnimatorStateTransition off_pre = stateOff.AddTransition(statePre);
+                off_pre.AddCondition(AnimatorConditionMode.If, 0, paramName);
+                off_pre.duration = 0.1f;
+                off_pre.hasExitTime = true;
+                AnimatorStateTransition pre_on = statePre.AddTransition(stateOn);
+                pre_on.duration = 0.1f;
+                pre_on.hasExitTime = true;
+                AnimatorStateTransition on_out = stateOn.AddTransition(stateOut);
+                on_out.AddCondition(AnimatorConditionMode.IfNot, 0, paramName);
+                on_out.duration = 0.1f;
+                on_out.hasExitTime = true;
+                AnimatorStateTransition out_off = stateOut.AddTransition(stateOff);
+                out_off.duration = 0.1f;
+                out_off.hasExitTime = true;
+                stateMachine.defaultState = stateOff;
+
+                return driverId;
+            }
+
+            private static AnimatorState[] BuildFxStates(string name, Motion offClip, Motion onClip)
             {
                 AnimatorControllerLayer fxLayer = new AnimatorControllerLayer();
                 AnimatorStateMachine fxStateMachine = new AnimatorStateMachine();
@@ -491,10 +601,13 @@ namespace EasyAvatar
                 controllerFx.AddLayer(fxLayer);
                 AnimatorState stateOff = fxStateMachine.AddState("off");
                 AnimatorState stateOn = fxStateMachine.AddState("on");
+                stateOff.writeDefaultValues = false;
+                stateOn.writeDefaultValues = false;
                 stateOff.motion = offClip;
                 stateOn.motion = onClip;
                 fxStateMachine.defaultState = stateOff;
                 return new AnimatorState[] { stateOff, stateOn };
+
             }
 
             private static AnimatorStateTransition[] BuildFxStateTransitions(AnimatorState[] states, string paramName)
@@ -528,7 +641,7 @@ namespace EasyAvatar
                 return new AnimatorStateTransition[] { off_on, on_off };
             }
             
-            private static AnimatorState[] BuildActionStates(string name, AnimationClip onClip)
+            private static AnimatorState[] BuildActionStates(string name, Motion onClip)
             {
                 AnimatorControllerLayer actionLayer = controllerAction.layers[0];
                 AnimatorStateMachine actionStateMachine = actionLayer.stateMachine;
@@ -539,11 +652,14 @@ namespace EasyAvatar
                 AnimatorState statePre = actionStateMachine.AddState(name + "_pre");
                 statePre.motion = templatePre.motion;
                 statePre.behaviours = templatePre.behaviours;
+                statePre.writeDefaultValues = false;
                 AnimatorState stateOn = actionStateMachine.AddState(name + "_on");
                 stateOn.motion = onClip;
+                stateOn.writeDefaultValues = false;
                 AnimatorState stateOut = actionStateMachine.AddState(name + "_out");
                 stateOut.motion = templateOut.motion;
                 stateOut.behaviours = templateOut.behaviours;
+                stateOut.writeDefaultValues = false;
 
                 return new AnimatorState[] { waitForActionOrAFK, statePre, stateOn, stateOut };
             }
@@ -593,6 +709,59 @@ namespace EasyAvatar
                 out_off.duration = 0;
 
                 return new AnimatorStateTransition[] { off_pre, pre_on, on_out, out_off };
+            }
+
+            private static BlendTree Build1DBlendTree(string name,string paramaName, Motion motion1, Motion motion2)
+            {
+                BlendTree blendTree = new BlendTree();
+                blendTree.blendType = BlendTreeType.Simple1D;
+                blendTree.blendParameter = paramaName;
+                blendTree.name = name;
+                blendTree.AddChild(motion1);
+                blendTree.AddChild(motion2);
+                return blendTree;
+            }
+
+            private static void BuildRadialPuppet(string name, SerializedObject control)
+            {
+                /*
+                //EasyBehaviors生成动画
+                AnimationClip offClip = Utility.GenerateAnimClip(control.FindProperty("behaviors1"));
+                AnimationClip onClip = Utility.GenerateAnimClip(control.FindProperty("behaviors2"));
+                //使用动画文件
+                if (control.FindProperty("useAnimClip").boolValue)
+                {
+                    //先将动画文件合并，在与Behaviors生成动画合并
+                    offClip = Utility.MergeAnimClip(Utility.MergeAnimClip(control.FindProperty("anims1")), offClip);
+                    onClip = Utility.MergeAnimClip(Utility.MergeAnimClip(control.FindProperty("anims2")), onClip);
+                }
+                //分离action动画
+                AnimationClip[] offClips = Utility.SeparateActionAnimation(offClip);
+                AnimationClip[] onClips = Utility.SeparateActionAnimation(onClip);
+                AnimationClip offClipAction = offClips[0];
+                AnimationClip offClipNonAction = offClips[1];
+                AnimationClip onClipAction = onClips[0];
+                AnimationClip onClipNonAction = onClips[1];
+
+                if (!checkControllerParameter(controllerFx, "float1"))
+                    controllerFx.AddParameter("float1", AnimatorControllerParameterType.Float);
+
+                BlendTree fxBlendTree = Build1DBlendTree(name + "_on","float1", offClipNonAction, onClipNonAction);
+                AssetDatabase.AddObjectToAsset(fxBlendTree, AssetDatabase.GetAssetPath(controllerFx));
+                Utility.SaveAnimClip(animBuildDir + name + "_off_fx.anim", offClipNonAction);
+                Utility.SaveAnimClip(animBuildDir + name + "_on_fx.anim", onClipNonAction);
+                BuildFxStateTransitions(BuildFxStates(name, null, fxBlendTree), "puppet",puppetCount);
+
+                //有action动画才加进去
+                if (AnimationUtility.GetCurveBindings(onClipAction).Length > 0)
+                {
+                    if (!checkControllerParameter(controllerAction, "float1"))
+                        controllerAction.AddParameter("float1", AnimatorControllerParameterType.Float);
+                    BlendTree actionBlendTree = Build1DBlendTree(name + "_on", "float1", offClipAction, onClipAction);
+                    Utility.SaveAnimClip(animBuildDir + name + "_on_action.anim", onClipAction);
+                    AssetDatabase.AddObjectToAsset(actionBlendTree, AssetDatabase.GetAssetPath(controllerAction));
+                    BuildActionStateTransitions(BuildActionStates(name, actionBlendTree), "puppet", puppetCount);
+                }*/
             }
         }
 
