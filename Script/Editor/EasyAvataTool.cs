@@ -199,7 +199,7 @@ namespace EasyAvatar
         #region Builder
         public class Builder
         {
-            static int toggleCount, driverCount;
+            static int controlCount, driverCount;
             static AnimatorController controllerFx, controllerAction;
             static string rootBuildDir, menuBuildDir, animBuildDir;
             static AnimationClip fxInitClip;
@@ -210,7 +210,7 @@ namespace EasyAvatar
             /// <param name="helper">AvatarHelper</param>
             public static void Build(EasyAvatarHelper helper)
             {
-                toggleCount = driverCount = 0;
+                controlCount = driverCount = 0;
                 
                 GameObject avatar = helper.avatar;
                 if (!avatar)
@@ -262,8 +262,13 @@ namespace EasyAvatar
                 //初始化AnimatorController
                 controllerFx = AnimatorController.CreateAnimatorControllerAtPath(animBuildDir + "FXLayer.controller");
                 controllerFx.AddParameter("driver", AnimatorControllerParameterType.Int);
+                controllerFx.AddParameter("float1", AnimatorControllerParameterType.Float);
+                controllerFx.AddParameter("float2", AnimatorControllerParameterType.Float);
                 AssetDatabase.CopyAsset(workingDirectory + "Res/TemplateActionLayer.controller", animBuildDir + "ActionLayer.controller");
                 controllerAction = AssetDatabase.LoadAssetAtPath<AnimatorController>(animBuildDir + "ActionLayer.controller");
+                controllerAction.AddParameter("driver", AnimatorControllerParameterType.Int);
+                controllerAction.AddParameter("float1", AnimatorControllerParameterType.Float);
+                controllerAction.AddParameter("float2", AnimatorControllerParameterType.Float);
                 fxInitClip = new AnimationClip();
 
                 if (gestureManager)
@@ -280,8 +285,8 @@ namespace EasyAvatar
                     parameters.Add(new VRCExpressionParameters.Parameter() { name = "driver", valueType = VRCExpressionParameters.ValueType.Int });
                     parameters.Add(new VRCExpressionParameters.Parameter() { name = "float1", valueType = VRCExpressionParameters.ValueType.Float });
                     parameters.Add(new VRCExpressionParameters.Parameter() { name = "float2", valueType = VRCExpressionParameters.ValueType.Float });
-                    for (int i = 0; i < toggleCount; i++)
-                        parameters.Add(new VRCExpressionParameters.Parameter() { name = "toggle" + (i + 1), valueType = VRCExpressionParameters.ValueType.Bool });
+                    for (int i = 0; i < controlCount; i++)
+                        parameters.Add(new VRCExpressionParameters.Parameter() { name = "control" + (i + 1), valueType = VRCExpressionParameters.ValueType.Bool });
                     expressionParameters.parameters = parameters.ToArray();
                     AssetDatabase.CreateAsset(expressionParameters, menuBuildDir + "Parameters.asset");
 
@@ -342,7 +347,7 @@ namespace EasyAvatar
                     EasyControl control = child.GetComponent<EasyControl>();
                     if (control)
                     {
-                        
+                        controlCount++;
                         SerializedObject serializedObject = new SerializedObject(control);
                         serializedObject.Update();
                         EasyControl.Type controlType =(EasyControl.Type)serializedObject.FindProperty("type").enumValueIndex;
@@ -350,21 +355,17 @@ namespace EasyAvatar
                         VRCExpressionsMenu.Control vrcControl = new VRCExpressionsMenu.Control();
                         vrcControl.name = control.name;
                         vrcControl.icon = (Texture2D)serializedObject.FindProperty("icon").objectReferenceValue;
-                        if(controlType == EasyControl.Type.Toggle)
+                        vrcControl.parameter = new VRCExpressionsMenu.Control.Parameter() { name = "control" + controlCount };
+                        if (controlType == EasyControl.Type.Toggle)
                         {
-                            toggleCount++;
                             vrcControl.type = VRCExpressionsMenu.Control.ControlType.Toggle;
-                            vrcControl.parameter = new VRCExpressionsMenu.Control.Parameter() { name = "toggle" + toggleCount };
                             BuildToggle(prefix + "_" + count + "_" + control.name, serializedObject);
                         }
                         else if(controlType == EasyControl.Type.RadialPuppet)
                         {
-                            /*puppetCount++;
                             vrcControl.type = VRCExpressionsMenu.Control.ControlType.RadialPuppet;
-                            vrcControl.parameter = new VRCExpressionsMenu.Control.Parameter() { name = "puppet" };
-                            vrcControl.value = puppetCount; 
                             vrcControl.subParameters = new VRCExpressionsMenu.Control.Parameter[] { new VRCExpressionsMenu.Control.Parameter() { name = "float1"} };
-                            BuildRadialPuppet(prefix + "_" + count + "_" + control.name, serializedObject);*/
+                            BuildRadialPuppet(prefix + "_" + count + "_" + control.name, serializedObject);
                         }
 
                         expressionsMenu.controls.Add(vrcControl);
@@ -386,34 +387,7 @@ namespace EasyAvatar
 
             private static void BuildGestures( EasyGestureManager gestures)
             {
-                AnimatorControllerLayer fxLayerL = new AnimatorControllerLayer();
-                AnimatorStateMachine fxStateMachineL = new AnimatorStateMachine();
-                fxLayerL.name = "GestureL";
-                fxLayerL.stateMachine = fxStateMachineL;
-                fxLayerL.defaultWeight = 1;
-                fxStateMachineL.name = "GestureL";
-                fxStateMachineL.hideFlags = HideFlags.HideInHierarchy;
-                //不加这个unity重启后FxLayer里的内容会消失
-                AssetDatabase.AddObjectToAsset(fxLayerL.stateMachine, AssetDatabase.GetAssetPath(controllerFx));
-                controllerFx.AddLayer(fxLayerL);
-                AnimatorState stateOffL = fxStateMachineL.AddState("off");
-                stateOffL.writeDefaultValues = false;
-                fxStateMachineL.defaultState = stateOffL;
-
-                AnimatorControllerLayer fxLayerR = new AnimatorControllerLayer();
-                AnimatorStateMachine fxStateMachineR = new AnimatorStateMachine();
-                fxLayerR.name = "GestureR";
-                fxLayerR.stateMachine = fxStateMachineR;
-                fxLayerR.defaultWeight = 1;
-                fxStateMachineR.name = "GestureR";
-                fxStateMachineR.hideFlags = HideFlags.HideInHierarchy;
-                //不加这个unity重启后FxLayer里的内容会消失
-                AssetDatabase.AddObjectToAsset(fxLayerR.stateMachine, AssetDatabase.GetAssetPath(controllerFx));
-                controllerFx.AddLayer(fxLayerR);
-                AnimatorState stateOffR = fxStateMachineR.AddState("off");
-                stateOffR.writeDefaultValues = false;
-                fxStateMachineR.defaultState = stateOffR;
-
+                
                 int count = 0;
                 foreach (Transform child in gestures.gameObject.transform)
                 {
@@ -443,27 +417,26 @@ namespace EasyAvatar
                     Utility.SaveAnimClip(animBuildDir +name + "_fx.anim", nonActionAnim);
                     if(hasActionAnim)
                         Utility.SaveAnimClip(animBuildDir + name + "_action.anim", actionAnim);
-
+                    
                     if (handType.enumValueIndex == (int)EasyGesture.HandType.Left || handType.enumValueIndex == (int)EasyGesture.HandType.Any)
                     {
-                        AnimatorState stateOn = fxStateMachineL.AddState(name);
-                        stateOn.writeDefaultValues = false;
-                        stateOn.motion = nonActionAnim;
-                        BuildFxStateTransitions(new AnimatorState[] { stateOffL, stateOn }, "GestureLeft", gestureType.enumValueIndex );
-                        if(hasActionAnim)
-                            BuildActionStateTransitions(BuildActionStates(name, actionAnim), "GestureLeft", gestureType.enumValueIndex );
+                        int driverId = BuildDriver(name + "_L", "GestureLeft", gestureType.enumValueIndex);
+                        BuildFxState(name + "_L", driverId, nonActionAnim);
+                        if (hasActionAnim)
+                            BuildActionState(name + "_L", driverId, actionAnim);
                     }
                         
                     if (handType.enumValueIndex == (int)EasyGesture.HandType.Right || handType.enumValueIndex == (int)EasyGesture.HandType.Any)
                     {
-                        AnimatorState stateOn = fxStateMachineR.AddState(name);
-                        stateOn.writeDefaultValues = false;
-                        stateOn.motion = nonActionAnim;
-                        BuildFxStateTransitions(new AnimatorState[] { stateOffR, stateOn }, "GestureRight", gestureType.enumValueIndex);
+                        int driverId = BuildDriver(name + "_R", "GestureRight", gestureType.enumValueIndex);
+                        BuildFxState(name + "_R", driverId, nonActionAnim);
                         if (hasActionAnim)
-                            BuildActionStateTransitions(BuildActionStates(name, actionAnim), "GestureRight", gestureType.enumValueIndex);
+                            BuildActionState(name + "_R", driverId, actionAnim);
                     }
-                    
+                    if (gestureType.enumValueIndex == (int)EasyGesture.GestureType.Neutral)
+                    {
+                        fxInitClip = Utility.MergeAnimClip(fxInitClip, nonActionAnim);
+                    }
                 }
             }
 
@@ -494,30 +467,46 @@ namespace EasyAvatar
 
                 Utility.SaveAnimClip(animBuildDir + name + "_off_fx.anim", offClipNonAction);
                 Utility.SaveAnimClip(animBuildDir + name + "_on_fx.anim", onClipNonAction);
-
-                int driverId = BuildDriver(name, "toggle" + toggleCount);
-
-                AnimatorStateMachine fxStateMachine = controllerFx.layers[0].stateMachine;
-                AnimatorState stateOff = fxStateMachine.AddState(name + "off");
-                AnimatorState stateOn = fxStateMachine.AddState(name + "on");
-                stateOff.writeDefaultValues = false;
-                stateOn.writeDefaultValues = false;
-                stateOff.motion = offClipNonAction;
-                stateOn.motion = onClipNonAction;
-                AnimatorStateTransition any_off = fxStateMachine.AddAnyStateTransition(stateOff);
-                any_off.AddCondition(AnimatorConditionMode.Equals, driverId + 1, "driver");
-                any_off.duration = 0.1f;
-                AnimatorStateTransition any_on = fxStateMachine.AddAnyStateTransition(stateOn);
-                any_on.AddCondition(AnimatorConditionMode.Equals, driverId, "driver");
-                any_on.duration = 0.1f;
-                //BuildFxStateTransitions(BuildFxStates(name, offClipNonAction, onClipNonAction), "toggle" + toggleCount);
+                //生成驱动id
+                int driverId = BuildDriver(name, "control" + controlCount);
+                //通过驱动id到对应状态
+                BuildFxState(name + "_on", driverId, onClipNonAction);
+                BuildFxState(name + "_off", driverId + 1, offClipNonAction);
 
                 //有action动画才加进去
-                /*if (AnimationUtility.GetCurveBindings(onClipAction).Length > 0)
+                if (AnimationUtility.GetCurveBindings(onClipAction).Length > 0)
                 {
                     Utility.SaveAnimClip(animBuildDir + name + "_on_action.anim", onClipAction);
-                    BuildActionStateTransitions(BuildActionStates(name, onClipAction), "toggle" + toggleCount);
-                }*/
+                    BuildActionState(name,driverId, onClipAction);
+                }
+            }
+
+            private static void BuildRadialPuppet(string name, SerializedObject control)
+            {
+
+                //EasyBehaviors生成动画
+                AnimationClip offClip = Utility.GenerateAnimClip(control.FindProperty("behaviors1"));
+                AnimationClip onClip = Utility.GenerateAnimClip(control.FindProperty("behaviors2"));
+                //使用动画文件
+                if (control.FindProperty("useAnimClip").boolValue)
+                {
+                    //先将动画文件合并，在与Behaviors生成动画合并
+                    offClip = Utility.MergeAnimClip(Utility.MergeAnimClip(control.FindProperty("anims1")), offClip);
+                    onClip = Utility.MergeAnimClip(Utility.MergeAnimClip(control.FindProperty("anims2")), onClip);
+                }
+                //分离action动画
+                AnimationClip[] offClips = Utility.SeparateActionAnimation(offClip);
+                AnimationClip[] onClips = Utility.SeparateActionAnimation(onClip);
+                AnimationClip offClipNonAction = offClips[1];
+                AnimationClip onClipNonAction = onClips[1];
+
+                BlendTree fxBlendTree = Build1DBlendTree(name + "_on", "float1", offClipNonAction, onClipNonAction);
+                AssetDatabase.AddObjectToAsset(fxBlendTree, AssetDatabase.GetAssetPath(controllerFx));
+                Utility.SaveAnimClip(animBuildDir + name + "_off_fx.anim", offClipNonAction);
+                Utility.SaveAnimClip(animBuildDir + name + "_on_fx.anim", onClipNonAction);
+                int driverId = BuildDriver(name, "control" + controlCount);
+                BuildFxState(name, driverId, fxBlendTree);
+
             }
 
             private static bool checkControllerParameter(AnimatorController controller,string paramaName)
@@ -533,14 +522,11 @@ namespace EasyAvatar
                 return false;
             }
 
-            private static int BuildDriver(string name, string paramName)
+            private static int BuildDriver(string name, string paramName,int threshold = -200)
             {
-                
+                //调用时不指定threshold参数，就认为是bool类型的Parameter
                 int driverId = driverCount*2 +1;
                 driverCount++;
-                if (!checkControllerParameter(controllerFx, paramName))
-                    controllerFx.AddParameter(paramName, AnimatorControllerParameterType.Bool);
-
                 AnimatorControllerLayer fxLayer = new AnimatorControllerLayer();
                 AnimatorStateMachine stateMachine = new AnimatorStateMachine();
                 fxLayer.name = name;
@@ -555,6 +541,7 @@ namespace EasyAvatar
                 AnimatorState statePre = stateMachine.AddState("pre");
                 AnimatorState stateOn = stateMachine.AddState("on");
                 AnimatorState stateOut = stateMachine.AddState("out");
+                stateMachine.defaultState = stateOff;
                 stateOff.writeDefaultValues = false;
                 statePre.writeDefaultValues = false;
                 stateOn.writeDefaultValues = false;
@@ -567,81 +554,50 @@ namespace EasyAvatar
                 onDriver.parameters.Add(new VRC.SDKBase.VRC_AvatarParameterDriver.Parameter() { name = "driver", value = 0, type = VRC.SDKBase.VRC_AvatarParameterDriver.ChangeType.Set });
                 VRCAvatarParameterDriver outDriver = stateOut.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
                 outDriver.parameters.Add(new VRC.SDKBase.VRC_AvatarParameterDriver.Parameter() { name = "driver", value = driverId+1, type = VRC.SDKBase.VRC_AvatarParameterDriver.ChangeType.Set });
-                
-                AnimatorStateTransition off_pre = stateOff.AddTransition(statePre);
-                off_pre.AddCondition(AnimatorConditionMode.If, 0, paramName);
-                off_pre.duration = 0.1f;
-                off_pre.hasExitTime = true;
-                AnimatorStateTransition pre_on = statePre.AddTransition(stateOn);
-                pre_on.duration = 0.1f;
-                pre_on.hasExitTime = true;
-                AnimatorStateTransition on_out = stateOn.AddTransition(stateOut);
-                on_out.AddCondition(AnimatorConditionMode.IfNot, 0, paramName);
-                on_out.duration = 0.1f;
-                on_out.hasExitTime = true;
-                AnimatorStateTransition out_off = stateOut.AddTransition(stateOff);
-                out_off.duration = 0.1f;
-                out_off.hasExitTime = true;
-                stateMachine.defaultState = stateOff;
 
+                if (!checkControllerParameter(controllerFx, paramName))
+                    controllerFx.AddParameter(paramName,threshold== -200 ? AnimatorControllerParameterType.Bool: AnimatorControllerParameterType.Int);
+                AnimatorStateTransition off_pre = stateOff.AddTransition(statePre);
+                off_pre.hasExitTime = true;
+                off_pre.duration = 0.01f;
+                off_pre.exitTime = 0.01f;
+                AnimatorStateTransition pre_on = statePre.AddTransition(stateOn);
+                pre_on.hasExitTime = true;
+                pre_on.duration = 0.01f;
+                pre_on.exitTime = 0.05f;
+                AnimatorStateTransition on_out = stateOn.AddTransition(stateOut);
+                on_out.hasExitTime = true;
+                on_out.duration = 0.01f;
+                on_out.exitTime = 0.01f;
+                AnimatorStateTransition out_off = stateOut.AddTransition(stateOff);
+                out_off.hasExitTime = true;
+                out_off.duration = 0.01f;
+                out_off.exitTime = 0.05f;
+                if(threshold == -200)
+                {
+                    off_pre.AddCondition(AnimatorConditionMode.If, 0, paramName);
+                    on_out.AddCondition(AnimatorConditionMode.IfNot, 0, paramName);
+                }
+                else
+                {
+                    off_pre.AddCondition(AnimatorConditionMode.Equals, threshold, paramName);
+                    on_out.AddCondition(AnimatorConditionMode.NotEqual, threshold, paramName);
+                }
                 return driverId;
             }
 
-            private static AnimatorState[] BuildFxStates(string name, Motion offClip, Motion onClip)
+            private static void BuildFxState(string name, int driverId, Motion motion)
             {
-                AnimatorControllerLayer fxLayer = new AnimatorControllerLayer();
-                AnimatorStateMachine fxStateMachine = new AnimatorStateMachine();
-                fxLayer.name = name;
-                fxLayer.stateMachine = fxStateMachine;
-                fxLayer.defaultWeight = 1;
-                fxStateMachine.name = name;
-                fxStateMachine.hideFlags = HideFlags.HideInHierarchy;
-                //不加这个unity重启后FxLayer里的内容会消失
-                AssetDatabase.AddObjectToAsset(fxLayer.stateMachine, AssetDatabase.GetAssetPath(controllerFx));
-                controllerFx.AddLayer(fxLayer);
-                AnimatorState stateOff = fxStateMachine.AddState("off");
-                AnimatorState stateOn = fxStateMachine.AddState("on");
-                stateOff.writeDefaultValues = false;
-                stateOn.writeDefaultValues = false;
-                stateOff.motion = offClip;
-                stateOn.motion = onClip;
-                fxStateMachine.defaultState = stateOff;
-                return new AnimatorState[] { stateOff, stateOn };
-
-            }
-
-            private static AnimatorStateTransition[] BuildFxStateTransitions(AnimatorState[] states, string paramName)
-            {
-                if (!checkControllerParameter(controllerFx, paramName))
-                    controllerFx.AddParameter(paramName, AnimatorControllerParameterType.Bool);
-                AnimatorState stateOff = states[0];
-                AnimatorState stateOn = states[1];
-                AnimatorStateTransition off_on = stateOff.AddTransition(stateOn);
-                off_on.AddCondition(AnimatorConditionMode.If, 0, paramName);
-                off_on.duration = 0;
-                AnimatorStateTransition on_off = stateOn.AddTransition(stateOff);
-                on_off.AddCondition(AnimatorConditionMode.IfNot, 0, paramName);
-                on_off.duration = 0;
-                return new AnimatorStateTransition[] { off_on, on_off };
-            }
-
-            private static AnimatorStateTransition[] BuildFxStateTransitions(AnimatorState[] states, string paramName, int threshold)
-            {
-                if (!checkControllerParameter(controllerFx, paramName))
-                    controllerFx.AddParameter(paramName, AnimatorControllerParameterType.Int);
-                AnimatorState stateOff = states[0];
-                AnimatorState stateOn = states[1];
-                AnimatorStateTransition off_on = stateOff.AddTransition(stateOn);
-                off_on.AddCondition(AnimatorConditionMode.Equals, threshold, paramName);
-                off_on.duration = 0;
-                AnimatorStateTransition on_off = stateOn.AddTransition(stateOff);
-                on_off.AddCondition(AnimatorConditionMode.NotEqual, threshold, paramName);
-                on_off.duration = 0;
-
-                return new AnimatorStateTransition[] { off_on, on_off };
+                AnimatorStateMachine fxStateMachine = controllerFx.layers[0].stateMachine;
+                AnimatorState state = fxStateMachine.AddState(name);
+                state.writeDefaultValues = false;
+                state.motion = motion;
+                AnimatorStateTransition transition = fxStateMachine.AddAnyStateTransition(state);
+                transition.AddCondition(AnimatorConditionMode.Equals, driverId, "driver");
+                transition.duration = 0.05f;
             }
             
-            private static AnimatorState[] BuildActionStates(string name, Motion onClip)
+            private static void BuildActionState(string name, int driverId, Motion motion)
             {
                 AnimatorControllerLayer actionLayer = controllerAction.layers[0];
                 AnimatorStateMachine actionStateMachine = actionLayer.stateMachine;
@@ -654,63 +610,27 @@ namespace EasyAvatar
                 statePre.behaviours = templatePre.behaviours;
                 statePre.writeDefaultValues = false;
                 AnimatorState stateOn = actionStateMachine.AddState(name + "_on");
-                stateOn.motion = onClip;
+                stateOn.motion = motion;
                 stateOn.writeDefaultValues = false;
                 AnimatorState stateOut = actionStateMachine.AddState(name + "_out");
                 stateOut.motion = templateOut.motion;
                 stateOut.behaviours = templateOut.behaviours;
                 stateOut.writeDefaultValues = false;
 
-                return new AnimatorState[] { waitForActionOrAFK, statePre, stateOn, stateOut };
-            }
-
-            private static AnimatorStateTransition[] BuildActionStateTransitions(AnimatorState[] states, string paramName)
-            {
-                if (!checkControllerParameter(controllerFx, paramName))
-                    controllerFx.AddParameter(paramName, AnimatorControllerParameterType.Bool);
-                AnimatorState stateOff = states[0];
-                AnimatorState statePre = states[1];
-                AnimatorState stateOn = states[2];
-                AnimatorState stateOut = states[3];
-                AnimatorStateTransition off_pre = stateOff.AddTransition(statePre);
-                off_pre.AddCondition(AnimatorConditionMode.If, 0, paramName);
+                AnimatorStateTransition off_pre = waitForActionOrAFK.AddTransition(statePre);
+                off_pre.AddCondition(AnimatorConditionMode.Equals, driverId, "driver");
                 off_pre.duration = 0;
                 AnimatorStateTransition pre_on = statePre.AddTransition(stateOn);
-                pre_on.AddCondition(AnimatorConditionMode.If, 0, paramName);
+                pre_on.hasExitTime = true;
                 pre_on.duration = 0;
                 AnimatorStateTransition on_out = stateOn.AddTransition(stateOut);
-                on_out.AddCondition(AnimatorConditionMode.IfNot, 0, paramName);
+                on_out.AddCondition(AnimatorConditionMode.Equals, driverId+1, "driver");
                 on_out.duration = 0;
-                AnimatorStateTransition out_off = stateOut.AddTransition(stateOff);
-                out_off.AddCondition(AnimatorConditionMode.IfNot, 0, paramName);
+                AnimatorStateTransition out_off = stateOut.AddTransition(waitForActionOrAFK);
+                out_off.hasExitTime = true;
                 out_off.duration = 0;
-                return new AnimatorStateTransition[] { off_pre, pre_on, on_out, out_off };
             }
-
-            private static AnimatorStateTransition[] BuildActionStateTransitions(AnimatorState[] states, string paramName , int threshold)
-            {
-                if (!checkControllerParameter(controllerFx, paramName))
-                    controllerFx.AddParameter(paramName, AnimatorControllerParameterType.Int);
-                AnimatorState stateOff = states[0];
-                AnimatorState statePre = states[1];
-                AnimatorState stateOn = states[2];
-                AnimatorState stateOut = states[3];
-                AnimatorStateTransition off_pre = stateOff.AddTransition(statePre);
-                off_pre.AddCondition(AnimatorConditionMode.Equals, threshold, paramName);
-                off_pre.duration = 0;
-                AnimatorStateTransition pre_on = statePre.AddTransition(stateOn);
-                pre_on.AddCondition(AnimatorConditionMode.Equals, threshold, paramName);
-                pre_on.duration = 0;
-                AnimatorStateTransition on_out = stateOn.AddTransition(stateOut);
-                on_out.AddCondition(AnimatorConditionMode.NotEqual, threshold, paramName);
-                on_out.duration = 0;
-                AnimatorStateTransition out_off = stateOut.AddTransition(stateOff);
-                out_off.AddCondition(AnimatorConditionMode.NotEqual, threshold, paramName);
-                out_off.duration = 0;
-
-                return new AnimatorStateTransition[] { off_pre, pre_on, on_out, out_off };
-            }
-
+            
             private static BlendTree Build1DBlendTree(string name,string paramaName, Motion motion1, Motion motion2)
             {
                 BlendTree blendTree = new BlendTree();
@@ -722,47 +642,7 @@ namespace EasyAvatar
                 return blendTree;
             }
 
-            private static void BuildRadialPuppet(string name, SerializedObject control)
-            {
-                /*
-                //EasyBehaviors生成动画
-                AnimationClip offClip = Utility.GenerateAnimClip(control.FindProperty("behaviors1"));
-                AnimationClip onClip = Utility.GenerateAnimClip(control.FindProperty("behaviors2"));
-                //使用动画文件
-                if (control.FindProperty("useAnimClip").boolValue)
-                {
-                    //先将动画文件合并，在与Behaviors生成动画合并
-                    offClip = Utility.MergeAnimClip(Utility.MergeAnimClip(control.FindProperty("anims1")), offClip);
-                    onClip = Utility.MergeAnimClip(Utility.MergeAnimClip(control.FindProperty("anims2")), onClip);
-                }
-                //分离action动画
-                AnimationClip[] offClips = Utility.SeparateActionAnimation(offClip);
-                AnimationClip[] onClips = Utility.SeparateActionAnimation(onClip);
-                AnimationClip offClipAction = offClips[0];
-                AnimationClip offClipNonAction = offClips[1];
-                AnimationClip onClipAction = onClips[0];
-                AnimationClip onClipNonAction = onClips[1];
-
-                if (!checkControllerParameter(controllerFx, "float1"))
-                    controllerFx.AddParameter("float1", AnimatorControllerParameterType.Float);
-
-                BlendTree fxBlendTree = Build1DBlendTree(name + "_on","float1", offClipNonAction, onClipNonAction);
-                AssetDatabase.AddObjectToAsset(fxBlendTree, AssetDatabase.GetAssetPath(controllerFx));
-                Utility.SaveAnimClip(animBuildDir + name + "_off_fx.anim", offClipNonAction);
-                Utility.SaveAnimClip(animBuildDir + name + "_on_fx.anim", onClipNonAction);
-                BuildFxStateTransitions(BuildFxStates(name, null, fxBlendTree), "puppet",puppetCount);
-
-                //有action动画才加进去
-                if (AnimationUtility.GetCurveBindings(onClipAction).Length > 0)
-                {
-                    if (!checkControllerParameter(controllerAction, "float1"))
-                        controllerAction.AddParameter("float1", AnimatorControllerParameterType.Float);
-                    BlendTree actionBlendTree = Build1DBlendTree(name + "_on", "float1", offClipAction, onClipAction);
-                    Utility.SaveAnimClip(animBuildDir + name + "_on_action.anim", onClipAction);
-                    AssetDatabase.AddObjectToAsset(actionBlendTree, AssetDatabase.GetAssetPath(controllerAction));
-                    BuildActionStateTransitions(BuildActionStates(name, actionBlendTree), "puppet", puppetCount);
-                }*/
-            }
+            
         }
 
 
