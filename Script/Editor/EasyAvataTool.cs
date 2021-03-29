@@ -103,6 +103,10 @@ namespace EasyAvatar
             return true;
         }
 
+        /// <summary>
+        /// 创建手势管理
+        /// </summary>
+        /// <returns></returns>
         [MenuItem("GameObject/EasyAvatar3.0/Gesture Manager", priority = 0)]
         public static bool CreateGestureManager()
         {
@@ -123,6 +127,10 @@ namespace EasyAvatar
             return true;
         }
 
+        /// <summary>
+        /// 创建手势
+        /// </summary>
+        /// <returns></returns>
         [MenuItem("GameObject/EasyAvatar3.0/Gesture", priority = 0)]
         public static bool CreateGesture()
         {
@@ -143,6 +151,9 @@ namespace EasyAvatar
             return true;
         }
 
+        /// <summary>
+        /// 显示关于对话框
+        /// </summary>
         [MenuItem("EasyAvatar3.0/About", priority = 0)]
         public static void showAbout()
         {
@@ -150,6 +161,11 @@ namespace EasyAvatar
             Debug.Log(Lang.About);
         }
 
+        /// <summary>
+        /// 通过组件创建GameObject
+        /// </summary>
+        /// <typeparam name="T">组件</typeparam>
+        /// <param name="name">新建物体的名字</param>
         public static void CreateObject<T>(string name) where T : Component
         {
             GameObject gameObject = new GameObject(name);
@@ -200,8 +216,9 @@ namespace EasyAvatar
         public class Builder
         {
             static int controlCount;
-            static AnimatorController controllerFx, controllerAction;
             static string rootBuildDir, menuBuildDir, animBuildDir;
+            static GameObject avatar;
+            static AnimatorController controllerFx, controllerAction;
             static AnimationClip fxInitClip;
             static Dictionary<KeyValuePair<string, int>, int> drivers;
 
@@ -212,16 +229,17 @@ namespace EasyAvatar
             public static void Build(EasyAvatarHelper helper)
             {
                 controlCount = 0;
+                avatar = helper.avatar;
+                rootBuildDir = workingDirectory + "Build/" + Utility.GetGoodFileName(avatar.name);
+                menuBuildDir = rootBuildDir + "/Menu/";
+                animBuildDir = rootBuildDir + "/Anim/";
                 drivers = new Dictionary<KeyValuePair<string, int>, int>();
-                GameObject avatar = helper.avatar;
-                if (!avatar)
-                {
-                    EditorUtility.DisplayDialog("Error", Lang.ErrAvatarNotSet, "ok");
-                    return;
-                }
+                fxInitClip = new AnimationClip();
+
                 VRCAvatarDescriptor avatarDescriptor = avatar.GetComponent<VRCAvatarDescriptor>();
                 EasyMenu mainMenu = null;
                 EasyGestureManager gestureManager = null;
+                
                 foreach (Transform child in helper.gameObject.transform)
                 {
                     EasyMenu tempMenu = child.GetComponent<EasyMenu>();
@@ -246,11 +264,7 @@ namespace EasyAvatar
                         gestureManager = tempGestureManager;
                     }
                 }
-
-                rootBuildDir = workingDirectory + "Build/" + Utility.GetGoodFileName(avatar.name);
-                menuBuildDir = rootBuildDir + "/Menu/";
-                animBuildDir = rootBuildDir + "/Anim/";
-
+                
                 //清除目录
                 if (Directory.Exists(rootBuildDir))
                 {
@@ -270,8 +284,8 @@ namespace EasyAvatar
                 controllerAction.AddParameter("driver", AnimatorControllerParameterType.Int);
                 controllerAction.AddParameter("float1", AnimatorControllerParameterType.Float);
                 controllerAction.AddParameter("float2", AnimatorControllerParameterType.Float);
-                fxInitClip = new AnimationClip();
 
+                //构建手势
                 if (gestureManager)
                     BuildGestures(gestureManager);
 
@@ -302,11 +316,8 @@ namespace EasyAvatar
                     avatarDescriptor.expressionsMenu = null;
                 }
 
-                Utility.SaveAnimClip(animBuildDir + "FxInit.anim", fxInitClip);
-                AnimatorStateMachine fxState = controllerFx.layers[0].stateMachine;
-                fxState.defaultState = fxState.AddState("Init");
-                fxState.defaultState.writeDefaultValues = false;
-                fxState.defaultState.motion = fxInitClip;
+                //构建FX的初始状态
+                BuildFxInitState(fxInitClip);
 
                 //设置CustomizeAnimationLayers
                 avatarDescriptor.customizeAnimationLayers = true;
@@ -386,6 +397,10 @@ namespace EasyAvatar
                 return expressionsMenu;
             }
 
+            /// <summary>
+            /// 构建所有手势
+            /// </summary>
+            /// <param name="gestures">手势管理</param>
             private static void BuildGestures( EasyGestureManager gestures)
             {
                 
@@ -400,44 +415,55 @@ namespace EasyAvatar
 
                     SerializedObject serializedObject = new SerializedObject(gesture);
                     serializedObject.Update();
-                    SerializedProperty behaviors = serializedObject.FindProperty("behaviors");
-                    SerializedProperty animations = serializedObject.FindProperty("animations");
-                    SerializedProperty gestureType = serializedObject.FindProperty("gestureType");
-                    SerializedProperty handType = serializedObject.FindProperty("handType");
-                    SerializedProperty useAnimClip = serializedObject.FindProperty("useAnimClip");
-                    AnimationClip animationClip = Utility.GenerateAnimClip(behaviors);
-                    if (useAnimClip.boolValue)
-                    {
-                        animationClip = Utility.MergeAnimClip(Utility.MergeAnimClip(animations), animationClip);
-                    }
+                    BuildGesture(name, serializedObject);
+                }
+            }
 
-                    AnimationClip[] separatedClips = Utility.SeparateActionAnimation(animationClip);
-                    AnimationClip actionAnim = separatedClips[0];
-                    AnimationClip nonActionAnim = separatedClips[1];
-                    bool hasActionAnim = AnimationUtility.GetCurveBindings(actionAnim).Length > 0;
-                    Utility.SaveAnimClip(animBuildDir +name + "_fx.anim", nonActionAnim);
-                    if(hasActionAnim)
-                        Utility.SaveAnimClip(animBuildDir + name + "_action.anim", actionAnim);
-                    
-                    if (handType.enumValueIndex == (int)EasyGesture.HandType.Left || handType.enumValueIndex == (int)EasyGesture.HandType.Any)
-                    {
-                        int driverId = BuildDriver("GestureLeft", gestureType.enumValueIndex);
-                        BuildFxState(name + "_L", driverId, nonActionAnim);
-                        if (hasActionAnim)
-                            BuildActionState(name + "_L", driverId, actionAnim);
-                    }
-                        
-                    if (handType.enumValueIndex == (int)EasyGesture.HandType.Right || handType.enumValueIndex == (int)EasyGesture.HandType.Any)
-                    {
-                        int driverId = BuildDriver("GestureRight", gestureType.enumValueIndex);
-                        BuildFxState(name + "_R", driverId, nonActionAnim);
-                        if (hasActionAnim)
-                            BuildActionState(name + "_R", driverId, actionAnim);
-                    }
-                    if (gestureType.enumValueIndex == (int)EasyGesture.GestureType.Neutral)
-                    {
-                        fxInitClip = Utility.MergeAnimClip(fxInitClip, nonActionAnim);
-                    }
+            /// <summary>
+            /// 构建手势
+            /// </summary>
+            /// <param name="name">名字</param>
+            /// <param name="gesture">手势</param>
+            private static void BuildGesture(string name, SerializedObject gesture)
+            {
+                SerializedProperty behaviors = gesture.FindProperty("behaviors");
+                SerializedProperty animations = gesture.FindProperty("animations");
+                SerializedProperty gestureType = gesture.FindProperty("gestureType");
+                SerializedProperty handType = gesture.FindProperty("handType");
+                SerializedProperty useAnimClip = gesture.FindProperty("useAnimClip");
+
+                AnimationClip animationClip = Utility.GenerateAnimClip(behaviors);
+                if (useAnimClip.boolValue)
+                {
+                    animationClip = Utility.MergeAnimClip(Utility.MergeAnimClip(animations), animationClip);
+                }
+
+                AnimationClip[] separatedClips = Utility.SeparateHumanAnimation(animationClip);
+                AnimationClip actionAnim = separatedClips[0];
+                AnimationClip nonActionAnim = separatedClips[1];
+                bool hasActionAnim = AnimationUtility.GetCurveBindings(actionAnim).Length > 0;
+                AssetDatabase.CreateAsset(nonActionAnim, animBuildDir + name + "_fx.anim");
+                if (hasActionAnim)
+                    AssetDatabase.CreateAsset(actionAnim, animBuildDir + name + "_action.anim");
+
+                if (handType.enumValueIndex == (int)EasyGesture.HandType.Left || handType.enumValueIndex == (int)EasyGesture.HandType.Any)
+                {
+                    int driverId = BuildDriver("GestureLeft", gestureType.enumValueIndex);
+                    BuildFxState(name + "_L", driverId, nonActionAnim);
+                    if (hasActionAnim)
+                        BuildActionState(name + "_L", driverId, actionAnim);
+                }
+
+                if (handType.enumValueIndex == (int)EasyGesture.HandType.Right || handType.enumValueIndex == (int)EasyGesture.HandType.Any)
+                {
+                    int driverId = BuildDriver("GestureRight", gestureType.enumValueIndex);
+                    BuildFxState(name + "_R", driverId, nonActionAnim);
+                    if (hasActionAnim)
+                        BuildActionState(name + "_R", driverId, actionAnim);
+                }
+                if (gestureType.enumValueIndex == (int)EasyGesture.GestureType.Neutral)
+                {
+                    AddFxInitClip(nonActionAnim);
                 }
             }
 
@@ -459,15 +485,15 @@ namespace EasyAvatar
                     onClip = Utility.MergeAnimClip(Utility.MergeAnimClip(control.FindProperty("anims2")), onClip);
                 }
                 //分离action动画
-                AnimationClip[] offClips = Utility.SeparateActionAnimation(offClip);
-                AnimationClip[] onClips = Utility.SeparateActionAnimation(onClip);
+                AnimationClip[] offClips = Utility.SeparateHumanAnimation(offClip);
+                AnimationClip[] onClips = Utility.SeparateHumanAnimation(onClip);
                 AnimationClip offClipNonAction = offClips[1];
                 AnimationClip onClipAction = onClips[0];
                 AnimationClip onClipNonAction = onClips[1];
-                fxInitClip = Utility.MergeAnimClip(fxInitClip, offClipNonAction);
+                AddFxInitClip(offClipNonAction);
 
-                Utility.SaveAnimClip(animBuildDir + name + "_off_fx.anim", offClipNonAction);
-                Utility.SaveAnimClip(animBuildDir + name + "_on_fx.anim", onClipNonAction);
+                AssetDatabase.CreateAsset(offClipNonAction, animBuildDir + name + "_off_fx.anim");
+                AssetDatabase.CreateAsset(onClipNonAction, animBuildDir + name + "_on_fx.anim");
                 //生成驱动id
                 int driverId = BuildDriver("control" + controlCount);
                 //通过驱动id到对应状态
@@ -477,11 +503,16 @@ namespace EasyAvatar
                 //有action动画才加进去
                 if (AnimationUtility.GetCurveBindings(onClipAction).Length > 0)
                 {
-                    Utility.SaveAnimClip(animBuildDir + name + "_on_action.anim", onClipAction);
+                    AssetDatabase.CreateAsset(onClipAction, animBuildDir + name + "_on_action.anim");
                     BuildActionState(name,driverId, onClipAction);
                 }
             }
-
+            
+            /// <summary>
+            /// 构建旋钮控件
+            /// </summary>
+            /// <param name="name">名字</param>
+            /// <param name="control">控件</param>
             private static void BuildRadialPuppet(string name, SerializedObject control)
             {
 
@@ -496,42 +527,34 @@ namespace EasyAvatar
                     onClip = Utility.MergeAnimClip(Utility.MergeAnimClip(control.FindProperty("anims2")), onClip);
                 }
                 //分离action动画
-                AnimationClip[] offClips = Utility.SeparateActionAnimation(offClip);
-                AnimationClip[] onClips = Utility.SeparateActionAnimation(onClip);
+                AnimationClip[] offClips = Utility.SeparateHumanAnimation(offClip);
+                AnimationClip[] onClips = Utility.SeparateHumanAnimation(onClip);
                 AnimationClip offClipNonAction = offClips[1];
                 AnimationClip onClipNonAction = onClips[1];
 
                 BlendTree fxBlendTree = Build1DBlendTree(name + "_on", "float1", offClipNonAction, onClipNonAction);
                 AssetDatabase.AddObjectToAsset(fxBlendTree, AssetDatabase.GetAssetPath(controllerFx));
-                Utility.SaveAnimClip(animBuildDir + name + "_off_fx.anim", offClipNonAction);
-                Utility.SaveAnimClip(animBuildDir + name + "_on_fx.anim", onClipNonAction);
+                AssetDatabase.CreateAsset(offClipNonAction, animBuildDir + name + "_off_fx.anim");
+                AssetDatabase.CreateAsset(onClipNonAction, animBuildDir + name + "_on_fx.anim");
                 int driverId = BuildDriver("control" + controlCount);
                 BuildFxState(name, driverId, fxBlendTree);
-
             }
 
-            private static bool checkControllerParameter(AnimatorController controller,string paramaName)
-            {
-                if (controller.parameters == null)
-                    return false;
-                foreach(AnimatorControllerParameter parameter in controller.parameters)
-                {
-                    if (parameter.name == paramaName)
-                        return true;
-                }
-
-                return false;
-            }
-
+            /// <summary>
+            /// 为bool参数创建驱动
+            /// </summary>
+            /// <param name="paramName">参数名</param>
+            /// <returns>bool参数为true时的驱动id，fales时为id+1</returns>
             private static int BuildDriver(string paramName)
             {
                 //查询drivers里是否已经有driver
                 KeyValuePair<string, int> driverKey = new KeyValuePair<string, int>(paramName, 1);
                 if (drivers.ContainsKey(driverKey))
                     return drivers[driverKey];
-
+                //每次id是成对的，所以乘2
                 int driverCount = drivers.Count;
                 int driverId = driverCount*2 +1;
+                //添加新的层
                 AnimatorControllerLayer fxLayer = new AnimatorControllerLayer();
                 AnimatorStateMachine stateMachine = new AnimatorStateMachine();
                 fxLayer.name = paramName;
@@ -539,34 +562,44 @@ namespace EasyAvatar
                 fxLayer.defaultWeight = 1;
                 stateMachine.name = paramName;
                 stateMachine.hideFlags = HideFlags.HideInHierarchy;
-                //不加这个unity重启后FxLayer里的内容会消失
+                //不加这个unity重启后新的层里的内容会消失
                 AssetDatabase.AddObjectToAsset(fxLayer.stateMachine, AssetDatabase.GetAssetPath(controllerFx));
                 controllerFx.AddLayer(fxLayer);
+                //开关状态
                 AnimatorState stateOff = stateMachine.AddState("off");
                 AnimatorState stateOn = stateMachine.AddState("on");
                 stateMachine.defaultState = stateOff;
                 stateOff.writeDefaultValues = false;
                 stateOn.writeDefaultValues = false;
+                //VRC参数驱动，paramName的参数为true时driver设为driverId，paramName的参数为false是driver设为driverId+1
                 VRCAvatarParameterDriver offDriver = stateOff.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
                 offDriver.parameters.Add(new VRC.SDKBase.VRC_AvatarParameterDriver.Parameter() { name = "driver", value = driverId + 1, type = VRC.SDKBase.VRC_AvatarParameterDriver.ChangeType.Set });
                 VRCAvatarParameterDriver onDriver = stateOn.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
                 onDriver.parameters.Add(new VRC.SDKBase.VRC_AvatarParameterDriver.Parameter() { name = "driver", value = driverId, type = VRC.SDKBase.VRC_AvatarParameterDriver.ChangeType.Set });
                 
-                if (!checkControllerParameter(controllerFx, paramName))
+                if (!Utility.CheckControllerParameter(controllerFx, paramName))
                     controllerFx.AddParameter(paramName,AnimatorControllerParameterType.Bool);
+                //状态连线
                 AnimatorStateTransition off_on = stateOff.AddTransition(stateOn);
                 off_on.duration = 0;
                 AnimatorStateTransition on_off = stateOn.AddTransition(stateOff);
                 on_off.duration = 0;
                 off_on.AddCondition(AnimatorConditionMode.If, 0, paramName);
                 on_off.AddCondition(AnimatorConditionMode.IfNot, 0, paramName);
+                //加入词典方便查询
                 drivers.Add(driverKey, driverId);
-
                 return driverId;
             }
 
+            /// <summary>
+            /// 为int参数创建驱动
+            /// </summary>
+            /// <param name="paramName">参数名</param>
+            /// <param name="threshold">参数为何值时的驱动</param>
+            /// <returns>驱动id，当参数设置为该值时的驱动id，当参数从该值设置为其他值时驱动id+1</returns>
             private static int BuildDriver(string paramName,int threshold)
             {
+                //查询drivers里是否已经有driver
                 KeyValuePair<string, int> driverKey = new KeyValuePair<string, int>(paramName, threshold);
                 if (drivers.ContainsKey(driverKey))
                     return drivers[driverKey];
@@ -574,7 +607,7 @@ namespace EasyAvatar
                 int driverCount = drivers.Count;
                 int driverId = driverCount * 2 + 1;
 
-                AnimatorControllerLayer fxLayer = Utility.findLayer(controllerFx,paramName);
+                AnimatorControllerLayer fxLayer = Utility.FindLayer(controllerFx,paramName);
                 AnimatorStateMachine stateMachine;
                 if (fxLayer == null)
                 {
@@ -584,7 +617,7 @@ namespace EasyAvatar
                     stateMachine = new AnimatorStateMachine();
                     stateMachine.name = paramName;
                     stateMachine.hideFlags = HideFlags.HideInHierarchy;
-                    //不加这个unity重启后FxLayer里的内容会消失
+                    //不加这个unity重启后新加的层里的内容会消失
                     AssetDatabase.AddObjectToAsset(stateMachine, AssetDatabase.GetAssetPath(controllerFx));
                     fxLayer.stateMachine = stateMachine;
                     //必须在设置stateMachine再添加层
@@ -592,7 +625,7 @@ namespace EasyAvatar
                 }
                 stateMachine = fxLayer.stateMachine;
                 
-                AnimatorState defaultState = Utility.findState(stateMachine, "default");
+                AnimatorState defaultState = Utility.FindState(stateMachine, "default");
                 if(defaultState == null)
                 {
                     defaultState = stateMachine.AddState("default");
@@ -609,7 +642,7 @@ namespace EasyAvatar
                 VRCAvatarParameterDriver onDriver = stateOn.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
                 onDriver.parameters.Add(new VRC.SDKBase.VRC_AvatarParameterDriver.Parameter() { name = "driver", value = driverId, type = VRC.SDKBase.VRC_AvatarParameterDriver.ChangeType.Set });
 
-                if (!checkControllerParameter(controllerFx, paramName))
+                if (!Utility.CheckControllerParameter(controllerFx, paramName))
                     controllerFx.AddParameter(paramName, AnimatorControllerParameterType.Int);
                 AnimatorStateTransition default_on = defaultState.AddTransition(stateOn);
                 default_on.duration = 0;
@@ -626,24 +659,37 @@ namespace EasyAvatar
                 return driverId;
             }
 
+            /// <summary>
+            /// 构建fx层的状态
+            /// </summary>
+            /// <param name="name">名字</param>
+            /// <param name="driverId">驱动id</param>
+            /// <param name="motion">动画</param>
             private static void BuildFxState(string name, int driverId, Motion motion)
             {
                 AnimatorStateMachine fxStateMachine = controllerFx.layers[0].stateMachine;
                 AnimatorState state = fxStateMachine.AddState(name);
                 state.writeDefaultValues = false;
                 state.motion = motion;
+                //通过驱动id从anystate进入对应状态
                 AnimatorStateTransition transition = fxStateMachine.AddAnyStateTransition(state);
                 transition.AddCondition(AnimatorConditionMode.Equals, driverId, "driver");
                 transition.duration = 0.05f;
             }
             
+            /// <summary>
+            /// 构建action层的动画
+            /// </summary>
+            /// <param name="name">名字</param>
+            /// <param name="driverId">驱动id</param>
+            /// <param name="motion">动画</param>
             private static void BuildActionState(string name, int driverId, Motion motion)
             {
                 AnimatorControllerLayer actionLayer = controllerAction.layers[0];
                 AnimatorStateMachine actionStateMachine = actionLayer.stateMachine;
-                AnimatorState waitForActionOrAFK = Utility.findState(actionStateMachine, "WaitForActionOrAFK");
-                AnimatorState templatePre = Utility.findState(actionStateMachine, "easy_avatar_pre");
-                AnimatorState templateOut = Utility.findState(actionStateMachine, "easy_avatar_out");
+                AnimatorState waitForActionOrAFK = Utility.FindState(actionStateMachine, "WaitForActionOrAFK");
+                AnimatorState templatePre = Utility.FindState(actionStateMachine, "easy_avatar_pre");
+                AnimatorState templateOut = Utility.FindState(actionStateMachine, "easy_avatar_out");
 
                 AnimatorState statePre = actionStateMachine.AddState(name + "_pre");
                 statePre.motion = templatePre.motion;
@@ -671,6 +717,14 @@ namespace EasyAvatar
                 out_off.duration = 0;
             }
             
+            /// <summary>
+            /// 构建一维blend tree
+            /// </summary>
+            /// <param name="name">名字</param>
+            /// <param name="paramaName">参数名</param>
+            /// <param name="motion1">参数为0时的动画</param>
+            /// <param name="motion2">参数为1时的动画</param>
+            /// <returns></returns>
             private static BlendTree Build1DBlendTree(string name,string paramaName, Motion motion1, Motion motion2)
             {
                 BlendTree blendTree = new BlendTree();
@@ -682,10 +736,31 @@ namespace EasyAvatar
                 return blendTree;
             }
 
-            
+            /// <summary>
+            /// 将clip添加到fx层的初始动画
+            /// </summary>
+            /// <param name="clip"></param>
+            private static void AddFxInitClip(AnimationClip clip)
+            {
+                fxInitClip = Utility.MergeAnimClip(fxInitClip, clip);
+            }
+
+            /// <summary>
+            /// 构建fx层初始状态
+            /// </summary>
+            /// <param name="motion">初始动画</param>
+            private static void BuildFxInitState(Motion motion)
+            {
+                AssetDatabase.CreateAsset(motion, animBuildDir + "FxInit.anim");
+                AnimatorStateMachine fxState = controllerFx.layers[0].stateMachine;
+                fxState.defaultState = fxState.AddState("Init");
+                fxState.defaultState.writeDefaultValues = false;
+                fxState.defaultState.motion = motion;
+            }
+
+
+
         }
-
-
         #endregion
 
         #region Utility
@@ -702,19 +777,6 @@ namespace EasyAvatar
                 foreach (char ichar in Path.GetInvalidFileNameChars())
                     result.Replace(ichar.ToString(), "");
                 return result;
-            }
-
-            /// <summary>
-            /// 保存动画文件
-            /// </summary>
-            /// <param name="path">路径</param>
-            /// <param name="clip">动画</param>
-            /// <returns>原动画</returns>
-            public static AnimationClip SaveAnimClip(string path, AnimationClip clip)
-            {
-                AssetDatabase.CreateAsset(clip, path);
-                AssetDatabase.SaveAssets();
-                return clip;
             }
 
             /// <summary>
@@ -760,7 +822,49 @@ namespace EasyAvatar
                 }
                 return clip;
             }
-            
+
+            /// <summary>
+            /// 通过behaviors生成动画
+            /// </summary>
+            /// <param name="behaviors">behaviors</param>
+            /// <returns>动画</returns>
+            public static AnimationClip GenerateAnimClip(List<EasyBehavior> behaviors)
+            {
+                AnimationClip clip = new AnimationClip();
+                clip.frameRate = 60;
+                
+                int behaviorsCount = behaviors.Count;
+                for (int i = 0; i < behaviorsCount; i++)
+                {
+                    EasyBehavior behavior = behaviors[i];
+                    List<EasyProperty> propertyGroup = behavior.propertyGroup;
+                    int propertyCount = propertyGroup.Count;
+                    for (int j = 0; j < propertyCount; j++)
+                    {
+                        EasyProperty property = propertyGroup[j];
+                        if (property.targetProperty == "")
+                            continue;
+
+                        EditorCurveBinding binding = GetBinding(property);
+
+                        if (!binding.isPPtrCurve)
+                        {
+                            AnimationUtility.SetEditorCurve(clip, binding, AnimationCurve.Linear(0, property.floatValue, 1.0f / 60, property.floatValue));
+                        }
+                        else
+                        {
+
+                            ObjectReferenceKeyframe[] objectReferenceKeyframes = {
+                                new ObjectReferenceKeyframe() { time = 0, value = property.objectValue },
+                                new ObjectReferenceKeyframe() { time = 1.0f / 60, value = property.objectValue }
+                            };
+                            AnimationUtility.SetObjectReferenceCurve(clip, binding, objectReferenceKeyframes);
+                        }
+                    }
+                }
+                return clip;
+            }
+
             /// <summary>
             /// 合并动画
             /// </summary>
@@ -811,25 +915,25 @@ namespace EasyAvatar
             /// </summary>
             /// <param name="clip">动画</param>
             /// <returns>[0]人体动画，[1]非人体动画</returns>
-            public static AnimationClip[] SeparateActionAnimation(AnimationClip clip)
+            public static AnimationClip[] SeparateHumanAnimation(AnimationClip clip)
             {
-                AnimationClip action = new AnimationClip();
-                action.frameRate = 60;
-                AnimationClip nonAction = new AnimationClip();
-                nonAction.frameRate = 60;
+                AnimationClip humanAnim = new AnimationClip();
+                humanAnim.frameRate = 60;
+                AnimationClip fxAnim = new AnimationClip();
+                fxAnim.frameRate = 60;
                 foreach (EditorCurveBinding binding in AnimationUtility.GetCurveBindings(clip))
                 {
-                    //一般在根物体也就是avatar上只用了animator
+                    //一般在根物体也就是avatar上只用了人体动画
                     if (binding.path == "")
-                        AnimationUtility.SetEditorCurve(action, binding, AnimationUtility.GetEditorCurve(clip, binding));
+                        AnimationUtility.SetEditorCurve(humanAnim, binding, AnimationUtility.GetEditorCurve(clip, binding));
                     else
-                        AnimationUtility.SetEditorCurve(nonAction, binding, AnimationUtility.GetEditorCurve(clip, binding));
+                        AnimationUtility.SetEditorCurve(fxAnim, binding, AnimationUtility.GetEditorCurve(clip, binding));
                 }
-                //Object类型的曲线一定不是animator动画
+                //Object类型的曲线一定不是人体动画
                 foreach (EditorCurveBinding binding in AnimationUtility.GetObjectReferenceCurveBindings(clip))
-                    AnimationUtility.SetObjectReferenceCurve(nonAction, binding, AnimationUtility.GetObjectReferenceCurve(clip, binding));
+                    AnimationUtility.SetObjectReferenceCurve(fxAnim, binding, AnimationUtility.GetObjectReferenceCurve(clip, binding));
 
-                return new AnimationClip[] {action,nonAction };
+                return new AnimationClip[] {humanAnim,fxAnim };
             }
 
             /// <summary>
@@ -838,7 +942,7 @@ namespace EasyAvatar
             /// <param name="stateMachine">动画状态机</param>
             /// <param name="name">名字</param>
             /// <returns>找到的状态</returns>
-            public static AnimatorState findState(AnimatorStateMachine stateMachine, string name)
+            public static AnimatorState FindState(AnimatorStateMachine stateMachine, string name)
             {
                 foreach(var childState in stateMachine.states)
                 {
@@ -848,7 +952,13 @@ namespace EasyAvatar
                 return null;
             }
 
-            public static AnimatorControllerLayer findLayer(AnimatorController controller, string name)
+            /// <summary>
+            /// 通过名字寻找controller中的层
+            /// </summary>
+            /// <param name="controller">controller</param>
+            /// <param name="name">名字</param>
+            /// <returns>层</returns>
+            public static AnimatorControllerLayer FindLayer(AnimatorController controller, string name)
             {
                 foreach (var layer in controller.layers)
                 {
@@ -858,6 +968,25 @@ namespace EasyAvatar
                 return null;
             }
 
+            /// <summary>
+            /// 检测controller中是否有某个参数
+            /// </summary>
+            /// <param name="controller"></param>
+            /// <param name="paramaName"></param>
+            /// <returns>有则返回true</returns>
+            public static bool CheckControllerParameter(AnimatorController controller, string paramaName)
+            {
+                if (controller.parameters == null)
+                    return false;
+                foreach (AnimatorControllerParameter parameter in controller.parameters)
+                {
+                    if (parameter.name == paramaName)
+                        return true;
+                }
+
+                return false;
+            }
+            
             /// <summary>
             /// 复制序列化的EasyBehavior
             /// </summary>
@@ -891,8 +1020,7 @@ namespace EasyAvatar
                 dest.FindPropertyRelative("objectValue").objectReferenceValue = src.FindPropertyRelative("objectValue").objectReferenceValue;
                 dest.FindPropertyRelative("floatValue").floatValue = src.FindPropertyRelative("floatValue").floatValue;
             }
-
-
+            
             /// <summary>
             /// 获取binding
             /// </summary>
@@ -910,6 +1038,20 @@ namespace EasyAvatar
                 else if (isDiscrete.boolValue)
                     return EditorCurveBinding.DiscreteCurve(targetPath.stringValue, EasyReflection.FindType(targetPropertyType.stringValue), targetProperty.stringValue);
                 return EditorCurveBinding.FloatCurve(targetPath.stringValue, EasyReflection.FindType(targetPropertyType.stringValue), targetProperty.stringValue);
+            }
+
+            /// <summary>
+            /// 获取binding
+            /// </summary>
+            /// <param name="property"></param>
+            /// <returns></returns>
+            public static EditorCurveBinding GetBinding(EasyProperty property)
+            {
+                if (property.isPPtr)
+                    return EditorCurveBinding.PPtrCurve(property.targetPath, EasyReflection.FindType(property.targetPropertyType), property.targetProperty);
+                else if (property.isDiscrete)
+                    return EditorCurveBinding.DiscreteCurve(property.targetPath, EasyReflection.FindType(property.targetPropertyType), property.targetProperty);
+                return EditorCurveBinding.FloatCurve(property.targetPath, EasyReflection.FindType(property.targetPropertyType), property.targetProperty);
             }
 
             /// <summary>
@@ -997,8 +1139,7 @@ namespace EasyAvatar
                     property.boolValue = value;
                 }
             }
-
-
+            
             /// <summary>
             /// 美化PropertyGroup名
             /// </summary>
