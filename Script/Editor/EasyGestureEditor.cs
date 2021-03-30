@@ -9,7 +9,7 @@ namespace EasyAvatar
     public class EasyGestureEditor : Editor
     {
         GameObject avatar;
-        SerializedProperty behaviors, animations, gestureType, handType, useAnimClip;
+        SerializedProperty behaviors, animations, gestureType, handType, useAnimClip, autoRestore;
         EasyBehaviorAndAnimEditor behaviorAndAnimEditor;
 
         int[] handTypeIndex = { 0, 1, 2 };
@@ -25,6 +25,7 @@ namespace EasyAvatar
             gestureType = serializedObject.FindProperty("gestureType");
             handType = serializedObject.FindProperty("handType");
             useAnimClip = serializedObject.FindProperty("useAnimClip");
+            autoRestore = serializedObject.FindProperty("autoRestore");
             behaviorAndAnimEditor = new EasyBehaviorAndAnimEditor(behaviors, animations);
             handTypeLabels = new string[] { Lang.LeftHand, Lang.RightHand, Lang.AnyHand };
             gestureTypeLabels = new string[] {Lang.GestureNeutral, Lang.GestureFist, Lang.GestureHandOpen, Lang.GestureFingerPoint, Lang.GestureVictory, Lang.GestureRockNRoll, Lang.GestureHandGun, Lang.GestureThumbsUp };
@@ -43,6 +44,7 @@ namespace EasyAvatar
             handType.enumValueIndex = EditorGUILayout.IntPopup(Lang.HandType, handType.enumValueIndex, handTypeLabels, handTypeIndex);
             gestureType.enumValueIndex = EditorGUILayout.IntPopup(Lang.GestureType, gestureType.enumValueIndex, gestureTypeLabels, gestureTypeIndex);
             behaviorAndAnimEditor.useAnimClip = useAnimClip.boolValue = EditorGUILayout.ToggleLeft(Lang.UseAnimClip, useAnimClip.boolValue);
+            autoRestore.boolValue = EditorGUILayout.ToggleLeft(Lang.AutoRestore, autoRestore.boolValue);
             EditorGUILayout.LabelField(Lang.OnGesture,EditorStyles.boldLabel);
             behaviorAndAnimEditor.LayoutGUI();
             serializedObject.ApplyModifiedProperties();

@@ -12,7 +12,7 @@ namespace EasyAvatar
     [CustomEditor(typeof(EasyControl))]
     public class EasyControlEditor : Editor
     {
-        SerializedProperty icon, behaviors1, behaviors2, behaviors3, behaviors4, useAnimClip, anims1, anims2, anims3, anims4, controlType;
+        SerializedProperty icon, behaviors1, behaviors2, behaviors3, behaviors4, useAnimClip, autoRestore, anims1, anims2, anims3, anims4, controlType;
         GameObject avatar;
 
         EasyBehaviorAndAnimEditor editor1, editor2, editor3, editor4;
@@ -29,12 +29,14 @@ namespace EasyAvatar
             behaviors2 = serializedObject.FindProperty("behaviors2");
             behaviors3 = serializedObject.FindProperty("behaviors3");
             behaviors4 = serializedObject.FindProperty("behaviors4");
-            useAnimClip = serializedObject.FindProperty("useAnimClip");
             anims1 = serializedObject.FindProperty("anims1");
             anims2 = serializedObject.FindProperty("anims2");
             anims3 = serializedObject.FindProperty("anims3");
             anims4 = serializedObject.FindProperty("anims4");
             controlType = serializedObject.FindProperty("type");
+            useAnimClip = serializedObject.FindProperty("useAnimClip");
+            autoRestore = serializedObject.FindProperty("autoRestore");
+
             editor1 = new EasyBehaviorAndAnimEditor(behaviors1, anims1);
             editor2 = new EasyBehaviorAndAnimEditor(behaviors2, anims2);
             editor3 = new EasyBehaviorAndAnimEditor(behaviors3, anims3);
@@ -42,7 +44,6 @@ namespace EasyAvatar
 
             typeLabels = new string[] { Lang.Toggle, Lang.RadialPuppet };
             
-
             serializedObject.ApplyModifiedProperties();
         }
 
@@ -68,8 +69,10 @@ namespace EasyAvatar
             controlType.enumValueIndex = EditorGUILayout.IntPopup(Lang.ControlType, controlType.enumValueIndex, typeLabels, typeIndex);
             //是否使用动画
             editor1.useAnimClip = editor2.useAnimClip = editor3.useAnimClip = editor4.useAnimClip = useAnimClip.boolValue = EditorGUILayout.ToggleLeft(Lang.UseAnimClip, useAnimClip.boolValue);
-            
-            if(controlType.enumValueIndex == (int)EasyControl.Type.Toggle)
+            //是否自动恢复
+            autoRestore.boolValue = EditorGUILayout.ToggleLeft(Lang.AutoRestore, autoRestore.boolValue);
+
+            if (controlType.enumValueIndex == (int)EasyControl.Type.Toggle)
             {
                 GUILayout.Label(Lang.OnSwitchOff, EditorStyles.boldLabel);
                 editor1.LayoutGUI();

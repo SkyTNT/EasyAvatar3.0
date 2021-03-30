@@ -360,24 +360,20 @@ namespace EasyAvatar
                     if (control)
                     {
                         controlCount++;
-                        SerializedObject serializedObject = new SerializedObject(control);
-                        serializedObject.Update();
-                        EasyControl.Type controlType =(EasyControl.Type)serializedObject.FindProperty("type").enumValueIndex;
-                        
                         VRCExpressionsMenu.Control vrcControl = new VRCExpressionsMenu.Control();
                         vrcControl.name = control.name;
-                        vrcControl.icon = (Texture2D)serializedObject.FindProperty("icon").objectReferenceValue;
+                        vrcControl.icon = control.icon;
                         vrcControl.parameter = new VRCExpressionsMenu.Control.Parameter() { name = "control" + controlCount };
-                        if (controlType == EasyControl.Type.Toggle)
+                        if (control.type == EasyControl.Type.Toggle)
                         {
                             vrcControl.type = VRCExpressionsMenu.Control.ControlType.Toggle;
-                            BuildToggle(prefix + "_" + count + "_" + control.name, serializedObject);
+                            BuildToggle(prefix + "_" + count + "_" + control.name, control);
                         }
-                        else if(controlType == EasyControl.Type.RadialPuppet)
+                        else if(control.type == EasyControl.Type.RadialPuppet)
                         {
                             vrcControl.type = VRCExpressionsMenu.Control.ControlType.RadialPuppet;
                             vrcControl.subParameters = new VRCExpressionsMenu.Control.Parameter[] { new VRCExpressionsMenu.Control.Parameter() { name = "float1"} };
-                            BuildRadialPuppet(prefix + "_" + count + "_" + control.name, serializedObject);
+                            BuildRadialPuppet(prefix + "_" + count + "_" + control.name, control);
                         }
 
                         expressionsMenu.controls.Add(vrcControl);
@@ -403,7 +399,6 @@ namespace EasyAvatar
             /// <param name="gestures">手势管理</param>
             private static void BuildGestures( EasyGestureManager gestures)
             {
-                
                 int count = 0;
                 foreach (Transform child in gestures.gameObject.transform)
                 {
@@ -412,10 +407,7 @@ namespace EasyAvatar
                         continue;
                     count++;
                     string name = "Gesture_" + count + "_" + gesture.name;
-
-                    SerializedObject serializedObject = new SerializedObject(gesture);
-                    serializedObject.Update();
-                    BuildGesture(name, serializedObject);
+                    BuildGesture(name, gesture);
                 }
             }
 
@@ -424,87 +416,81 @@ namespace EasyAvatar
             /// </summary>
             /// <param name="name">名字</param>
             /// <param name="gesture">手势</param>
-            private static void BuildGesture(string name, SerializedObject gesture)
+            private static void BuildGesture(string name, EasyGesture gesture)
             {
-                SerializedProperty behaviors = gesture.FindProperty("behaviors");
-                SerializedProperty animations = gesture.FindProperty("animations");
-                SerializedProperty gestureType = gesture.FindProperty("gestureType");
-                SerializedProperty handType = gesture.FindProperty("handType");
-                SerializedProperty useAnimClip = gesture.FindProperty("useAnimClip");
-
-                AnimationClip animationClip = Utility.GenerateAnimClip(behaviors);
-                if (useAnimClip.boolValue)
+                AnimationClip animationClip = Utility.GenerateAnimClip(gesture.behaviors);
+                if (gesture.useAnimClip)
                 {
-                    animationClip = Utility.MergeAnimClip(Utility.MergeAnimClip(animations), animationClip);
+                    animationClip = Utility.MergeAnimClip(Utility.MergeAnimClip(gesture.animations.ToArray()), animationClip);
                 }
 
                 AnimationClip[] separatedClips = Utility.SeparateHumanAnimation(animationClip);
                 AnimationClip actionAnim = separatedClips[0];
-                AnimationClip nonActionAnim = separatedClips[1];
+                AnimationClip fxAnim = separatedClips[1];
                 bool hasActionAnim = AnimationUtility.GetCurveBindings(actionAnim).Length > 0;
-                AssetDatabase.CreateAsset(nonActionAnim, animBuildDir + name + "_fx.anim");
+                AssetDatabase.CreateAsset(fxAnim, animBuildDir + name + "_fx.anim");
                 if (hasActionAnim)
                     AssetDatabase.CreateAsset(actionAnim, animBuildDir + name + "_action.anim");
 
-                if (handType.enumValueIndex == (int)EasyGesture.HandType.Left || handType.enumValueIndex == (int)EasyGesture.HandType.Any)
+                if (gesture.handType == EasyGesture.HandType.Left || gesture.handType == EasyGesture.HandType.Any)
                 {
-                    int driverId = BuildDriver("GestureLeft", gestureType.enumValueIndex);
-                    BuildFxState(name + "_L", driverId, nonActionAnim);
+                    int driverId = BuildDriver("GestureLeft", (int)gesture.gestureType);
+                    BuildFxState(name + "_L", driverId, fxAnim);
                     if (hasActionAnim)
                         BuildActionState(name + "_L", driverId, actionAnim);
                 }
 
-                if (handType.enumValueIndex == (int)EasyGesture.HandType.Right || handType.enumValueIndex == (int)EasyGesture.HandType.Any)
+                if (gesture.handType == EasyGesture.HandType.Right || gesture.handType == EasyGesture.HandType.Any)
                 {
-                    int driverId = BuildDriver("GestureRight", gestureType.enumValueIndex);
-                    BuildFxState(name + "_R", driverId, nonActionAnim);
+                    int driverId = BuildDriver("GestureRight", (int)gesture.gestureType);
+                    BuildFxState(name + "_R", driverId, fxAnim);
                     if (hasActionAnim)
                         BuildActionState(name + "_R", driverId, actionAnim);
                 }
-                if (gestureType.enumValueIndex == (int)EasyGesture.GestureType.Neutral)
+                if (gesture.gestureType == EasyGesture.GestureType.Neutral)
                 {
-                    AddFxInitClip(nonActionAnim);
+                    AddFxInitClip(fxAnim);
                 }
             }
 
             /// <summary>
-            /// 构建按钮
+            /// 构建开关控件
             /// </summary>
             /// <param name="name">名字</param>
-            /// <param name="control">序列化的控件</param>
-            private static void BuildToggle(string name, SerializedObject control)
+            /// <param name="control">控件</param>
+            private static void BuildToggle(string name, EasyControl control)
             {
                 //EasyBehaviors生成动画
-                AnimationClip offClip = Utility.GenerateAnimClip(control.FindProperty("behaviors1"));
-                AnimationClip onClip = Utility.GenerateAnimClip(control.FindProperty("behaviors2"));
+                AnimationClip offClip = Utility.GenerateAnimClip(control.behaviors1);
+                AnimationClip onClip = Utility.GenerateAnimClip(control.behaviors2);
                 //使用动画文件
-                if (control.FindProperty("useAnimClip").boolValue)
+                if (control.useAnimClip)
                 {
                     //先将动画文件合并，在与Behaviors生成动画合并
-                    offClip = Utility.MergeAnimClip(Utility.MergeAnimClip(control.FindProperty("anims1")), offClip);
-                    onClip = Utility.MergeAnimClip(Utility.MergeAnimClip(control.FindProperty("anims2")), onClip);
+                    offClip = Utility.MergeAnimClip(Utility.MergeAnimClip(control.anims1.ToArray()), offClip);
+                    onClip = Utility.MergeAnimClip(Utility.MergeAnimClip(control.anims2.ToArray()), onClip);
                 }
                 //分离action动画
                 AnimationClip[] offClips = Utility.SeparateHumanAnimation(offClip);
                 AnimationClip[] onClips = Utility.SeparateHumanAnimation(onClip);
-                AnimationClip offClipNonAction = offClips[1];
-                AnimationClip onClipAction = onClips[0];
-                AnimationClip onClipNonAction = onClips[1];
-                AddFxInitClip(offClipNonAction);
+                AnimationClip offFx = offClips[1];
+                AnimationClip onAction = onClips[0];
+                AnimationClip onFx = onClips[1];
+                AddFxInitClip(offFx);
 
-                AssetDatabase.CreateAsset(offClipNonAction, animBuildDir + name + "_off_fx.anim");
-                AssetDatabase.CreateAsset(onClipNonAction, animBuildDir + name + "_on_fx.anim");
+                AssetDatabase.CreateAsset(offFx, animBuildDir + name + "_off_fx.anim");
+                AssetDatabase.CreateAsset(onFx, animBuildDir + name + "_on_fx.anim");
                 //生成驱动id
                 int driverId = BuildDriver("control" + controlCount);
                 //通过驱动id到对应状态
-                BuildFxState(name + "_on", driverId, onClipNonAction);
-                BuildFxState(name + "_off", driverId + 1, offClipNonAction);
+                BuildFxState(name + "_on", driverId, onFx);
+                BuildFxState(name + "_off", driverId + 1, offFx);
 
                 //有action动画才加进去
-                if (AnimationUtility.GetCurveBindings(onClipAction).Length > 0)
+                if (AnimationUtility.GetCurveBindings(onAction).Length > 0)
                 {
-                    AssetDatabase.CreateAsset(onClipAction, animBuildDir + name + "_on_action.anim");
-                    BuildActionState(name,driverId, onClipAction);
+                    AssetDatabase.CreateAsset(onAction, animBuildDir + name + "_on_action.anim");
+                    BuildActionState(name,driverId, onAction);
                 }
             }
             
@@ -513,31 +499,42 @@ namespace EasyAvatar
             /// </summary>
             /// <param name="name">名字</param>
             /// <param name="control">控件</param>
-            private static void BuildRadialPuppet(string name, SerializedObject control)
+            private static void BuildRadialPuppet(string name, EasyControl control)
             {
 
                 //EasyBehaviors生成动画
-                AnimationClip offClip = Utility.GenerateAnimClip(control.FindProperty("behaviors1"));
-                AnimationClip onClip = Utility.GenerateAnimClip(control.FindProperty("behaviors2"));
+                AnimationClip offClip = Utility.GenerateAnimClip(control.behaviors1);
+                AnimationClip onClip = Utility.GenerateAnimClip(control.behaviors2);
                 //使用动画文件
-                if (control.FindProperty("useAnimClip").boolValue)
+                if (control.useAnimClip)
                 {
                     //先将动画文件合并，在与Behaviors生成动画合并
-                    offClip = Utility.MergeAnimClip(Utility.MergeAnimClip(control.FindProperty("anims1")), offClip);
-                    onClip = Utility.MergeAnimClip(Utility.MergeAnimClip(control.FindProperty("anims2")), onClip);
+                    offClip = Utility.MergeAnimClip(Utility.MergeAnimClip(control.anims1.ToArray()), offClip);
+                    onClip = Utility.MergeAnimClip(Utility.MergeAnimClip(control.anims2.ToArray()), onClip);
                 }
                 //分离action动画
                 AnimationClip[] offClips = Utility.SeparateHumanAnimation(offClip);
                 AnimationClip[] onClips = Utility.SeparateHumanAnimation(onClip);
-                AnimationClip offClipNonAction = offClips[1];
-                AnimationClip onClipNonAction = onClips[1];
+                AnimationClip offFx = offClips[1];
+                AnimationClip onFx = onClips[1];
+                AnimationClip offAction = offClips[0];
+                AnimationClip onAction = onClips[0];
 
-                BlendTree fxBlendTree = Build1DBlendTree(name + "_on", "float1", offClipNonAction, onClipNonAction);
+                BlendTree fxBlendTree = Build1DBlendTree(name + "_on_fx", "float1", offFx, onFx);
                 AssetDatabase.AddObjectToAsset(fxBlendTree, AssetDatabase.GetAssetPath(controllerFx));
-                AssetDatabase.CreateAsset(offClipNonAction, animBuildDir + name + "_off_fx.anim");
-                AssetDatabase.CreateAsset(onClipNonAction, animBuildDir + name + "_on_fx.anim");
+                AssetDatabase.CreateAsset(offFx, animBuildDir + name + "_off_fx.anim");
+                AssetDatabase.CreateAsset(onFx, animBuildDir + name + "_on_fx.anim");
                 int driverId = BuildDriver("control" + controlCount);
                 BuildFxState(name, driverId, fxBlendTree);
+
+                if (AnimationUtility.GetCurveBindings(offAction).Length > 0 || AnimationUtility.GetCurveBindings(onAction).Length > 0)
+                {
+                    BlendTree actionBlendTree = Build1DBlendTree(name + "_on_action", "float1", offAction, onAction);
+                    AssetDatabase.AddObjectToAsset(actionBlendTree, AssetDatabase.GetAssetPath(controllerAction));
+                    AssetDatabase.CreateAsset(offAction, animBuildDir + name + "_off_action.anim");
+                    AssetDatabase.CreateAsset(onAction, animBuildDir + name + "_on_action.anim");
+                    BuildActionState(name, driverId, actionBlendTree);
+                }
             }
 
             /// <summary>
@@ -861,6 +858,35 @@ namespace EasyAvatar
                             AnimationUtility.SetObjectReferenceCurve(clip, binding, objectReferenceKeyframes);
                         }
                     }
+                }
+                return clip;
+            }
+
+            /// <summary>
+            /// 生成恢复到默认状态的动画
+            /// </summary>
+            /// <param name="avatar">avatar</param>
+            /// <param name="clip">clip</param>
+            /// <returns></returns>
+            public static AnimationClip GenerateRestoreAnimClip(GameObject avatar, AnimationClip clip)
+            {
+                AnimationClip result = new AnimationClip();
+                result.frameRate = 60;
+                foreach (EditorCurveBinding binding in AnimationUtility.GetCurveBindings(clip))
+                {
+                    float value;
+                    AnimationUtility.GetFloatValue(avatar, binding, out value);
+                    AnimationUtility.SetEditorCurve(clip, binding, AnimationCurve.Linear(0, value, 1.0f / 60, value));
+                }
+                foreach (EditorCurveBinding binding in AnimationUtility.GetObjectReferenceCurveBindings(clip))
+                {
+                    UnityEngine.Object value;
+                    AnimationUtility.GetObjectReferenceValue(avatar, binding, out value);
+                    ObjectReferenceKeyframe[] objectReferenceKeyframes = {
+                                new ObjectReferenceKeyframe() { time = 0, value = value },
+                                new ObjectReferenceKeyframe() { time = 1.0f / 60, value = value }
+                            };
+                    AnimationUtility.SetObjectReferenceCurve(clip, binding, objectReferenceKeyframes);
                 }
                 return clip;
             }

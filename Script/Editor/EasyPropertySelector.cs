@@ -234,6 +234,7 @@ namespace EasyAvatar
                 property.FindPropertyRelative("isDiscrete").boolValue = binding.isDiscreteCurve;
                 property.FindPropertyRelative("isPPtr").boolValue = binding.isPPtrCurve;
 
+                //获取默认值
                 if (binding.isPPtrCurve)
                 {
                     UnityEngine.Object value;

@@ -49,6 +49,7 @@ namespace EasyAvatar
 
             serializedObject.ApplyModifiedProperties();
         }
+        
     }
 }
 

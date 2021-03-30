@@ -59,6 +59,7 @@ namespace EasyAvatar
             RightHand,
             AnyHand,
             BuildSucceed,
+            AutoRestore,
             About,
             ErrAvatarMenuLen1,
             ErrAvatarGestureMenuLen1,
@@ -145,6 +146,7 @@ namespace EasyAvatar
             RightHand = "右手";
             AnyHand = "任何手";
             BuildSucceed = "成功";
+            AutoRestore = "关闭时自动恢复修改的内容到默认状态";
             About = "由SkyTNT制作\n项目地址：https://github.com/SkyTNT/EasyAvatar3.0/";
             ErrAvatarMenuLen1 = "一个模型中只能有一个主菜单，请考虑创建子菜单";
             ErrAvatarGestureMenuLen1 = "一个模型中只能有一个手势菜单";
@@ -212,6 +214,7 @@ namespace EasyAvatar
             RightHand = "RightHand";
             AnyHand = "AnyHand";
             BuildSucceed = "Succeed";
+            AutoRestore = "Auto restore to default state when off";
             About = " Made by SkyTNT\nProject:https://github.com/SkyTNT/EasyAvatar3.0/";
             ErrAvatarMenuLen1 = "There should only be one main menu in a avatar. Consider creating a submenu.";
             ErrAvatarGestureMenuLen1 = "There should only be one gesture menu in a avatar.";

@@ -35,6 +35,8 @@ namespace EasyAvatar
         public HandType handType;
         [SerializeField]
         public bool useAnimClip;
+        [SerializeField]
+        public bool autoRestore = true;
 
         // Start is called before the first frame update
         void Start()

@@ -17,9 +17,11 @@ namespace EasyAvatar
         [SerializeField]
         public List<EasyBehavior> behaviors1, behaviors2, behaviors3, behaviors4;
         [SerializeField]
+        public List<AnimationClip> anims1, anims2, anims3, anims4;
+        [SerializeField]
         public bool useAnimClip;
         [SerializeField]
-        public List<AnimationClip> anims1, anims2, anims3, anims4;
+        public bool autoRestore;
         [SerializeField]
         public Type type;
 
