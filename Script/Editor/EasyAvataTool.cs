@@ -213,6 +213,115 @@ namespace EasyAvatar
         }
 
         #region Builder
+
+        class AnimatorControllerBuilder
+        {
+            AnimatorController controller;
+            AnimatorControllerLayer baseLayer;
+
+            Dictionary<int, Motion> drivedMotions;
+            Dictionary<int, StateMachineBehaviour> drivedStateBehaviour;
+            Dictionary<int, string> stateNames;
+            Dictionary<string, AnimatorControllerLayer> layers;
+
+            public AnimatorControllerBuilder(string path)
+            {
+                controller = AnimatorController.CreateAnimatorControllerAtPath(path); ;
+                baseLayer = controller.layers[0];
+                drivedMotions = new Dictionary<int, Motion>();
+                stateNames = new Dictionary<int, string>();
+                layers = new Dictionary<string, AnimatorControllerLayer>();
+            }
+
+            public void AddDrivedState(int driverId, string name, Motion motion)
+            {
+                if (drivedMotions.ContainsKey(driverId))
+                {
+                    if (motion is AnimationClip)
+                    {
+                        AnimationClip clip = drivedMotions[driverId] as AnimationClip;
+                        drivedMotions[driverId] = clip == null ? motion : Utility.MergeAnimClip(clip, motion as AnimationClip);
+                    }
+                    else
+                        drivedMotions[driverId] = motion;
+                }
+                else
+                    drivedMotions.Add(driverId, motion);
+                stateNames.Add(driverId, name);
+            }
+
+            public void AddLayer(string name)
+            {
+                AnimatorControllerLayer newLayer = new AnimatorControllerLayer();
+                newLayer.name = name;
+                newLayer.defaultWeight = 1;
+                AnimatorStateMachine stateMachine = new AnimatorStateMachine();
+                stateMachine.name = name;
+                stateMachine.hideFlags = HideFlags.HideInHierarchy;
+                //不加这个unity重启后新加的层里的内容会消失
+                AssetDatabase.AddObjectToAsset(stateMachine, AssetDatabase.GetAssetPath(controller));
+                newLayer.stateMachine = stateMachine;
+                //必须在设置stateMachine再添加层
+                controller.AddLayer(newLayer);
+                layers.Add(name, newLayer);
+            }
+
+            public void AddParameterBool(string name)
+            {
+                controller.AddParameter(name, AnimatorControllerParameterType.Bool);
+            }
+
+            public void AddParameterInt(string name)
+            {
+                controller.AddParameter(name, AnimatorControllerParameterType.Int);
+            }
+
+            public void AddParameterFloat(string name)
+            {
+                controller.AddParameter(name, AnimatorControllerParameterType.Float);
+            }
+
+            public static bool CheckControllerParameter(AnimatorController controller, string paramaName)
+            {
+                if (controller.parameters == null)
+                    return false;
+                foreach (AnimatorControllerParameter parameter in controller.parameters)
+                {
+                    if (parameter.name == paramaName)
+                        return true;
+                }
+                return false;
+            }
+
+            public static AnimatorState FindState(AnimatorStateMachine stateMachine, string name)
+            {
+                foreach (var childState in stateMachine.states)
+                {
+                    if (name == childState.state.name)
+                        return childState.state;
+                }
+                return null;
+            }
+
+            public AnimatorControllerLayer FindLayer(string name)
+            {
+                AnimatorControllerLayer layer = null;
+                layers.TryGetValue(name, out layer);
+                return layer;
+            }
+
+            public virtual  void BuildDrivedState(int driverId)
+            {
+
+            }
+
+            public void Build()
+            {
+                foreach (int driverId in drivedMotions.Keys)
+                    BuildDrivedState(driverId);
+            }
+        }
+
         public class Builder
         {
             static int controlCount;
@@ -221,6 +330,7 @@ namespace EasyAvatar
             static AnimatorController controllerFx, controllerAction;
             static AnimationClip fxInitClip;
             static Dictionary<KeyValuePair<string, int>, int> drivers;
+            
 
             /// <summary>
             /// 构建所有
