@@ -261,27 +261,38 @@ namespace EasyAvatar
                     stateNames.Add(driverId, name);
             }
 
-            public void AddDrivedStateBehaviour(int driverId, StateMachineBehaviour behaviour)
+            public void AddDrivedStateBehaviour(int driverId, params StateMachineBehaviour[] behaviours)
             {
-                if (drivedStateBehaviour.ContainsKey(driverId))
+                foreach (StateMachineBehaviour behaviour in behaviours)
                 {
-                    List<StateMachineBehaviour> behaviours = drivedStateBehaviour[driverId];
-                    //先去除同类型的
-                    StateMachineBehaviour sameType = null;
-                    foreach(StateMachineBehaviour b in behaviours)
-                    {
-                        if (b.GetType() == behaviour.GetType())
-                        {
-                            sameType = b;
-                            break;
-                        }
-                    }
-                    if (sameType) behaviours.Remove(sameType);
+                    behaviour.hideFlags = HideFlags.HideInHierarchy;
+                    //不加这个unity重启后新加的层里的内容会消失
+                    AssetDatabase.AddObjectToAsset(behaviour, AssetDatabase.GetAssetPath(controller));
 
-                    behaviours.Add(behaviour);
+                    if (drivedStateBehaviour.ContainsKey(driverId))
+                    {
+                        List<StateMachineBehaviour> behaviourList = drivedStateBehaviour[driverId];
+                        //先去除同类型的
+                        StateMachineBehaviour sameType = null;
+                        foreach (StateMachineBehaviour b in behaviourList)
+                        {
+                            if (b.GetType() == behaviour.GetType())
+                            {
+                                sameType = b;
+                                break;
+                            }
+                        }
+                        if (sameType) behaviourList.Remove(sameType);
+
+                        behaviourList.Add(behaviour);
+                    }
+                    else
+                    {
+                        List<StateMachineBehaviour> behaviourList = new List<StateMachineBehaviour>();
+                        behaviourList.Add(behaviour);
+                        drivedStateBehaviour.Add(driverId, behaviourList);
+                    }
                 }
-                else
-                    drivedStateBehaviour.Add(driverId, new List<StateMachineBehaviour>());
             }
 
             public void AddToInitState(AnimationClip clip)
@@ -471,7 +482,7 @@ namespace EasyAvatar
                 on_off.duration = 0;
                 AnimatorStateTransition off_default = stateOff.AddTransition(defaultState);
                 off_default.hasExitTime = true;
-                off_default.exitTime = 0.01f;
+                off_default.exitTime = 0.05f;
                 off_default.duration = 0;
                 default_on.AddCondition(AnimatorConditionMode.Equals, threshold, parameterName);
                 on_off.AddCondition(AnimatorConditionMode.NotEqual, threshold, parameterName);
@@ -517,6 +528,19 @@ namespace EasyAvatar
                 return trackingControl;
             }
 
+            public static VRCPlayableLayerControl PlayableLayerControl(VRC.SDKBase.VRC_PlayableLayerControl.BlendableLayer layer,float weight)
+            {
+                VRCPlayableLayerControl playableLayerControl = ScriptableObject.CreateInstance<VRCPlayableLayerControl>();
+                playableLayerControl.blendDuration = 1;
+                playableLayerControl.layer = layer;
+                playableLayerControl.goalWeight = weight;
+                return playableLayerControl;
+            }
+
+            public static VRCPlayableLayerControl ActionLayerControl(float weight)
+            {
+                return PlayableLayerControl(VRC.SDKBase.VRC_PlayableLayerControl.BlendableLayer.Action, weight);
+            }
 
         }
 
@@ -526,9 +550,11 @@ namespace EasyAvatar
             /// 代理站立
             /// </summary>
             public static AnimationClip stand_still;
+            public static AnimationClip afk;
             static ProxyAnim()
             {
                 stand_still = GetProxyAnim("proxy_stand_still");
+                afk = GetProxyAnim("proxy_afk");
             }
 
             /// <summary>
@@ -609,6 +635,15 @@ namespace EasyAvatar
                 fxLayerBuilder = new AnimatorControllerBuilder(animBuildDir + "FXLayer.controller");
                 actionLayerBuilder = new AnimatorControllerBuilder(animBuildDir + "ActionLayer.controller");
                 driver = new AnimatorDriver(fxLayerBuilder);
+
+                //afk
+                {
+                    int afkDriverId = driver.GetDriverId("AFK");
+                    actionLayerBuilder.AddDrivedState(afkDriverId, "afk", ProxyAnim.afk);
+                    actionLayerBuilder.AddDrivedStateBehaviour(afkDriverId, VRCStateMachineBehaviourGenerater.FullAnimation(), VRCStateMachineBehaviourGenerater.ActionLayerControl(1));
+                    actionLayerBuilder.AddDrivedState(afkDriverId + 1, "afk_off", ProxyAnim.stand_still);
+                    actionLayerBuilder.AddDrivedStateBehaviour(afkDriverId + 1, VRCStateMachineBehaviourGenerater.FullTracking(), VRCStateMachineBehaviourGenerater.ActionLayerControl(0));
+                }
 
                 //构建手势
                 if (gestureManager)
@@ -767,9 +802,9 @@ namespace EasyAvatar
                     if (hasActionAnim)
                     {
                         actionLayerBuilder.AddDrivedState(driverId, name + "_L_on", actionAnim);
-                        actionLayerBuilder.AddDrivedStateBehaviour(driverId, VRCStateMachineBehaviourGenerater.FullAnimation());
-                        actionLayerBuilder.AddDrivedState(driverId, name + "_L_off", ProxyAnim.stand_still);
-                        actionLayerBuilder.AddDrivedStateBehaviour(driverId + 1, VRCStateMachineBehaviourGenerater.FullAnimation());
+                        actionLayerBuilder.AddDrivedStateBehaviour(driverId, VRCStateMachineBehaviourGenerater.FullAnimation(), VRCStateMachineBehaviourGenerater.ActionLayerControl(1));
+                        actionLayerBuilder.AddDrivedState(driverId + 1, name + "_L_off", ProxyAnim.stand_still);
+                        actionLayerBuilder.AddDrivedStateBehaviour(driverId + 1, VRCStateMachineBehaviourGenerater.FullTracking(), VRCStateMachineBehaviourGenerater.ActionLayerControl(0));
                     }
                 }
 
@@ -780,9 +815,9 @@ namespace EasyAvatar
                     if (hasActionAnim)
                     { 
                         actionLayerBuilder.AddDrivedState(driverId, name + "_R_on", actionAnim);
-                        actionLayerBuilder.AddDrivedStateBehaviour(driverId, VRCStateMachineBehaviourGenerater.FullAnimation());
-                        actionLayerBuilder.AddDrivedState(driverId, name + "_R_off", ProxyAnim.stand_still);
-                        actionLayerBuilder.AddDrivedStateBehaviour(driverId + 1, VRCStateMachineBehaviourGenerater.FullAnimation());
+                        actionLayerBuilder.AddDrivedStateBehaviour(driverId, VRCStateMachineBehaviourGenerater.FullAnimation(), VRCStateMachineBehaviourGenerater.ActionLayerControl(1));
+                        actionLayerBuilder.AddDrivedState(driverId + 1, name + "_R_off", ProxyAnim.stand_still);
+                        actionLayerBuilder.AddDrivedStateBehaviour(driverId + 1, VRCStateMachineBehaviourGenerater.FullTracking(), VRCStateMachineBehaviourGenerater.ActionLayerControl(0));
                     }
                 }
                 if (gesture.gestureType == EasyGesture.GestureType.Neutral)
@@ -830,8 +865,8 @@ namespace EasyAvatar
                     AssetDatabase.CreateAsset(onAction, animBuildDir + name + "_on_action.anim");
                     actionLayerBuilder.AddDrivedState(driverId, name + "_on", onFx);
                     actionLayerBuilder.AddDrivedState(driverId + 1, name + "_off",ProxyAnim.stand_still);
-                    actionLayerBuilder.AddDrivedStateBehaviour(driverId, VRCStateMachineBehaviourGenerater.FullTracking());
-                    actionLayerBuilder.AddDrivedStateBehaviour(driverId + 1, VRCStateMachineBehaviourGenerater.FullAnimation());
+                    actionLayerBuilder.AddDrivedStateBehaviour(driverId, VRCStateMachineBehaviourGenerater.FullAnimation(), VRCStateMachineBehaviourGenerater.ActionLayerControl(1));
+                    actionLayerBuilder.AddDrivedStateBehaviour(driverId + 1, VRCStateMachineBehaviourGenerater.FullTracking(), VRCStateMachineBehaviourGenerater.ActionLayerControl(0));
                 }
             }
             
@@ -872,13 +907,13 @@ namespace EasyAvatar
                 if (AnimationUtility.GetCurveBindings(offAction).Length > 0 || AnimationUtility.GetCurveBindings(onAction).Length > 0)
                 {
                     BlendTree actionBlendTree = Utility.Generate1DBlendTree(name + "_on_action", "float1", offAction, onAction);
-                    AssetDatabase.AddObjectToAsset(actionBlendTree, AssetDatabase.GetAssetPath(fxLayerBuilder.controller));
+                    AssetDatabase.AddObjectToAsset(actionBlendTree, AssetDatabase.GetAssetPath(actionLayerBuilder.controller));
                     AssetDatabase.CreateAsset(offAction, animBuildDir + name + "_off_action.anim");
                     AssetDatabase.CreateAsset(onAction, animBuildDir + name + "_on_action.anim");
                     actionLayerBuilder.AddDrivedState(driverId, name + "_on", actionBlendTree);
                     actionLayerBuilder.AddDrivedState(driverId + 1, name + "_off", ProxyAnim.stand_still);
-                    actionLayerBuilder.AddDrivedStateBehaviour(driverId, VRCStateMachineBehaviourGenerater.FullTracking());
-                    actionLayerBuilder.AddDrivedStateBehaviour(driverId + 1, VRCStateMachineBehaviourGenerater.FullAnimation());
+                    actionLayerBuilder.AddDrivedStateBehaviour(driverId, VRCStateMachineBehaviourGenerater.FullAnimation(), VRCStateMachineBehaviourGenerater.ActionLayerControl(1));
+                    actionLayerBuilder.AddDrivedStateBehaviour(driverId + 1, VRCStateMachineBehaviourGenerater.FullTracking(), VRCStateMachineBehaviourGenerater.ActionLayerControl(0));
                 }
             }
 
