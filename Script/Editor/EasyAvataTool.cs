@@ -214,27 +214,33 @@ namespace EasyAvatar
 
         #region Builder
 
-        class AnimatorControllerBuilder
+        public class AnimatorControllerBuilder
         {
-            AnimatorController controller;
+            public AnimatorController controller;
             AnimatorControllerLayer baseLayer;
-
+            string path;
             Dictionary<int, Motion> drivedMotions;
             Dictionary<int, List<StateMachineBehaviour>> drivedStateBehaviour;
             Dictionary<int, string> stateNames;
             Dictionary<string, AnimatorControllerLayer> layers;
+            AnimationClip initAnimation;
 
             public AnimatorControllerBuilder(string path)
             {
                 controller = AnimatorController.CreateAnimatorControllerAtPath(path); ;
                 baseLayer = controller.layers[0];
+                this.path = path;
                 drivedMotions = new Dictionary<int, Motion>();
                 drivedStateBehaviour = new Dictionary<int, List<StateMachineBehaviour>>();
                 stateNames = new Dictionary<int, string>();
                 layers = new Dictionary<string, AnimatorControllerLayer>();
+
+                AddParameterInt("driver");
+                AddParameterFloat("float1");
+                AddParameterFloat("float2");
             }
 
-            public void AddDrivedState(int driverId, string name, Motion motion)
+            public void AddDrivedState(int driverId, string name, Motion motion = null)
             {
                 if (drivedMotions.ContainsKey(driverId))
                 {
@@ -248,15 +254,43 @@ namespace EasyAvatar
                 }
                 else
                     drivedMotions.Add(driverId, motion);
-                stateNames.Add(driverId, name);
+
+                if (stateNames.ContainsKey(driverId))
+                    stateNames[driverId] += "_" + name;
+                else
+                    stateNames.Add(driverId, name);
             }
 
-            public void AddDrivedStateBehaviour(int driverId, string name, StateMachineBehaviour behaviour)
+            public void AddDrivedStateBehaviour(int driverId, StateMachineBehaviour behaviour)
             {
                 if (drivedStateBehaviour.ContainsKey(driverId))
-                    drivedStateBehaviour[driverId].Add(behaviour);
+                {
+                    List<StateMachineBehaviour> behaviours = drivedStateBehaviour[driverId];
+                    //先去除同类型的
+                    StateMachineBehaviour sameType = null;
+                    foreach(StateMachineBehaviour b in behaviours)
+                    {
+                        if (b.GetType() == behaviour.GetType())
+                        {
+                            sameType = b;
+                            break;
+                        }
+                    }
+                    if (sameType) behaviours.Remove(sameType);
+
+                    behaviours.Add(behaviour);
+                }
                 else
                     drivedStateBehaviour.Add(driverId, new List<StateMachineBehaviour>());
+            }
+
+            public void AddToInitState(AnimationClip clip)
+            {
+                if (!initAnimation)
+                    initAnimation = clip;
+                else
+                    initAnimation = Utility.MergeAnimClip(initAnimation, clip);
+
             }
 
             public AnimatorControllerLayer AddLayer(string name)
@@ -337,12 +371,19 @@ namespace EasyAvatar
 
             public void Build()
             {
+                AnimatorState initState = baseLayer.stateMachine.AddState("init");
+                initState.writeDefaultValues = false;
+                initState.motion = initAnimation;
+                baseLayer.stateMachine.defaultState = initState;
+                if(initAnimation)
+                    AssetDatabase.CreateAsset(initAnimation, Path.GetDirectoryName(path) + "/" + Path.GetFileNameWithoutExtension(path) + "_init.anim");
                 foreach (int driverId in drivedMotions.Keys)
                     BuildDrivedState(driverId);
+
             }
         }
 
-        class AnimatorDriver
+        public class AnimatorDriver
         {
             Dictionary<KeyValuePair<string, int>, int> drivers;
             AnimatorControllerBuilder builder;
@@ -390,7 +431,7 @@ namespace EasyAvatar
                 return driverId;
             }
 
-            private int GetDriverId(string parameterName, int threshold)
+            public int GetDriverId(string parameterName, int threshold)
             {
                 //查询drivers里是否已经有driver
                 KeyValuePair<string, int> driverKey = new KeyValuePair<string, int>(parameterName, threshold);
@@ -440,32 +481,93 @@ namespace EasyAvatar
             }
         }
 
+        public class VRCStateMachineBehaviourGenerater
+        {
+            public static VRCAnimatorTrackingControl FullTracking()
+            {
+                VRCAnimatorTrackingControl trackingControl = ScriptableObject.CreateInstance<VRCAnimatorTrackingControl>();
+                VRC.SDKBase.VRC_AnimatorTrackingControl.TrackingType tracking = VRC.SDKBase.VRC_AnimatorTrackingControl.TrackingType.Tracking;
+                trackingControl.trackingEyes = tracking;
+                trackingControl.trackingHead = tracking;
+                trackingControl.trackingHip = tracking;
+                trackingControl.trackingLeftFingers = tracking;
+                trackingControl.trackingLeftFoot = tracking;
+                trackingControl.trackingLeftHand = tracking;
+                trackingControl.trackingMouth = tracking;
+                trackingControl.trackingRightFingers = tracking;
+                trackingControl.trackingRightFoot = tracking;
+                trackingControl.trackingRightHand = tracking;
+                return trackingControl;
+            }
+
+            public static VRCAnimatorTrackingControl FullAnimation()
+            {
+                VRCAnimatorTrackingControl trackingControl = ScriptableObject.CreateInstance<VRCAnimatorTrackingControl>();
+                VRC.SDKBase.VRC_AnimatorTrackingControl.TrackingType animation = VRC.SDKBase.VRC_AnimatorTrackingControl.TrackingType.Animation;
+                trackingControl.trackingEyes = animation;
+                trackingControl.trackingHead = animation;
+                trackingControl.trackingHip = animation;
+                trackingControl.trackingLeftFingers = animation;
+                trackingControl.trackingLeftFoot = animation;
+                trackingControl.trackingLeftHand = animation;
+                trackingControl.trackingMouth = animation;
+                trackingControl.trackingRightFingers = animation;
+                trackingControl.trackingRightFoot = animation;
+                trackingControl.trackingRightHand = animation;
+                return trackingControl;
+            }
+
+
+        }
+
+        public class ProxyAnim
+        {
+            /// <summary>
+            /// 代理站立
+            /// </summary>
+            public static AnimationClip stand_still;
+            static ProxyAnim()
+            {
+                stand_still = GetProxyAnim("proxy_stand_still");
+            }
+
+            /// <summary>
+            /// 获取vrc的代理动画
+            /// </summary>
+            /// <param name="name">名字，不包含后缀</param>
+            /// <returns></returns>
+            public static AnimationClip GetProxyAnim(string name)
+            {
+                AnimationClip animation = AssetDatabase.LoadAssetAtPath<AnimationClip>("Assets/VRCSDK/Examples3/Animation/ProxyAnim/" + name + ".anim");
+                return animation;
+            }
+        }
 
         public class Builder
         {
-            static int controlCount;
-            static string rootBuildDir, menuBuildDir, animBuildDir;
-            static GameObject avatar;
-            static AnimatorController controllerFx, controllerAction;
-            static AnimationClip fxInitClip;
-            static Dictionary<KeyValuePair<string, int>, int> drivers;
+            string rootBuildDir, menuBuildDir, animBuildDir;
+            EasyAvatarHelper helper;
+            AnimatorControllerBuilder fxLayerBuilder, actionLayerBuilder;
+            AnimatorDriver driver;
+            int controlCount;
+
+            public Builder(EasyAvatarHelper helper)
+            {
+                this.helper = helper;
+                rootBuildDir = workingDirectory + "Build/" + Utility.GetGoodFileName(helper.avatar.name);
+                menuBuildDir = rootBuildDir + "/Menu/";
+                animBuildDir = rootBuildDir + "/Anim/";
+                controlCount = 0;
+            }
             
 
             /// <summary>
             /// 构建所有
             /// </summary>
             /// <param name="helper">AvatarHelper</param>
-            public static void Build(EasyAvatarHelper helper)
+            public void Build()
             {
-                controlCount = 0;
-                avatar = helper.avatar;
-                rootBuildDir = workingDirectory + "Build/" + Utility.GetGoodFileName(avatar.name);
-                menuBuildDir = rootBuildDir + "/Menu/";
-                animBuildDir = rootBuildDir + "/Anim/";
-                drivers = new Dictionary<KeyValuePair<string, int>, int>();
-                fxInitClip = new AnimationClip();
-
-                VRCAvatarDescriptor avatarDescriptor = avatar.GetComponent<VRCAvatarDescriptor>();
+                VRCAvatarDescriptor avatarDescriptor = helper.avatar.GetComponent<VRCAvatarDescriptor>();
                 EasyMenu mainMenu = null;
                 EasyGestureManager gestureManager = null;
                 
@@ -504,15 +606,9 @@ namespace EasyAvatar
                 Directory.CreateDirectory(animBuildDir);
 
                 //初始化AnimatorController
-                controllerFx = AnimatorController.CreateAnimatorControllerAtPath(animBuildDir + "FXLayer.controller");
-                controllerFx.AddParameter("driver", AnimatorControllerParameterType.Int);
-                controllerFx.AddParameter("float1", AnimatorControllerParameterType.Float);
-                controllerFx.AddParameter("float2", AnimatorControllerParameterType.Float);
-                AssetDatabase.CopyAsset(workingDirectory + "Res/TemplateActionLayer.controller", animBuildDir + "ActionLayer.controller");
-                controllerAction = AssetDatabase.LoadAssetAtPath<AnimatorController>(animBuildDir + "ActionLayer.controller");
-                controllerAction.AddParameter("driver", AnimatorControllerParameterType.Int);
-                controllerAction.AddParameter("float1", AnimatorControllerParameterType.Float);
-                controllerAction.AddParameter("float2", AnimatorControllerParameterType.Float);
+                fxLayerBuilder = new AnimatorControllerBuilder(animBuildDir + "FXLayer.controller");
+                actionLayerBuilder = new AnimatorControllerBuilder(animBuildDir + "ActionLayer.controller");
+                driver = new AnimatorDriver(fxLayerBuilder);
 
                 //构建手势
                 if (gestureManager)
@@ -520,6 +616,7 @@ namespace EasyAvatar
 
                 if (mainMenu)
                 {
+                    controlCount = 0;
                     //构建菜单
                     VRCExpressionsMenu VRCMenu = BuildMenu(mainMenu, "Menu");
 
@@ -545,8 +642,9 @@ namespace EasyAvatar
                     avatarDescriptor.expressionsMenu = null;
                 }
 
-                //构建FX的初始状态
-                BuildFxInitState(fxInitClip);
+                //构建AnimatorController
+                fxLayerBuilder.Build();
+                actionLayerBuilder.Build();
 
                 //设置CustomizeAnimationLayers
                 avatarDescriptor.customizeAnimationLayers = true;
@@ -554,8 +652,8 @@ namespace EasyAvatar
                     new CustomAnimLayer(){type = AnimLayerType.Base ,isDefault = true},
                     new CustomAnimLayer(){type = AnimLayerType.Additive ,isDefault = true},
                     new CustomAnimLayer(){type = AnimLayerType.Gesture ,isDefault = true},
-                    new CustomAnimLayer(){type = AnimLayerType.Action ,isDefault = false , animatorController = controllerAction },
-                    new CustomAnimLayer(){type = AnimLayerType.FX ,isDefault = false,animatorController = controllerFx},
+                    new CustomAnimLayer(){type = AnimLayerType.Action ,isDefault = false , animatorController = actionLayerBuilder.controller },
+                    new CustomAnimLayer(){type = AnimLayerType.FX ,isDefault = false,animatorController = fxLayerBuilder.controller},
                 };
 
                 //保存
@@ -569,7 +667,7 @@ namespace EasyAvatar
             /// <param name="menu">根菜单</param>
             /// <param name="prefix">菜单名字累加前缀</param>
             /// <returns>vrc菜单</returns>
-            private static VRCExpressionsMenu BuildMenu(EasyMenu menu, string prefix)
+            private VRCExpressionsMenu BuildMenu(EasyMenu menu, string prefix)
             {
                 if (GetMenuItemCount(menu.gameObject.transform) > 8)
                 {
@@ -626,7 +724,7 @@ namespace EasyAvatar
             /// 构建所有手势
             /// </summary>
             /// <param name="gestures">手势管理</param>
-            private static void BuildGestures( EasyGestureManager gestures)
+            private void BuildGestures( EasyGestureManager gestures)
             {
                 int count = 0;
                 foreach (Transform child in gestures.gameObject.transform)
@@ -645,7 +743,7 @@ namespace EasyAvatar
             /// </summary>
             /// <param name="name">名字</param>
             /// <param name="gesture">手势</param>
-            private static void BuildGesture(string name, EasyGesture gesture)
+            private void BuildGesture(string name, EasyGesture gesture)
             {
                 AnimationClip animationClip = Utility.GenerateAnimClip(gesture.behaviors);
                 if (gesture.useAnimClip)
@@ -657,28 +755,39 @@ namespace EasyAvatar
                 AnimationClip actionAnim = separatedClips[0];
                 AnimationClip fxAnim = separatedClips[1];
                 bool hasActionAnim = AnimationUtility.GetCurveBindings(actionAnim).Length > 0;
+
                 AssetDatabase.CreateAsset(fxAnim, animBuildDir + name + "_fx.anim");
                 if (hasActionAnim)
                     AssetDatabase.CreateAsset(actionAnim, animBuildDir + name + "_action.anim");
 
                 if (gesture.handType == EasyGesture.HandType.Left || gesture.handType == EasyGesture.HandType.Any)
                 {
-                    int driverId = BuildDriver("GestureLeft", (int)gesture.gestureType);
-                    BuildFxState(name + "_L", driverId, fxAnim);
+                    int driverId = driver.GetDriverId("GestureLeft", (int)gesture.gestureType);
+                    fxLayerBuilder.AddDrivedState(driverId, name + "_L", fxAnim);
                     if (hasActionAnim)
-                        BuildActionState(name + "_L", driverId, actionAnim);
+                    {
+                        actionLayerBuilder.AddDrivedState(driverId, name + "_L_on", actionAnim);
+                        actionLayerBuilder.AddDrivedStateBehaviour(driverId, VRCStateMachineBehaviourGenerater.FullAnimation());
+                        actionLayerBuilder.AddDrivedState(driverId, name + "_L_off", ProxyAnim.stand_still);
+                        actionLayerBuilder.AddDrivedStateBehaviour(driverId + 1, VRCStateMachineBehaviourGenerater.FullAnimation());
+                    }
                 }
 
                 if (gesture.handType == EasyGesture.HandType.Right || gesture.handType == EasyGesture.HandType.Any)
                 {
-                    int driverId = BuildDriver("GestureRight", (int)gesture.gestureType);
-                    BuildFxState(name + "_R", driverId, fxAnim);
+                    int driverId = driver.GetDriverId("GestureRight", (int)gesture.gestureType);
+                    fxLayerBuilder.AddDrivedState(driverId, name + "_R", fxAnim);
                     if (hasActionAnim)
-                        BuildActionState(name + "_R", driverId, actionAnim);
+                    { 
+                        actionLayerBuilder.AddDrivedState(driverId, name + "_R_on", actionAnim);
+                        actionLayerBuilder.AddDrivedStateBehaviour(driverId, VRCStateMachineBehaviourGenerater.FullAnimation());
+                        actionLayerBuilder.AddDrivedState(driverId, name + "_R_off", ProxyAnim.stand_still);
+                        actionLayerBuilder.AddDrivedStateBehaviour(driverId + 1, VRCStateMachineBehaviourGenerater.FullAnimation());
+                    }
                 }
                 if (gesture.gestureType == EasyGesture.GestureType.Neutral)
                 {
-                    AddFxInitClip(fxAnim);
+                    fxLayerBuilder.AddToInitState(fxAnim);
                 }
             }
 
@@ -687,7 +796,7 @@ namespace EasyAvatar
             /// </summary>
             /// <param name="name">名字</param>
             /// <param name="control">控件</param>
-            private static void BuildToggle(string name, EasyControl control)
+            private void BuildToggle(string name, EasyControl control)
             {
                 //EasyBehaviors生成动画
                 AnimationClip offClip = Utility.GenerateAnimClip(control.behaviors1);
@@ -705,21 +814,24 @@ namespace EasyAvatar
                 AnimationClip offFx = offClips[1];
                 AnimationClip onAction = onClips[0];
                 AnimationClip onFx = onClips[1];
-                AddFxInitClip(offFx);
 
                 AssetDatabase.CreateAsset(offFx, animBuildDir + name + "_off_fx.anim");
                 AssetDatabase.CreateAsset(onFx, animBuildDir + name + "_on_fx.anim");
                 //生成驱动id
-                int driverId = BuildDriver("control" + controlCount);
+                int driverId = driver.GetDriverId("control" + controlCount);
                 //通过驱动id到对应状态
-                BuildFxState(name + "_on", driverId, onFx);
-                BuildFxState(name + "_off", driverId + 1, offFx);
+                fxLayerBuilder.AddDrivedState(driverId, name + "_on", onFx);
+                fxLayerBuilder.AddDrivedState(driverId + 1, name + "_off", offFx);
+                fxLayerBuilder.AddToInitState(offFx);
 
                 //有action动画才加进去
                 if (AnimationUtility.GetCurveBindings(onAction).Length > 0)
                 {
                     AssetDatabase.CreateAsset(onAction, animBuildDir + name + "_on_action.anim");
-                    BuildActionState(name,driverId, onAction);
+                    actionLayerBuilder.AddDrivedState(driverId, name + "_on", onFx);
+                    actionLayerBuilder.AddDrivedState(driverId + 1, name + "_off",ProxyAnim.stand_still);
+                    actionLayerBuilder.AddDrivedStateBehaviour(driverId, VRCStateMachineBehaviourGenerater.FullTracking());
+                    actionLayerBuilder.AddDrivedStateBehaviour(driverId + 1, VRCStateMachineBehaviourGenerater.FullAnimation());
                 }
             }
             
@@ -728,7 +840,7 @@ namespace EasyAvatar
             /// </summary>
             /// <param name="name">名字</param>
             /// <param name="control">控件</param>
-            private static void BuildRadialPuppet(string name, EasyControl control)
+            private void BuildRadialPuppet(string name, EasyControl control)
             {
 
                 //EasyBehaviors生成动画
@@ -749,242 +861,26 @@ namespace EasyAvatar
                 AnimationClip offAction = offClips[0];
                 AnimationClip onAction = onClips[0];
 
-                BlendTree fxBlendTree = Build1DBlendTree(name + "_on_fx", "float1", offFx, onFx);
-                AssetDatabase.AddObjectToAsset(fxBlendTree, AssetDatabase.GetAssetPath(controllerFx));
+                BlendTree fxBlendTree = Utility.Generate1DBlendTree(name + "_on_fx", "float1", offFx, onFx);
+                AssetDatabase.AddObjectToAsset(fxBlendTree, AssetDatabase.GetAssetPath(fxLayerBuilder.controller));
                 AssetDatabase.CreateAsset(offFx, animBuildDir + name + "_off_fx.anim");
                 AssetDatabase.CreateAsset(onFx, animBuildDir + name + "_on_fx.anim");
-                int driverId = BuildDriver("control" + controlCount);
-                BuildFxState(name, driverId, fxBlendTree);
+                int driverId = driver.GetDriverId("control" + controlCount);
+                fxLayerBuilder.AddDrivedState(driverId, name + "_on", fxBlendTree);
+                fxLayerBuilder.AddToInitState(offFx);
 
                 if (AnimationUtility.GetCurveBindings(offAction).Length > 0 || AnimationUtility.GetCurveBindings(onAction).Length > 0)
                 {
-                    BlendTree actionBlendTree = Build1DBlendTree(name + "_on_action", "float1", offAction, onAction);
-                    AssetDatabase.AddObjectToAsset(actionBlendTree, AssetDatabase.GetAssetPath(controllerAction));
+                    BlendTree actionBlendTree = Utility.Generate1DBlendTree(name + "_on_action", "float1", offAction, onAction);
+                    AssetDatabase.AddObjectToAsset(actionBlendTree, AssetDatabase.GetAssetPath(fxLayerBuilder.controller));
                     AssetDatabase.CreateAsset(offAction, animBuildDir + name + "_off_action.anim");
                     AssetDatabase.CreateAsset(onAction, animBuildDir + name + "_on_action.anim");
-                    BuildActionState(name, driverId, actionBlendTree);
+                    actionLayerBuilder.AddDrivedState(driverId, name + "_on", actionBlendTree);
+                    actionLayerBuilder.AddDrivedState(driverId + 1, name + "_off", ProxyAnim.stand_still);
+                    actionLayerBuilder.AddDrivedStateBehaviour(driverId, VRCStateMachineBehaviourGenerater.FullTracking());
+                    actionLayerBuilder.AddDrivedStateBehaviour(driverId + 1, VRCStateMachineBehaviourGenerater.FullAnimation());
                 }
             }
-
-            /// <summary>
-            /// 为bool参数创建驱动
-            /// </summary>
-            /// <param name="paramName">参数名</param>
-            /// <returns>bool参数为true时的驱动id，fales时为id+1</returns>
-            private static int BuildDriver(string paramName)
-            {
-                //查询drivers里是否已经有driver
-                KeyValuePair<string, int> driverKey = new KeyValuePair<string, int>(paramName, 1);
-                if (drivers.ContainsKey(driverKey))
-                    return drivers[driverKey];
-                //每次id是成对的，所以乘2
-                int driverCount = drivers.Count;
-                int driverId = driverCount*2 +1;
-                //添加新的层
-                AnimatorControllerLayer fxLayer = new AnimatorControllerLayer();
-                AnimatorStateMachine stateMachine = new AnimatorStateMachine();
-                fxLayer.name = paramName;
-                fxLayer.stateMachine = stateMachine;
-                fxLayer.defaultWeight = 1;
-                stateMachine.name = paramName;
-                stateMachine.hideFlags = HideFlags.HideInHierarchy;
-                //不加这个unity重启后新的层里的内容会消失
-                AssetDatabase.AddObjectToAsset(fxLayer.stateMachine, AssetDatabase.GetAssetPath(controllerFx));
-                controllerFx.AddLayer(fxLayer);
-                //开关状态
-                AnimatorState stateOff = stateMachine.AddState("off");
-                AnimatorState stateOn = stateMachine.AddState("on");
-                stateMachine.defaultState = stateOff;
-                stateOff.writeDefaultValues = false;
-                stateOn.writeDefaultValues = false;
-                //VRC参数驱动，paramName的参数为true时driver设为driverId，paramName的参数为false是driver设为driverId+1
-                VRCAvatarParameterDriver offDriver = stateOff.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
-                offDriver.parameters.Add(new VRC.SDKBase.VRC_AvatarParameterDriver.Parameter() { name = "driver", value = driverId + 1, type = VRC.SDKBase.VRC_AvatarParameterDriver.ChangeType.Set });
-                VRCAvatarParameterDriver onDriver = stateOn.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
-                onDriver.parameters.Add(new VRC.SDKBase.VRC_AvatarParameterDriver.Parameter() { name = "driver", value = driverId, type = VRC.SDKBase.VRC_AvatarParameterDriver.ChangeType.Set });
-                
-                if (!Utility.CheckControllerParameter(controllerFx, paramName))
-                    controllerFx.AddParameter(paramName,AnimatorControllerParameterType.Bool);
-                //状态连线
-                AnimatorStateTransition off_on = stateOff.AddTransition(stateOn);
-                off_on.duration = 0;
-                AnimatorStateTransition on_off = stateOn.AddTransition(stateOff);
-                on_off.duration = 0;
-                off_on.AddCondition(AnimatorConditionMode.If, 0, paramName);
-                on_off.AddCondition(AnimatorConditionMode.IfNot, 0, paramName);
-                //加入词典方便查询
-                drivers.Add(driverKey, driverId);
-                return driverId;
-            }
-
-            /// <summary>
-            /// 为int参数创建驱动
-            /// </summary>
-            /// <param name="paramName">参数名</param>
-            /// <param name="threshold">参数为何值时的驱动</param>
-            /// <returns>驱动id，当参数设置为该值时的驱动id，当参数从该值设置为其他值时驱动id+1</returns>
-            private static int BuildDriver(string paramName,int threshold)
-            {
-                //查询drivers里是否已经有driver
-                KeyValuePair<string, int> driverKey = new KeyValuePair<string, int>(paramName, threshold);
-                if (drivers.ContainsKey(driverKey))
-                    return drivers[driverKey];
-                
-                int driverCount = drivers.Count;
-                int driverId = driverCount * 2 + 1;
-
-                AnimatorControllerLayer fxLayer = Utility.FindLayer(controllerFx,paramName);
-                AnimatorStateMachine stateMachine;
-                if (fxLayer == null)
-                {
-                    fxLayer = new AnimatorControllerLayer();
-                    fxLayer.name = paramName;
-                    fxLayer.defaultWeight = 1;
-                    stateMachine = new AnimatorStateMachine();
-                    stateMachine.name = paramName;
-                    stateMachine.hideFlags = HideFlags.HideInHierarchy;
-                    //不加这个unity重启后新加的层里的内容会消失
-                    AssetDatabase.AddObjectToAsset(stateMachine, AssetDatabase.GetAssetPath(controllerFx));
-                    fxLayer.stateMachine = stateMachine;
-                    //必须在设置stateMachine再添加层
-                    controllerFx.AddLayer(fxLayer);
-                }
-                stateMachine = fxLayer.stateMachine;
-                
-                AnimatorState defaultState = Utility.FindState(stateMachine, "default");
-                if(defaultState == null)
-                {
-                    defaultState = stateMachine.AddState("default");
-                    defaultState.writeDefaultValues = false;
-                    stateMachine.defaultState = defaultState;
-                }
-
-                AnimatorState stateOff = stateMachine.AddState(threshold + "_off");
-                AnimatorState stateOn = stateMachine.AddState(threshold + "_on");
-                stateOff.writeDefaultValues = false;
-                stateOn.writeDefaultValues = false;
-                VRCAvatarParameterDriver offDriver = stateOff.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
-                offDriver.parameters.Add(new VRC.SDKBase.VRC_AvatarParameterDriver.Parameter() { name = "driver", value = driverId + 1, type = VRC.SDKBase.VRC_AvatarParameterDriver.ChangeType.Set });
-                VRCAvatarParameterDriver onDriver = stateOn.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
-                onDriver.parameters.Add(new VRC.SDKBase.VRC_AvatarParameterDriver.Parameter() { name = "driver", value = driverId, type = VRC.SDKBase.VRC_AvatarParameterDriver.ChangeType.Set });
-
-                if (!Utility.CheckControllerParameter(controllerFx, paramName))
-                    controllerFx.AddParameter(paramName, AnimatorControllerParameterType.Int);
-                AnimatorStateTransition default_on = defaultState.AddTransition(stateOn);
-                default_on.duration = 0;
-                AnimatorStateTransition on_off = stateOn.AddTransition(stateOff);
-                on_off.duration = 0;
-                AnimatorStateTransition off_default = stateOff.AddTransition(defaultState);
-                off_default.hasExitTime = true;
-                off_default.exitTime = 0.01f;
-                off_default.duration = 0;
-                default_on.AddCondition(AnimatorConditionMode.Equals, threshold, paramName);
-                on_off.AddCondition(AnimatorConditionMode.NotEqual, threshold, paramName);
-                drivers.Add(driverKey, driverId);
-
-                return driverId;
-            }
-
-            /// <summary>
-            /// 构建fx层的状态
-            /// </summary>
-            /// <param name="name">名字</param>
-            /// <param name="driverId">驱动id</param>
-            /// <param name="motion">动画</param>
-            private static void BuildFxState(string name, int driverId, Motion motion)
-            {
-                AnimatorStateMachine fxStateMachine = controllerFx.layers[0].stateMachine;
-                AnimatorState state = fxStateMachine.AddState(name);
-                state.writeDefaultValues = false;
-                state.motion = motion;
-                //通过驱动id从anystate进入对应状态
-                AnimatorStateTransition transition = fxStateMachine.AddAnyStateTransition(state);
-                transition.AddCondition(AnimatorConditionMode.Equals, driverId, "driver");
-                transition.duration = 0.05f;
-            }
-            
-            /// <summary>
-            /// 构建action层的动画
-            /// </summary>
-            /// <param name="name">名字</param>
-            /// <param name="driverId">驱动id</param>
-            /// <param name="motion">动画</param>
-            private static void BuildActionState(string name, int driverId, Motion motion)
-            {
-                AnimatorControllerLayer actionLayer = controllerAction.layers[0];
-                AnimatorStateMachine actionStateMachine = actionLayer.stateMachine;
-                AnimatorState waitForActionOrAFK = Utility.FindState(actionStateMachine, "WaitForActionOrAFK");
-                AnimatorState templatePre = Utility.FindState(actionStateMachine, "easy_avatar_pre");
-                AnimatorState templateOut = Utility.FindState(actionStateMachine, "easy_avatar_out");
-
-                AnimatorState statePre = actionStateMachine.AddState(name + "_pre");
-                statePre.motion = templatePre.motion;
-                statePre.behaviours = templatePre.behaviours;
-                statePre.writeDefaultValues = false;
-                AnimatorState stateOn = actionStateMachine.AddState(name + "_on");
-                stateOn.motion = motion;
-                stateOn.writeDefaultValues = false;
-                AnimatorState stateOut = actionStateMachine.AddState(name + "_out");
-                stateOut.motion = templateOut.motion;
-                stateOut.behaviours = templateOut.behaviours;
-                stateOut.writeDefaultValues = false;
-
-                AnimatorStateTransition off_pre = waitForActionOrAFK.AddTransition(statePre);
-                off_pre.AddCondition(AnimatorConditionMode.Equals, driverId, "driver");
-                off_pre.duration = 0;
-                AnimatorStateTransition pre_on = statePre.AddTransition(stateOn);
-                pre_on.hasExitTime = true;
-                pre_on.duration = 0;
-                AnimatorStateTransition on_out = stateOn.AddTransition(stateOut);
-                on_out.AddCondition(AnimatorConditionMode.Equals, driverId+1, "driver");
-                on_out.duration = 0;
-                AnimatorStateTransition out_off = stateOut.AddTransition(waitForActionOrAFK);
-                out_off.hasExitTime = true;
-                out_off.duration = 0;
-            }
-            
-            /// <summary>
-            /// 构建一维blend tree
-            /// </summary>
-            /// <param name="name">名字</param>
-            /// <param name="paramaName">参数名</param>
-            /// <param name="motion1">参数为0时的动画</param>
-            /// <param name="motion2">参数为1时的动画</param>
-            /// <returns></returns>
-            private static BlendTree Build1DBlendTree(string name,string paramaName, Motion motion1, Motion motion2)
-            {
-                BlendTree blendTree = new BlendTree();
-                blendTree.blendType = BlendTreeType.Simple1D;
-                blendTree.blendParameter = paramaName;
-                blendTree.name = name;
-                blendTree.AddChild(motion1);
-                blendTree.AddChild(motion2);
-                return blendTree;
-            }
-
-            /// <summary>
-            /// 将clip添加到fx层的初始动画
-            /// </summary>
-            /// <param name="clip"></param>
-            private static void AddFxInitClip(AnimationClip clip)
-            {
-                fxInitClip = Utility.MergeAnimClip(fxInitClip, clip);
-            }
-
-            /// <summary>
-            /// 构建fx层初始状态
-            /// </summary>
-            /// <param name="motion">初始动画</param>
-            private static void BuildFxInitState(Motion motion)
-            {
-                AssetDatabase.CreateAsset(motion, animBuildDir + "FxInit.anim");
-                AnimatorStateMachine fxState = controllerFx.layers[0].stateMachine;
-                fxState.defaultState = fxState.AddState("Init");
-                fxState.defaultState.writeDefaultValues = false;
-                fxState.defaultState.motion = motion;
-            }
-
-
 
         }
         #endregion
@@ -1120,6 +1016,17 @@ namespace EasyAvatar
                 return clip;
             }
 
+            public static BlendTree Generate1DBlendTree(string name, string paramaName, Motion motion1, Motion motion2)
+            {
+                BlendTree blendTree = new BlendTree();
+                blendTree.blendType = BlendTreeType.Simple1D;
+                blendTree.blendParameter = paramaName;
+                blendTree.name = name;
+                blendTree.AddChild(motion1);
+                blendTree.AddChild(motion2);
+                return blendTree;
+            }
+
             /// <summary>
             /// 合并动画
             /// </summary>
@@ -1191,57 +1098,6 @@ namespace EasyAvatar
                 return new AnimationClip[] {humanAnim,fxAnim };
             }
 
-            /// <summary>
-            /// 通过名字寻找动画状态机中的状态
-            /// </summary>
-            /// <param name="stateMachine">动画状态机</param>
-            /// <param name="name">名字</param>
-            /// <returns>找到的状态</returns>
-            public static AnimatorState FindState(AnimatorStateMachine stateMachine, string name)
-            {
-                foreach(var childState in stateMachine.states)
-                {
-                    if (name == childState.state.name)
-                        return childState.state;
-                }
-                return null;
-            }
-
-            /// <summary>
-            /// 通过名字寻找controller中的层
-            /// </summary>
-            /// <param name="controller">controller</param>
-            /// <param name="name">名字</param>
-            /// <returns>层</returns>
-            public static AnimatorControllerLayer FindLayer(AnimatorController controller, string name)
-            {
-                foreach (var layer in controller.layers)
-                {
-                    if (name == layer.name)
-                        return layer;
-                }
-                return null;
-            }
-
-            /// <summary>
-            /// 检测controller中是否有某个参数
-            /// </summary>
-            /// <param name="controller"></param>
-            /// <param name="paramaName"></param>
-            /// <returns>有则返回true</returns>
-            public static bool CheckControllerParameter(AnimatorController controller, string paramaName)
-            {
-                if (controller.parameters == null)
-                    return false;
-                foreach (AnimatorControllerParameter parameter in controller.parameters)
-                {
-                    if (parameter.name == paramaName)
-                        return true;
-                }
-
-                return false;
-            }
-            
             /// <summary>
             /// 复制序列化的EasyBehavior
             /// </summary>
