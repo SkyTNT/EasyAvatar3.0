@@ -40,7 +40,7 @@ namespace EasyAvatar
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
-            avatar = behaviorAndAnimEditor.avatar = EasyAvatarTool.Utility.GetAvatar(((EasyGesture)target).gameObject);
+            avatar = behaviorAndAnimEditor.avatar = Utility.GetAvatar(((EasyGesture)target).gameObject);
             handType.enumValueIndex = EditorGUILayout.IntPopup(Lang.HandType, handType.enumValueIndex, handTypeLabels, handTypeIndex);
             gestureType.enumValueIndex = EditorGUILayout.IntPopup(Lang.GestureType, gestureType.enumValueIndex, gestureTypeLabels, gestureTypeIndex);
             behaviorAndAnimEditor.useAnimClip = useAnimClip.boolValue = EditorGUILayout.ToggleLeft(Lang.UseAnimClip, useAnimClip.boolValue);

@@ -57,7 +57,7 @@ namespace EasyAvatar
         {
             serializedObject.Update();
             
-            avatar = EasyAvatarTool.Utility.GetAvatar(((EasyControl)target).gameObject);
+            avatar = Utility.GetAvatar(((EasyControl)target).gameObject);
             editor1.avatar = editor2.avatar = editor3.avatar = editor4.avatar = avatar;
             //名字设置
             target.name = EditorGUILayout.TextField(Lang.Name,target.name);

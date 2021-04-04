@@ -136,7 +136,7 @@ namespace EasyAvatar
             behaviors.arraySize = copiedBehaviors.arraySize;
             for (int i = 0; i < behaviors.arraySize; i++)
             {
-                EasyAvatarTool.Utility.CopyBehavior(behaviors.GetArrayElementAtIndex(i), copiedBehaviors.GetArrayElementAtIndex(i));
+                Utility.CopyBehavior(behaviors.GetArrayElementAtIndex(i), copiedBehaviors.GetArrayElementAtIndex(i));
             }
         }
 
@@ -209,9 +209,9 @@ namespace EasyAvatar
             if (!previewing || !AnimationMode.InAnimationMode() || !avatar)
                 return;
             AnimationMode.BeginSampling();
-            AnimationClip previewClip = EasyAvatarTool.Utility.GenerateAnimClip(behaviors);
+            AnimationClip previewClip = Utility.GenerateAnimClip(behaviors);
             if (useAnimClip)
-                previewClip = EasyAvatarTool.Utility.MergeAnimClip(EasyAvatarTool.Utility.MergeAnimClip(animClips), previewClip);
+                previewClip = Utility.MergeAnimClip(Utility.MergeAnimClip(animClips), previewClip);
             AnimationMode.SampleAnimationClip(avatar, previewClip, 0);
             AnimationMode.EndSampling();
         }
@@ -297,10 +297,10 @@ namespace EasyAvatar
             if (newTarget != tempTarget)
             {
                 if (avatar)
-                    EasyAvatarTool.Utility.PropertyGroupEdit(propertyGroup, "targetPath", CalculateGameObjectPath(newTarget));
+                    Utility.PropertyGroupEdit(propertyGroup, "targetPath", CalculateGameObjectPath(newTarget));
                 //检查目标是否具有当前属性
-                if (!EasyAvatarTool.Utility.CheckProperty(avatar, property))
-                    EasyAvatarTool.Utility.ClearPropertyGroup(propertyGroup);
+                if (!Utility.CheckProperty(avatar, property))
+                    Utility.ClearPropertyGroup(propertyGroup);
             }
             //属性选择
             EditorGUI.LabelField(propertyLabelRect, Lang.Property);
@@ -344,12 +344,12 @@ namespace EasyAvatar
         public void PropertyValueField(Rect rect, SerializedProperty propertyGroup)
         {
 
-            if (EasyAvatarTool.Utility.PropertyGroupIsBlendShape(propertyGroup))//特殊情况Blend Shape
+            if (Utility.PropertyGroupIsBlendShape(propertyGroup))//特殊情况Blend Shape
             {
                 SerializedProperty value = propertyGroup.GetArrayElementAtIndex(0).FindPropertyRelative("floatValue");
                 value.floatValue = EditorGUI.Slider(rect, value.floatValue, 0, 100);
             }
-            else if (EasyAvatarTool.Utility.PropertyGroupIsColor(propertyGroup))//特殊情况Color
+            else if (Utility.PropertyGroupIsColor(propertyGroup))//特殊情况Color
             {
                 bool isVec4 = false;
                 SerializedProperty valueR, valueG, valueB, valueA;
@@ -357,7 +357,7 @@ namespace EasyAvatar
                 for (int i = 0; i < propertyGroup.arraySize; i++)
                 {
                     SerializedProperty property = propertyGroup.GetArrayElementAtIndex(i);
-                    string subName = EasyAvatarTool.Utility.GetPropertyGroupSubname(property);
+                    string subName = Utility.GetPropertyGroupSubname(property);
                     colorMap.Add(subName, property.FindPropertyRelative("floatValue"));
                     if (subName == "w")
                         isVec4 = true;
@@ -412,7 +412,7 @@ namespace EasyAvatar
                     //显示Vector之类的x,y,z,w或r,g,b,a
                     if (propertyGroup.arraySize > 1)
                     {
-                        label = new GUIContent(EasyAvatarTool.Utility.GetPropertyGroupSubname(propertyGroup, i).ToUpper());
+                        label = new GUIContent(Utility.GetPropertyGroupSubname(propertyGroup, i).ToUpper());
                     }
 
                     float preLabelWidth = EditorGUIUtility.labelWidth;

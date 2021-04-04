@@ -30,7 +30,7 @@ namespace EasyAvatar
             else
             {
                 Type propertyType = EasyReflection.FindType(targetPropertyType.stringValue);
-                content.text = ObjectNames.NicifyVariableName(propertyType.Name) + ":" + EasyAvatarTool.Utility.NicifyPropertyGroupName(propertyType, targetProperty.stringValue);
+                content.text = ObjectNames.NicifyVariableName(propertyType.Name) + ":" + Utility.NicifyPropertyGroupName(propertyType, targetProperty.stringValue);
                 content.image = AssetPreview.GetMiniTypeThumbnail(propertyType);
             }
             
@@ -112,7 +112,7 @@ namespace EasyAvatar
                 tempGroup.Add(binding);
                 if (!bindingsDictionary.ContainsKey(binding.type.Name))
                     bindingsDictionary.Add(binding.type.Name, new List<EditorCurveBinding[]>());
-                if (i == bindings.Length - 1 || EasyAvatarTool.Utility.NicifyPropertyGroupName(bindings[i + 1].type, bindings[i + 1].propertyName) != EasyAvatarTool.Utility.NicifyPropertyGroupName(binding.type, binding.propertyName))
+                if (i == bindings.Length - 1 || Utility.NicifyPropertyGroupName(bindings[i + 1].type, bindings[i + 1].propertyName) != Utility.NicifyPropertyGroupName(binding.type, binding.propertyName))
                 {
                     bindingsDictionary[binding.type.Name].Add(tempGroup.ToArray());
                     tempGroup.Clear();
@@ -143,7 +143,7 @@ namespace EasyAvatar
                     root.AddChild(typeItem);
                 //先排序
                 foreach (EditorCurveBinding[] bindingGroup in bindingsDictionary[name])
-                    propertyItems.Add(new PropertyTreeItem(id++, bindingGroup[0].propertyName == "m_IsActive" ? 0 : 1, EasyAvatarTool.Utility.NicifyPropertyGroupName(bindingGroup[0].type, bindingGroup[0].propertyName), bindingGroup));
+                    propertyItems.Add(new PropertyTreeItem(id++, bindingGroup[0].propertyName == "m_IsActive" ? 0 : 1, Utility.NicifyPropertyGroupName(bindingGroup[0].type, bindingGroup[0].propertyName), bindingGroup));
                 propertyItems.Sort();
                 //再把它加到树中
                 foreach (PropertyTreeItem item in propertyItems)
