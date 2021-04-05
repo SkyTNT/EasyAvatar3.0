@@ -12,7 +12,7 @@ namespace EasyAvatar
 
     public class EasyBehaviorAndAnimEditor
     {
-        static EasyControl copiedTarget;
+        static Component copiedTarget;
         static string copiedBehaviorsPath;
         static List<AnimationClip> copidClips;
         public GameObject avatar;
@@ -118,7 +118,7 @@ namespace EasyAvatar
         /// <param name="behaviors"></param>
         public static void CopyBehaviors(SerializedProperty behaviors)
         {
-            copiedTarget = (EasyControl)behaviors.serializedObject.targetObject;
+            copiedTarget = (Component)behaviors.serializedObject.targetObject;
             copiedBehaviorsPath = behaviors.propertyPath;
         }
 

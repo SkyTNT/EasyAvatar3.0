@@ -125,9 +125,9 @@ namespace EasyAvatar
                 float value;
                 AnimationUtility.GetFloatValue(avatar, binding, out value);
                 if (binding.type == typeof(Animator) && binding.path == "")
-                    AnimationUtility.SetEditorCurve(clip, binding, AnimationCurve.Linear(0, 0, 1.0f / 60, 0));
+                    AnimationUtility.SetEditorCurve(result, binding, AnimationCurve.Linear(0, 0, 1.0f / 60, 0));
                 else
-                    AnimationUtility.SetEditorCurve(clip, binding, AnimationCurve.Linear(0, value, 1.0f / 60, value));
+                    AnimationUtility.SetEditorCurve(result, binding, AnimationCurve.Linear(0, value, 1.0f / 60, value));
             }
             foreach (EditorCurveBinding binding in AnimationUtility.GetObjectReferenceCurveBindings(clip))
             {
@@ -137,9 +137,9 @@ namespace EasyAvatar
                                 new ObjectReferenceKeyframe() { time = 0, value = value },
                                 new ObjectReferenceKeyframe() { time = 1.0f / 60, value = value }
                             };
-                AnimationUtility.SetObjectReferenceCurve(clip, binding, objectReferenceKeyframes);
+                AnimationUtility.SetObjectReferenceCurve(result, binding, objectReferenceKeyframes);
             }
-            return clip;
+            return result;
         }
 
         public static BlendTree Generate1DBlendTree(string name, string paramaName, Motion motion1, Motion motion2)
