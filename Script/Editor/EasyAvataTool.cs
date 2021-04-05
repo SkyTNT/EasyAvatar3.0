@@ -240,6 +240,11 @@ namespace EasyAvatar
                 AddParameterFloat("float2");
             }
 
+            public void SetMask(AvatarMask mask)
+            {
+                baseLayer.avatarMask = mask;
+            }
+
             public void AddDrivedState(int driverId, string name, Motion motion = null)
             {
                 if (drivedMotions.ContainsKey(driverId))
@@ -624,38 +629,13 @@ namespace EasyAvatar
             }
 
         }
-
-        public class ProxyAnim
-        {
-            /// <summary>
-            /// 代理站立
-            /// </summary>
-            public static AnimationClip stand_still;
-            public static AnimationClip afk;
-            static ProxyAnim()
-            {
-                stand_still = GetProxyAnim("proxy_stand_still");
-                afk = GetProxyAnim("proxy_afk");
-            }
-
-            /// <summary>
-            /// 获取vrc的代理动画
-            /// </summary>
-            /// <param name="name">名字，不包含后缀</param>
-            /// <returns></returns>
-            public static AnimationClip GetProxyAnim(string name)
-            {
-                AnimationClip animation = AssetDatabase.LoadAssetAtPath<AnimationClip>("Assets/VRCSDK/Examples3/Animation/ProxyAnim/" + name + ".anim");
-                return animation;
-            }
-        }
+        
 
         public class Builder
         {
             string rootBuildDir, menuBuildDir, animBuildDir;
             EasyAvatarHelper helper;
-            AnimatorControllerBuilder fxLayerBuilder, actionLayerBuilder;
-            AnimatorDriver driver;
+            EasyAnimator easyAnimator;
             int controlCount;
 
             public Builder(EasyAvatarHelper helper)
@@ -712,19 +692,9 @@ namespace EasyAvatar
                 Directory.CreateDirectory(menuBuildDir);
                 Directory.CreateDirectory(animBuildDir);
 
-                //初始化AnimatorController
-                fxLayerBuilder = new AnimatorControllerBuilder(animBuildDir + "FXLayer.controller");
-                actionLayerBuilder = new AnimatorControllerBuilder(animBuildDir + "ActionLayer.controller");
-                driver = new AnimatorDriver(fxLayerBuilder);
-
-                //afk
-                {
-                    int afkDriverId = driver.GetDriverId("AFK");
-                    actionLayerBuilder.AddDrivedState(afkDriverId, "afk", ProxyAnim.afk);
-                    actionLayerBuilder.AddDrivedStateBehaviour(afkDriverId, VRCStateMachineBehaviour.FullAnimation(), VRCStateMachineBehaviour.ActionLayerControl(1));
-                    actionLayerBuilder.AddDrivedState(afkDriverId + 1, "afk_off", ProxyAnim.stand_still);
-                    actionLayerBuilder.AddDrivedStateBehaviour(afkDriverId + 1, VRCStateMachineBehaviour.FullTracking(), VRCStateMachineBehaviour.ActionLayerControl(0));
-                }
+                //初始化EasyAnimator
+                easyAnimator = new EasyAnimator(animBuildDir, helper.avatar);
+                
 
                 //构建手势
                 if (gestureManager)
@@ -758,18 +728,17 @@ namespace EasyAvatar
                     avatarDescriptor.expressionsMenu = null;
                 }
 
-                //构建AnimatorController
-                fxLayerBuilder.Build();
-                actionLayerBuilder.Build();
+                //构建EasyAnimator
+                easyAnimator.Build();
 
                 //设置CustomizeAnimationLayers
                 avatarDescriptor.customizeAnimationLayers = true;
                 avatarDescriptor.baseAnimationLayers = new CustomAnimLayer[]{
                     new CustomAnimLayer(){type = AnimLayerType.Base ,isDefault = true},
                     new CustomAnimLayer(){type = AnimLayerType.Additive ,isDefault = true},
-                    new CustomAnimLayer(){type = AnimLayerType.Gesture ,isDefault = true},
-                    new CustomAnimLayer(){type = AnimLayerType.Action ,isDefault = false , animatorController = actionLayerBuilder.controller },
-                    new CustomAnimLayer(){type = AnimLayerType.FX ,isDefault = false,animatorController = fxLayerBuilder.controller},
+                    new CustomAnimLayer(){type = AnimLayerType.Gesture ,isDefault = false,animatorController = easyAnimator.gestureController},
+                    new CustomAnimLayer(){type = AnimLayerType.Action ,isDefault = false , animatorController = easyAnimator.actionController},
+                    new CustomAnimLayer(){type = AnimLayerType.FX ,isDefault = false,animatorController = easyAnimator.fxController}
                 };
 
                 //保存
@@ -861,50 +830,17 @@ namespace EasyAvatar
             /// <param name="gesture">手势</param>
             private void BuildGesture(string name, EasyGesture gesture)
             {
-                AnimationClip animationClip = Utility.GenerateAnimClip(gesture.behaviors);
+                AnimationClip onClip = Utility.GenerateAnimClip(gesture.behaviors1);
+                AnimationClip outClip = Utility.GenerateAnimClip(gesture.behaviors2);
                 if (gesture.useAnimClip)
                 {
-                    animationClip = Utility.MergeAnimClip(Utility.MergeAnimClip(gesture.animations.ToArray()), animationClip);
+                    onClip = Utility.MergeAnimClip(Utility.MergeAnimClip(gesture.animations1.ToArray()), onClip);
+                    outClip = Utility.MergeAnimClip(Utility.MergeAnimClip(gesture.animations2.ToArray()), outClip);
                 }
-
-                AnimationClip[] separatedClips = Utility.SeparateHumanAnimation(animationClip);
-                AnimationClip actionAnim = separatedClips[0];
-                AnimationClip fxAnim = separatedClips[1];
-                bool hasActionAnim = AnimationUtility.GetCurveBindings(actionAnim).Length > 0;
-
-                AssetDatabase.CreateAsset(fxAnim, animBuildDir + name + "_fx.anim");
-                if (hasActionAnim)
-                    AssetDatabase.CreateAsset(actionAnim, animBuildDir + name + "_action.anim");
-
                 if (gesture.handType == EasyGesture.HandType.Left || gesture.handType == EasyGesture.HandType.Any)
-                {
-                    int driverId = driver.GetDriverId("GestureLeft", (int)gesture.gestureType);
-                    fxLayerBuilder.AddDrivedState(driverId, name + "_L", fxAnim);
-                    if (hasActionAnim)
-                    {
-                        actionLayerBuilder.AddDrivedState(driverId, name + "_L_on", actionAnim);
-                        actionLayerBuilder.AddDrivedStateBehaviour(driverId, VRCStateMachineBehaviour.FullAnimation(), VRCStateMachineBehaviour.ActionLayerControl(1));
-                        actionLayerBuilder.AddDrivedState(driverId + 1, name + "_L_off", ProxyAnim.stand_still);
-                        actionLayerBuilder.AddDrivedStateBehaviour(driverId + 1, VRCStateMachineBehaviour.FullTracking(), VRCStateMachineBehaviour.ActionLayerControl(0));
-                    }
-                }
-
+                    easyAnimator.AddState(name + "L", outClip, onClip, gesture.autoRestore, "GestureLeft", (int)gesture.gestureType);
                 if (gesture.handType == EasyGesture.HandType.Right || gesture.handType == EasyGesture.HandType.Any)
-                {
-                    int driverId = driver.GetDriverId("GestureRight", (int)gesture.gestureType);
-                    fxLayerBuilder.AddDrivedState(driverId, name + "_R", fxAnim);
-                    if (hasActionAnim)
-                    { 
-                        actionLayerBuilder.AddDrivedState(driverId, name + "_R_on", actionAnim);
-                        actionLayerBuilder.AddDrivedStateBehaviour(driverId, VRCStateMachineBehaviour.FullAnimation(), VRCStateMachineBehaviour.ActionLayerControl(1));
-                        actionLayerBuilder.AddDrivedState(driverId + 1, name + "_R_off", ProxyAnim.stand_still);
-                        actionLayerBuilder.AddDrivedStateBehaviour(driverId + 1, VRCStateMachineBehaviour.FullTracking(), VRCStateMachineBehaviour.ActionLayerControl(0));
-                    }
-                }
-                if (gesture.gestureType == EasyGesture.GestureType.Neutral)
-                {
-                    fxLayerBuilder.AddToInitState(fxAnim);
-                }
+                    easyAnimator.AddState(name + "R", outClip, onClip, gesture.autoRestore, "GestureRight", (int)gesture.gestureType);
             }
 
             /// <summary>
@@ -915,40 +851,16 @@ namespace EasyAvatar
             private void BuildToggle(string name, EasyControl control)
             {
                 //EasyBehaviors生成动画
-                AnimationClip offClip = Utility.GenerateAnimClip(control.behaviors1);
-                AnimationClip onClip = Utility.GenerateAnimClip(control.behaviors2);
+                AnimationClip offClip = Utility.GenerateAnimClip(control.behaviors2);
+                AnimationClip onClip = Utility.GenerateAnimClip(control.behaviors1);
                 //使用动画文件
                 if (control.useAnimClip)
                 {
                     //先将动画文件合并，在与Behaviors生成动画合并
-                    offClip = Utility.MergeAnimClip(Utility.MergeAnimClip(control.anims1.ToArray()), offClip);
-                    onClip = Utility.MergeAnimClip(Utility.MergeAnimClip(control.anims2.ToArray()), onClip);
+                    offClip = Utility.MergeAnimClip(Utility.MergeAnimClip(control.anims2.ToArray()), offClip);
+                    onClip = Utility.MergeAnimClip(Utility.MergeAnimClip(control.anims1.ToArray()), onClip);
                 }
-                //分离action动画
-                AnimationClip[] offClips = Utility.SeparateHumanAnimation(offClip);
-                AnimationClip[] onClips = Utility.SeparateHumanAnimation(onClip);
-                AnimationClip offFx = offClips[1];
-                AnimationClip onAction = onClips[0];
-                AnimationClip onFx = onClips[1];
-
-                AssetDatabase.CreateAsset(offFx, animBuildDir + name + "_off_fx.anim");
-                AssetDatabase.CreateAsset(onFx, animBuildDir + name + "_on_fx.anim");
-                //生成驱动id
-                int driverId = driver.GetDriverId("control" + controlCount);
-                //通过驱动id到对应状态
-                fxLayerBuilder.AddDrivedState(driverId, name + "_on", onFx);
-                fxLayerBuilder.AddDrivedState(driverId + 1, name + "_off", offFx);
-                fxLayerBuilder.AddToInitState(offFx);
-
-                //有action动画才加进去
-                if (AnimationUtility.GetCurveBindings(onAction).Length > 0)
-                {
-                    AssetDatabase.CreateAsset(onAction, animBuildDir + name + "_on_action.anim");
-                    actionLayerBuilder.AddDrivedState(driverId, name + "_on", onFx);
-                    actionLayerBuilder.AddDrivedState(driverId + 1, name + "_off",ProxyAnim.stand_still);
-                    actionLayerBuilder.AddDrivedStateBehaviour(driverId, VRCStateMachineBehaviour.FullAnimation(), VRCStateMachineBehaviour.ActionLayerControl(1));
-                    actionLayerBuilder.AddDrivedStateBehaviour(driverId + 1, VRCStateMachineBehaviour.FullTracking(), VRCStateMachineBehaviour.ActionLayerControl(0));
-                }
+                easyAnimator.AddState(name, offClip, onClip, control.autoRestore, "control" + controlCount);
             }
             
             /// <summary>
@@ -960,42 +872,19 @@ namespace EasyAvatar
             {
 
                 //EasyBehaviors生成动画
-                AnimationClip offClip = Utility.GenerateAnimClip(control.behaviors1);
-                AnimationClip onClip = Utility.GenerateAnimClip(control.behaviors2);
+                AnimationClip offClip = Utility.GenerateAnimClip(control.behaviors3);
+                AnimationClip blend0 = Utility.GenerateAnimClip(control.behaviors1);
+                AnimationClip blend1 = Utility.GenerateAnimClip(control.behaviors2);
                 //使用动画文件
                 if (control.useAnimClip)
                 {
                     //先将动画文件合并，在与Behaviors生成动画合并
-                    offClip = Utility.MergeAnimClip(Utility.MergeAnimClip(control.anims1.ToArray()), offClip);
-                    onClip = Utility.MergeAnimClip(Utility.MergeAnimClip(control.anims2.ToArray()), onClip);
+                    offClip = Utility.MergeAnimClip(Utility.MergeAnimClip(control.anims3.ToArray()), offClip);
+                    blend0 = Utility.MergeAnimClip(Utility.MergeAnimClip(control.anims1.ToArray()), blend0);
+                    blend0 = Utility.MergeAnimClip(Utility.MergeAnimClip(control.anims2.ToArray()), blend0);
                 }
-                //分离action动画
-                AnimationClip[] offClips = Utility.SeparateHumanAnimation(offClip);
-                AnimationClip[] onClips = Utility.SeparateHumanAnimation(onClip);
-                AnimationClip offFx = offClips[1];
-                AnimationClip onFx = onClips[1];
-                AnimationClip offAction = offClips[0];
-                AnimationClip onAction = onClips[0];
 
-                BlendTree fxBlendTree = Utility.Generate1DBlendTree(name + "_on_fx", "float1", offFx, onFx);
-                AssetDatabase.AddObjectToAsset(fxBlendTree, AssetDatabase.GetAssetPath(fxLayerBuilder.controller));
-                AssetDatabase.CreateAsset(offFx, animBuildDir + name + "_off_fx.anim");
-                AssetDatabase.CreateAsset(onFx, animBuildDir + name + "_on_fx.anim");
-                int driverId = driver.GetDriverId("control" + controlCount);
-                fxLayerBuilder.AddDrivedState(driverId, name + "_on", fxBlendTree);
-                fxLayerBuilder.AddToInitState(offFx);
-
-                if (AnimationUtility.GetCurveBindings(offAction).Length > 0 || AnimationUtility.GetCurveBindings(onAction).Length > 0)
-                {
-                    BlendTree actionBlendTree = Utility.Generate1DBlendTree(name + "_on_action", "float1", offAction, onAction);
-                    AssetDatabase.AddObjectToAsset(actionBlendTree, AssetDatabase.GetAssetPath(actionLayerBuilder.controller));
-                    AssetDatabase.CreateAsset(offAction, animBuildDir + name + "_off_action.anim");
-                    AssetDatabase.CreateAsset(onAction, animBuildDir + name + "_on_action.anim");
-                    actionLayerBuilder.AddDrivedState(driverId, name + "_on", actionBlendTree);
-                    actionLayerBuilder.AddDrivedState(driverId + 1, name + "_off", ProxyAnim.stand_still);
-                    actionLayerBuilder.AddDrivedStateBehaviour(driverId, VRCStateMachineBehaviour.FullAnimation(), VRCStateMachineBehaviour.ActionLayerControl(1));
-                    actionLayerBuilder.AddDrivedStateBehaviour(driverId + 1, VRCStateMachineBehaviour.FullTracking(), VRCStateMachineBehaviour.ActionLayerControl(0));
-                }
+                easyAnimator.AddState(name, offClip, blend0, blend1, control.autoRestore, "control" + controlCount);
             }
 
         }

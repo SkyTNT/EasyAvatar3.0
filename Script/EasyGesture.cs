@@ -26,9 +26,9 @@ namespace EasyAvatar
         }
 
         [SerializeField]
-        public List<EasyBehavior> behaviors;
+        public List<EasyBehavior> behaviors1, behaviors2;
         [SerializeField]
-        public List<AnimationClip> animations;
+        public List<AnimationClip> animations1, animations2;
         [SerializeField]
         public GestureType gestureType;
         [SerializeField]

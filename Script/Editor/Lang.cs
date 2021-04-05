@@ -37,6 +37,7 @@ namespace EasyAvatar
             OnSwitchOn,
             OnRadialPuppet0,
             OnRadialPuppet1,
+            OnRadialPuppetOff,
             BehaviorListLabel,
             AnimClipListLabel,
             UseAnimClip,
@@ -47,6 +48,7 @@ namespace EasyAvatar
             GestureType,
             HandType,
             OnGesture,
+            OnGestureOut,
             GestureNeutral,
             GestureFist,
             GestureHandOpen,
@@ -124,6 +126,7 @@ namespace EasyAvatar
             OnSwitchOn = "开关打开时";
             OnRadialPuppet0 = "旋钮值为零时";
             OnRadialPuppet1 = "旋钮旋满时";
+            OnRadialPuppetOff = "旋钮关闭时";
             BehaviorListLabel = "进行的修改";
             AnimClipListLabel = "播放的动画";
             UseAnimClip = "使用动画文件";
@@ -134,6 +137,7 @@ namespace EasyAvatar
             GestureType = "手势类型";
             HandType = "手类型";
             OnGesture = "当做手势时";
+            OnGestureOut = "当切换到其他手势时";
             GestureNeutral = "普通";
             GestureFist = "握拳";
             GestureHandOpen = "张手";
@@ -192,6 +196,7 @@ namespace EasyAvatar
             OnSwitchOn = "On Control Switch On";
             OnRadialPuppet0 = "On Value Is 0%";
             OnRadialPuppet1 = "On Value Is 100%";
+            OnRadialPuppetOff = "On Radial Puppet Off";
             BehaviorListLabel = "Behaviors";
             AnimClipListLabel = "Animation Clips";
             UseAnimClip = "Use Animation Clip";
@@ -202,6 +207,7 @@ namespace EasyAvatar
             GestureType = "Gesture Type";
             HandType = "Hand Type";
             OnGesture = "On Gesture";
+            OnGestureOut = "On Switch to Other Gesture";
             GestureNeutral = "Neutral";
             GestureFist = "Fist";
             GestureHandOpen = "HandOpen";

@@ -74,10 +74,10 @@ namespace EasyAvatar
 
             if (controlType.enumValueIndex == (int)EasyControl.Type.Toggle)
             {
-                GUILayout.Label(Lang.OnSwitchOff, EditorStyles.boldLabel);
+                GUILayout.Label(Lang.OnSwitchOn, EditorStyles.boldLabel);
                 editor1.LayoutGUI();
 
-                GUILayout.Label(Lang.OnSwitchOn, EditorStyles.boldLabel);
+                GUILayout.Label(Lang.OnSwitchOff, EditorStyles.boldLabel);
                 editor2.LayoutGUI();
             }
             else if(controlType.enumValueIndex == (int)EasyControl.Type.RadialPuppet)
@@ -87,15 +87,37 @@ namespace EasyAvatar
 
                 GUILayout.Label(Lang.OnRadialPuppet1, EditorStyles.boldLabel);
                 editor2.LayoutGUI();
+
+                GUILayout.Label(Lang.OnRadialPuppetOff, EditorStyles.boldLabel);
+                editor3.LayoutGUI();
             }
             
 
             //一个预览的时候把另一个关了
             if (editor1.previewStarted)
+            {
                 editor2.previewing = false;
+                editor3.previewing = false;
+                editor4.previewing = false;
+            }
             if (editor2.previewStarted)
+            {
                 editor1.previewing = false;
-
+                editor3.previewing = false;
+                editor4.previewing = false;
+            }
+            if (editor3.previewStarted)
+            {
+                editor1.previewing = false;
+                editor2.previewing = false;
+                editor4.previewing = false;
+            }
+            if (editor4.previewStarted)
+            {
+                editor1.previewing = false;
+                editor2.previewing = false;
+                editor3.previewing = false;
+            }
 
             serializedObject.ApplyModifiedProperties();
             
