@@ -73,14 +73,20 @@ namespace EasyAvatar
             fxBuilder.AddDrivedState(driverId, name + "_on", on_fx);
             fxBuilder.AddDrivedState(driverId + 1, name + "_off", off_fx);
             fxBuilder.AddToInitState(off_fx);
-            var trackingControl = VRCStateMachineBehaviour.CalculateTrackingControl(on_action);
-            actionBuilder.AddDrivedState(driverId, name + "_on", on_action);
-            actionBuilder.AddDrivedStateBehaviour(driverId, trackingControl, VRCStateMachineBehaviour.ActionLayerControl(1));
-            actionBuilder.AddDrivedState(driverId + 1, name + "_off", off_action);
-            actionBuilder.AddDrivedStateBehaviour(driverId + 1, VRCStateMachineBehaviour.ReverseTrackingControl(trackingControl), VRCStateMachineBehaviour.ActionLayerControl(0));
-            gestureBuilder.AddDrivedState(driverId, name + "_on", on_gesture);
-            gestureBuilder.AddDrivedState(driverId + 1, name + "_off", off_gesture);
+            if (!Utility.AnimationIsEmpty(on_action))
+            {
+                var trackingControl = VRCStateMachineBehaviour.CalculateTrackingControl(on_action);
+                actionBuilder.AddDrivedState(driverId, name + "_on", on_action);
+                actionBuilder.AddDrivedStateBehaviour(driverId, trackingControl, VRCStateMachineBehaviour.ActionLayerControl(1));
+                actionBuilder.AddDrivedState(driverId + 1, name + "_off", off_action);
+                actionBuilder.AddDrivedStateBehaviour(driverId + 1, VRCStateMachineBehaviour.ReverseTrackingControl(trackingControl), VRCStateMachineBehaviour.ActionLayerControl(0));
 
+            }
+            if (!Utility.AnimationIsEmpty(on_gesture))
+            {
+                gestureBuilder.AddDrivedState(driverId, name + "_on", on_gesture);
+                gestureBuilder.AddDrivedState(driverId + 1, name + "_off", off_gesture);
+            }
         }
 
         public void AddState(string name, AnimationClip offAnim, AnimationClip blendTree0, AnimationClip blendTree1, bool autoRestore, string parameterName, int threshold = -999)
@@ -110,15 +116,21 @@ namespace EasyAvatar
             fxBuilder.AddDrivedState(driverId, name + "_on", blendTree_fx);
             fxBuilder.AddDrivedState(driverId + 1, name + "_off", off_fx);
             fxBuilder.AddToInitState(off_fx);
-            blendTree_action = Utility.Generate1DBlendTree(name + "_on", "float1", blend0_action, blend1_action);
-            var trackingControl = VRCStateMachineBehaviour.CalculateTrackingControl(blendTree_action);
-            actionBuilder.AddDrivedState(driverId, name + "_on", blendTree_action);
-            actionBuilder.AddDrivedStateBehaviour(driverId, trackingControl, VRCStateMachineBehaviour.ActionLayerControl(1));
-            actionBuilder.AddDrivedState(driverId + 1, name + "_off", off_action);
-            actionBuilder.AddDrivedStateBehaviour(driverId + 1, VRCStateMachineBehaviour.ReverseTrackingControl(trackingControl), VRCStateMachineBehaviour.ActionLayerControl(0));
-            blendTree_gesture = Utility.Generate1DBlendTree(name + "_on", "float1", blend0_gesture, blend1_gesture);
-            gestureBuilder.AddDrivedState(driverId, name + "_on", blendTree_gesture);
-            gestureBuilder.AddDrivedState(driverId + 1, name + "_off", off_gesture);
+            if(!Utility.AnimationIsEmpty(blend0_action) || !Utility.AnimationIsEmpty(blend1_action))
+            {
+                blendTree_action = Utility.Generate1DBlendTree(name + "_on", "float1", blend0_action, blend1_action);
+                var trackingControl = VRCStateMachineBehaviour.CalculateTrackingControl(blendTree_action);
+                actionBuilder.AddDrivedState(driverId, name + "_on", blendTree_action);
+                actionBuilder.AddDrivedStateBehaviour(driverId, trackingControl, VRCStateMachineBehaviour.ActionLayerControl(1));
+                actionBuilder.AddDrivedState(driverId + 1, name + "_off", off_action);
+                actionBuilder.AddDrivedStateBehaviour(driverId + 1, VRCStateMachineBehaviour.ReverseTrackingControl(trackingControl), VRCStateMachineBehaviour.ActionLayerControl(0));
+            }
+            if (!Utility.AnimationIsEmpty(blend0_gesture) || !Utility.AnimationIsEmpty(blend1_gesture))
+            {
+                blendTree_gesture = Utility.Generate1DBlendTree(name + "_on", "float1", blend0_gesture, blend1_gesture);
+                gestureBuilder.AddDrivedState(driverId, name + "_on", blendTree_gesture);
+                gestureBuilder.AddDrivedState(driverId + 1, name + "_off", off_gesture);
+            }
         }
         
         public void Build()
@@ -133,10 +145,9 @@ namespace EasyAvatar
             fxBuilder.Build();
             actionBuilder.Build();
             gestureBuilder.Build();
-            gestureBuilder.controller.layers[0].avatarMask = VRCAssets.hands_only;
+            gestureBuilder.SetMask(VRCAssets.hands_only);
         }
         
-
         public static void SeparateAnimation(AnimationClip clip, out AnimationClip action, out AnimationClip gesture,out AnimationClip fx)
         {
             action = new AnimationClip();
@@ -195,7 +206,10 @@ namespace EasyAvatar
 
         public void SetMask(AvatarMask mask)
         {
-            baseLayer.avatarMask = mask;
+            //坑，controller.layers是复制的
+            var layers = controller.layers;
+            layers[0].avatarMask = mask;
+            controller.layers = layers;
         }
 
         public void AddDrivedState(int driverId, string name, Motion motion = null)
@@ -330,7 +344,7 @@ namespace EasyAvatar
             if (animationClip)
             {
                 //如果animationClip为空，就舍弃这个animationClip
-                if (AnimationUtility.GetCurveBindings(animationClip).Length == 0 && AnimationUtility.GetObjectReferenceCurveBindings(animationClip).Length == 0)
+                if (Utility.AnimationIsEmpty(animationClip))
                     motion = null;
                 else if (!AssetDatabase.Contains(animationClip))
                     AssetDatabase.CreateAsset(animationClip, saveDir + name + ".anim");
@@ -341,7 +355,7 @@ namespace EasyAvatar
             {
                 bool childNotNull = false;
 
-                //坑，这里是复制数组
+                //坑，这里是复制的
                 ChildMotion[] children = blendTree.children;
                 for (int i = 0; i < children.Length; i++)
                 {

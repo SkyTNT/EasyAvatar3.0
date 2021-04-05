@@ -199,6 +199,16 @@ namespace EasyAvatar
         }
 
         /// <summary>
+        /// 判断一个动画是否为空
+        /// </summary>
+        /// <param name="clip"></param>
+        /// <returns></returns>
+        public static bool AnimationIsEmpty(AnimationClip clip)
+        {
+            return !clip || (AnimationUtility.GetCurveBindings(clip).Length == 0 && AnimationUtility.GetCurveBindings(clip).Length == 0);
+        }
+
+        /// <summary>
         /// 分离人体动画
         /// </summary>
         /// <param name="clip">动画</param>
