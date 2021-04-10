@@ -412,7 +412,7 @@ namespace EasyAvatar
             /// <param name="gesture">手势</param>
             private void BuildGesture(string name, EasyGesture gesture)
             {
-                AnimationClip onClip = Utility.GenerateAnimClip(gesture.behaviors1);
+                /*AnimationClip onClip = Utility.GenerateAnimClip(gesture.behaviors1);
                 AnimationClip outClip = Utility.GenerateAnimClip(gesture.behaviors2);
                 if (gesture.useAnimClip)
                 {
@@ -422,7 +422,7 @@ namespace EasyAvatar
                 if (gesture.handType == EasyGesture.HandType.Left || gesture.handType == EasyGesture.HandType.Any)
                     easyAnimator.AddState(name + "L", outClip, onClip, gesture.autoRestore, "GestureLeft", (int)gesture.gestureType);
                 if (gesture.handType == EasyGesture.HandType.Right || gesture.handType == EasyGesture.HandType.Any)
-                    easyAnimator.AddState(name + "R", outClip, onClip, gesture.autoRestore, "GestureRight", (int)gesture.gestureType);
+                    easyAnimator.AddState(name + "R", outClip, onClip, gesture.autoRestore, "GestureRight", (int)gesture.gestureType);*/
             }
 
             /// <summary>
@@ -433,7 +433,7 @@ namespace EasyAvatar
             private void BuildToggle(string name, EasyControl control)
             {
                 //EasyBehaviors生成动画
-                AnimationClip offClip = Utility.GenerateAnimClip(control.behaviors2);
+                /*AnimationClip offClip = Utility.GenerateAnimClip(control.behaviors2);
                 AnimationClip onClip = Utility.GenerateAnimClip(control.behaviors1);
                 //使用动画文件
                 if (control.useAnimClip)
@@ -442,7 +442,7 @@ namespace EasyAvatar
                     offClip = Utility.MergeAnimClip(Utility.MergeAnimClip(control.anims2.ToArray()), offClip);
                     onClip = Utility.MergeAnimClip(Utility.MergeAnimClip(control.anims1.ToArray()), onClip);
                 }
-                easyAnimator.AddState(name, offClip, onClip, control.autoRestore, "control" + controlCount);
+                easyAnimator.AddState(name, offClip, onClip, control.autoRestore, "control" + controlCount);*/
             }
             
             /// <summary>
@@ -454,7 +454,7 @@ namespace EasyAvatar
             {
 
                 //EasyBehaviors生成动画
-                AnimationClip offClip = Utility.GenerateAnimClip(control.behaviors3);
+                /*AnimationClip offClip = Utility.GenerateAnimClip(control.behaviors3);
                 AnimationClip blend0 = Utility.GenerateAnimClip(control.behaviors1);
                 AnimationClip blend1 = Utility.GenerateAnimClip(control.behaviors2);
                 //使用动画文件
@@ -465,8 +465,8 @@ namespace EasyAvatar
                     blend0 = Utility.MergeAnimClip(Utility.MergeAnimClip(control.anims1.ToArray()), blend0);
                     blend1 = Utility.MergeAnimClip(Utility.MergeAnimClip(control.anims2.ToArray()), blend1);
                 }
-
-                easyAnimator.AddState(name, offClip, blend0, blend1, control.autoRestore, "control" + controlCount);
+                
+                easyAnimator.AddState(name, offClip, blend0, blend1, control.autoRestore, "control" + controlCount);*/
             }
 
         }

@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using VRC.SDK3.Avatars.Components;
 
 namespace EasyAvatar
 {
@@ -13,17 +14,17 @@ namespace EasyAvatar
         }
 
         [SerializeField]
+        public Type type;
+        [SerializeField]
         public Texture2D icon;
         [SerializeField]
-        public List<EasyBehavior> behaviors1, behaviors2, behaviors3, behaviors4;
+        public bool autoRestore = true;
         [SerializeField]
-        public List<AnimationClip> anims1, anims2, anims3, anims4;
+        public bool autoTrackingControl = true;
         [SerializeField]
-        public bool useAnimClip;
+        public VRCAnimatorTrackingControl offTrackingControl, onTrackingControl;
         [SerializeField]
-        public bool autoRestore;
-        [SerializeField]
-        public Type type;
+        public List<EasyBehaviors> behaviors;//Toggle型的为2个，RadialPuppet型的为3个
 
         // Start is called before the first frame update
         void Start()

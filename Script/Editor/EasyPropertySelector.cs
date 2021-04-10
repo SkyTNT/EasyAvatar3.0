@@ -19,7 +19,7 @@ namespace EasyAvatar
         /// <param name="propertyGroup">PropertyGroup</param>
         /// <param name="avatar">avatar</param>
         /// <param name="target">target</param>
-        public static void DoSelect(Rect rect, SerializedProperty propertyGroup, GameObject avatar, GameObject target)
+        public static void PropertyField(Rect rect, SerializedProperty propertyGroup, GameObject avatar, GameObject target)
         {
             SerializedProperty property = propertyGroup.GetArrayElementAtIndex(0);
             SerializedProperty targetProperty = property.FindPropertyRelative("targetProperty");

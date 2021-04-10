@@ -9,39 +9,27 @@ using AnimatorController = UnityEditor.Animations.AnimatorController;
 
 namespace EasyAvatar
 {
-
-    public class EasyBehaviorAndAnimEditor
+    public class EasyBehaviorsEditor
     {
         static Component copiedTarget;
         static string copiedBehaviorsPath;
-        static List<AnimationClip> copidClips;
+        static EasyBehaviorsEditor previewing;
         public GameObject avatar;
 
-        SerializedProperty behaviors, animClips;
-        ReorderableList behaviorsList, animClipList;
-        public bool useAnimClip, previewing;
-        private bool m_previewStarted;
+        SerializedProperty behaviors;
+        ReorderableList behaviorsList;
 
-        /// <summary>
-        /// 是否刚刚开始预览
-        /// </summary>
-        public bool previewStarted { get
-            {
-                bool result = m_previewStarted;
-                m_previewStarted = false;
-                return result;
-            }
-        }
+        int[] typeIndex = { 0, 1 };
+        string[] typeLabels;
 
-        public EasyBehaviorAndAnimEditor(SerializedProperty behaviors, SerializedProperty animClips)
+        public EasyBehaviorsEditor(SerializedProperty behaviors)
         {
+            behaviors = behaviors.FindPropertyRelative("list");
             this.behaviors = behaviors;
-            this.animClips = animClips;
 
             behaviorsList = new ReorderableList(behaviors.serializedObject, behaviors, true, true, true, true);
-            animClipList = new ReorderableList(animClips.serializedObject, animClips, true, true, true, true);
-            behaviorsList.drawHeaderCallback = (Rect rect) => EditorGUI.LabelField(rect,Lang.BehaviorListLabel);
-            behaviorsList.elementHeight = (EditorGUIUtility.singleLineHeight + 6) * 3;
+            behaviorsList.drawHeaderCallback = (Rect rect) => EditorGUI.LabelField(rect, Lang.Behavior);
+            behaviorsList.elementHeight = (EditorGUIUtility.singleLineHeight + 6) * 4;
             behaviorsList.drawElementCallback = (Rect rect, int index, bool selected, bool focused) => BehaviorField(rect, behaviors.GetArrayElementAtIndex(index));
             behaviorsList.onAddCallback = (ReorderableList list) => {
                 if (list.serializedProperty != null)
@@ -59,23 +47,16 @@ namespace EasyAvatar
                 }
             };
 
-            animClipList.drawHeaderCallback = (Rect rect) => EditorGUI.LabelField(rect, Lang.AnimClipListLabel);
-            animClipList.elementHeight = EditorGUIUtility.singleLineHeight + 6;
-            animClipList.drawElementCallback = (Rect rect, int index, bool selected, bool focused) => AnimField(rect, animClips.GetArrayElementAtIndex(index));
-
+            typeLabels = new string[] {Lang.BehaviorTypeProperty,Lang.BehaviorTypeAnim };
         }
 
-        /// <summary>
-        /// 绘制GUI
-        /// </summary>
-        public void LayoutGUI()
+        public void DoLayout()
         {
-            //行为
             Color preBg = GUI.backgroundColor;
-            GUI.backgroundColor = previewing ? MyGUIStyle.activeButtonColor : preBg;
+            GUI.backgroundColor = previewing == this ? MyGUIStyle.activeButtonColor : preBg;
             if (GUILayout.Button(Lang.Preview))
             {
-                if (!previewing)
+                if (previewing != this)
                     StartPreview();
                 else
                     StopPreview();
@@ -92,23 +73,6 @@ namespace EasyAvatar
             }
             EditorGUILayout.EndHorizontal();
             behaviorsList.DoLayoutList();
-            
-            if (useAnimClip)
-            {
-                EditorGUILayout.BeginHorizontal();
-                if (GUILayout.Button(Lang.Copy))
-                {
-                    CopyAnimClips(animClips);
-                }
-                if (GUILayout.Button(Lang.Paste))
-                {
-                    PasteAnimClips(animClips);
-                }
-                EditorGUILayout.EndHorizontal();
-                animClipList.DoLayoutList();
-                
-            }
-
             Preview();
         }
 
@@ -139,32 +103,7 @@ namespace EasyAvatar
                 Utility.CopyBehavior(behaviors.GetArrayElementAtIndex(i), copiedBehaviors.GetArrayElementAtIndex(i));
             }
         }
-
-        /// <summary>
-        /// 复制AnimationClips
-        /// </summary>
-        /// <param name="animClips"></param>
-        public static void CopyAnimClips(SerializedProperty animClips)
-        {
-            copidClips = new List<AnimationClip>();
-            for (int i = 0; i < animClips.arraySize; i++)
-                copidClips.Add((AnimationClip)animClips.GetArrayElementAtIndex(i).objectReferenceValue);
-
-        }
-
-        /// <summary>
-        /// 粘贴AnimationClips
-        /// </summary>
-        /// <param name="animClips"></param>
-        public static void PasteAnimClips(SerializedProperty animClips)
-        {
-            if (copidClips == null)
-                return;
-            animClips.arraySize = copidClips.Count;
-            for (int i = 0; i < animClips.arraySize; i++)
-                animClips.GetArrayElementAtIndex(i).objectReferenceValue = copidClips[i];
-        }
-
+        
 
         /// <summary>
         /// 准备预览
@@ -184,8 +123,7 @@ namespace EasyAvatar
                 AnimatorController controller = AnimatorController.CreateAnimatorControllerAtPath(EasyAvatarTool.workingDirectory + "Build/preview.controller");
                 animator.runtimeAnimatorController = controller;
             }
-            previewing = true;
-            m_previewStarted = true;
+            previewing = this;
             if (!AnimationMode.InAnimationMode())
                 AnimationMode.StartAnimationMode();
         }
@@ -195,8 +133,7 @@ namespace EasyAvatar
         /// </summary>
         public void StopPreview()
         {
-            previewing = false;
-            m_previewStarted = false;
+            previewing = null;
             if (AnimationMode.InAnimationMode())
                 AnimationMode.StopAnimationMode();
         }
@@ -206,12 +143,12 @@ namespace EasyAvatar
         /// </summary>
         public void Preview()
         {
-            if (!previewing || !AnimationMode.InAnimationMode() || !avatar)
+            if (previewing != this || !AnimationMode.InAnimationMode() || !avatar)
                 return;
             AnimationMode.BeginSampling();
             AnimationClip previewClip = Utility.GenerateAnimClip(behaviors);
-            if (useAnimClip)
-                previewClip = Utility.MergeAnimClip(Utility.MergeAnimClip(animClips), previewClip);
+            //if (useAnimClip)
+             //   previewClip = Utility.MergeAnimClip(Utility.MergeAnimClip(animClips), previewClip);
             AnimationMode.SampleAnimationClip(avatar, previewClip, 0);
             AnimationMode.EndSampling();
         }
@@ -223,6 +160,37 @@ namespace EasyAvatar
         /// <param name="position">位置</param>
         /// <param name="behavior">Behavior</param>
         public void BehaviorField(Rect position, SerializedProperty behavior)
+        {
+            SerializedProperty type= behavior.FindPropertyRelative("type");
+
+            position.y += 3;
+            position.height = EditorGUIUtility.singleLineHeight;
+            Rect typeLabelRect = new Rect(position)
+            {
+                width = Mathf.Max(position.width / 4, 50)
+            };
+
+            Rect typeFieldRect = new Rect(position)
+            {
+                x = typeLabelRect.x + typeLabelRect.width,
+                width = position.width - typeLabelRect.width
+
+            };
+            Rect layoutRect = new Rect(position)
+            {
+                y = position.y + typeLabelRect.height + 3,
+            };
+
+            GUI.Label(typeLabelRect, Lang.BehaviorType);
+            type.enumValueIndex = EditorGUI.IntPopup(typeFieldRect, "", type.enumValueIndex, typeLabels, typeIndex);
+
+            if (type.enumValueIndex == (int)EasyBehavior.Type.Property)
+                PropertyTypeBehaviorLayout(layoutRect, behavior);
+            else if (type.enumValueIndex == (int)EasyBehavior.Type.AnimationClip)
+                AnimTypeBehaviorLayout(layoutRect, behavior);
+        }
+
+        public void PropertyTypeBehaviorLayout(Rect position, SerializedProperty behavior)
         {
             SerializedProperty propertyGroup = behavior.FindPropertyRelative("propertyGroup");
             SerializedProperty property = propertyGroup.GetArrayElementAtIndex(0);
@@ -304,7 +272,7 @@ namespace EasyAvatar
             }
             //属性选择
             EditorGUI.LabelField(propertyLabelRect, Lang.Property);
-            EasyPropertySelector.DoSelect(propertyFieldRect, propertyGroup, avatar, tempTarget);
+            EasyPropertySelector.PropertyField(propertyFieldRect, propertyGroup, avatar, tempTarget);
             EditorGUI.LabelField(valueLabelRect, Lang.SetTo);
 
 
@@ -314,26 +282,44 @@ namespace EasyAvatar
         }
 
 
-        /// <summary>
-        /// AnimationClip输入框
-        /// </summary>
-        /// <param name="position">位置</param>
-        /// <param name="clip">AnimationClip</param>
-        public void AnimField(Rect position, SerializedProperty clip)
+        public void AnimTypeBehaviorLayout(Rect position, SerializedProperty behavior)
         {
+            SerializedProperty anim = behavior.FindPropertyRelative("anim");
+            SerializedProperty mask = behavior.FindPropertyRelative("mask");
+
             position.y += 3;
             position.height = EditorGUIUtility.singleLineHeight;
-            Rect labelRect = new Rect(position)
+
+
+            Rect animLabelRect = new Rect(position)
             {
                 width = Mathf.Max(position.width / 4, 50)
             };
-            Rect fieldRect = new Rect(position)
+            Rect animFieldRect = new Rect(position)
             {
-                x = labelRect.x + labelRect.width,
-                width = position.width - labelRect.width
+                x = animLabelRect.x + animLabelRect.width,
+                width = position.width - animLabelRect.width
+
             };
-            EditorGUI.LabelField(labelRect, Lang.AnimClip);
-            EditorGUI.PropertyField(fieldRect, clip, GUIContent.none);
+            Rect maskLabelRect = new Rect(position)
+            {
+                y = position.y + position.height + 6,
+                width = Mathf.Max(position.width / 4, 50)
+            };
+            Rect maskFieldRect = new Rect(position)
+            {
+                x = maskLabelRect.x + maskLabelRect.width,
+                y = position.y + position.height + 6,
+                width = position.width - maskLabelRect.width
+            };
+            GUI.Label(animLabelRect, Lang.AnimClip);
+            EditorGUI.BeginChangeCheck();
+            EditorGUI.PropertyField(animFieldRect, anim, GUIContent.none);
+            if (EditorGUI.EndChangeCheck())
+                EasyAnimationMaskWindow.CalculateMask((AnimationClip)anim.objectReferenceValue, mask);
+
+            GUI.Label(maskLabelRect, Lang.AnimMask);
+            EasyAnimationMaskWindow.AnimationMaskField(maskFieldRect, mask);
         }
 
         /// <summary>
@@ -449,6 +435,158 @@ namespace EasyAvatar
             if (!gameObject)
                 return "";
             return gameObject.transform.GetHierarchyPath(avatar.transform);
+        }
+    }
+
+    class EasyAnimationMaskWindow : EditorWindow
+    {
+        SerializedProperty mask;
+        public static void AnimationMaskField(Rect rect, SerializedProperty animationMask)
+        {
+            if (GUI.Button(rect, GetMaskStr(animationMask), EditorStyles.objectField))
+            {
+                Vector2 vector2 = EditorGUIUtility.GUIToScreenPoint(new Vector2(rect.x, rect.y));
+                Rect screenFixedRect = new Rect(rect)
+                {
+                    x = vector2.x,
+                    y = vector2.y
+                };
+                EasyAnimationMaskWindow editorWindow = CreateInstance<EasyAnimationMaskWindow>();
+                editorWindow.Init(animationMask);
+                editorWindow.ShowAsDropDown(screenFixedRect, new Vector2(rect.width, EditorGUIUtility.singleLineHeight * 14));
+            }
+
+        }
+
+        public static void GetMaskProperties(SerializedProperty mask, out SerializedProperty head, out SerializedProperty mouth, out SerializedProperty eyes, out SerializedProperty hip, out SerializedProperty rightHand, out SerializedProperty leftHand, out SerializedProperty rightFingers, out SerializedProperty leftFingers, out SerializedProperty rightFoot, out SerializedProperty leftFoot, out SerializedProperty fx)
+        {
+            head = mask.FindPropertyRelative("head");
+            mouth = mask.FindPropertyRelative("mouth");
+            eyes = mask.FindPropertyRelative("eyes");
+            hip = mask.FindPropertyRelative("hip");
+            rightHand = mask.FindPropertyRelative("rightHand");
+            leftHand = mask.FindPropertyRelative("leftHand");
+            rightFingers = mask.FindPropertyRelative("rightFingers");
+            leftFingers = mask.FindPropertyRelative("leftFingers");
+            rightFoot = mask.FindPropertyRelative("rightFoot");
+            leftFoot = mask.FindPropertyRelative("leftFoot");
+            fx = mask.FindPropertyRelative("fx");
+        }
+
+        public static string GetMaskStr(SerializedProperty mask)
+        {
+            GetMaskProperties(mask, out SerializedProperty head, out SerializedProperty mouth, out SerializedProperty eyes, out SerializedProperty hip, out SerializedProperty rightHand, out SerializedProperty leftHand, out SerializedProperty rightFingers, out SerializedProperty leftFingers, out SerializedProperty rightFoot, out SerializedProperty leftFoot, out SerializedProperty fx);
+
+            string result = "";
+            if (head.boolValue)
+                result += Lang.AnimMaskHead + ",";
+            if (mouth.boolValue)
+                result += Lang.AnimMaskMouth + ",";
+            if (eyes.boolValue)
+                result += Lang.AnimMaskEyes + ",";
+            if (hip.boolValue)
+                result += Lang.AnimMaskHip + ",";
+            if (rightHand.boolValue)
+                result += Lang.AnimMaskRightHand + ",";
+            if (leftHand.boolValue)
+                result += Lang.AnimMaskLeftHand + ",";
+            if (rightFingers.boolValue)
+                result += Lang.AnimMaskRightFingers + ",";
+            if (leftFingers.boolValue)
+                result += Lang.AnimMaskLeftFingers + ",";
+            if (rightFoot.boolValue)
+                result += Lang.AnimMaskRightFoot + ",";
+            if (leftFoot.boolValue)
+                result += Lang.AnimMaskLeftFoot + ",";
+            if (fx.boolValue)
+                result += Lang.AnimMaskFx;
+
+            if (result.Length > 0 && result[result.Length - 1] == ',')
+                result = result.Substring(0, result.Length - 1);
+
+            return result;
+        }
+
+        public static void CalculateMask(AnimationClip clip, SerializedProperty mask)
+        {
+            GetMaskProperties(mask, out SerializedProperty head, out SerializedProperty mouth, out SerializedProperty eyes, out SerializedProperty hip, out SerializedProperty rightHand, out SerializedProperty leftHand, out SerializedProperty rightFingers, out SerializedProperty leftFingers, out SerializedProperty rightFoot, out SerializedProperty leftFoot, out SerializedProperty fx);
+
+            //重置
+            head.boolValue = false;
+            mouth.boolValue = false;
+            eyes.boolValue = false;
+            hip.boolValue = false;
+            rightHand.boolValue = false;
+            leftHand.boolValue = false;
+            rightFingers.boolValue = false;
+            leftFingers.boolValue = false;
+            rightFoot.boolValue = false;
+            leftFoot.boolValue = false;
+            fx.boolValue = false;
+
+            if (!clip)
+                return;
+
+            //设置
+            foreach (EditorCurveBinding binding in AnimationUtility.GetCurveBindings(clip))
+            {
+                if (binding.type == typeof(Animator) && binding.path == "")
+                {
+                    string name = binding.propertyName;
+                    if (name.Contains("Head"))
+                        head.boolValue = true;
+                    else if (name.Contains("Root"))
+                        hip.boolValue = true;
+                    else if (name.Contains("Eye"))
+                        eyes.boolValue = true;
+                    else if (name.Contains("Jaw"))
+                        mouth.boolValue = true;
+                    else if (name.Contains("Left Hand"))
+                        leftHand.boolValue = true;
+                    else if (name.Contains("LeftHand"))
+                        leftFingers.boolValue = true;
+                    else if (name.Contains("Right Hand"))
+                        rightHand.boolValue = true;
+                    else if (name.Contains("RightHand"))
+                        rightFingers.boolValue = true;
+                    else if (name.Contains("Left Foot"))
+                        leftFoot.boolValue = true;
+                    else if (name.Contains("Right Foot"))
+                        rightFoot.boolValue = true;
+                }
+                else
+                    fx.boolValue = true;
+            }
+            if (AnimationUtility.GetObjectReferenceCurveBindings(clip).Length > 0)
+                fx.boolValue = true;
+        }
+
+        public void Init(SerializedProperty animationMask)
+        {
+            mask = animationMask;
+        }
+
+        Vector2 scroll =new Vector2();
+
+        public void OnGUI()
+        {
+            mask.serializedObject.Update();
+            GetMaskProperties(mask, out SerializedProperty head, out SerializedProperty mouth, out SerializedProperty eyes, out SerializedProperty hip, out SerializedProperty rightHand, out SerializedProperty leftHand, out SerializedProperty rightFingers, out SerializedProperty leftFingers, out SerializedProperty rightFoot, out SerializedProperty leftFoot, out SerializedProperty fx);
+
+            scroll = GUILayout.BeginScrollView(scroll);
+            head.boolValue = EditorGUILayout.Toggle(Lang.AnimMaskHead, head.boolValue);
+            mouth.boolValue = EditorGUILayout.Toggle(Lang.AnimMaskMouth, mouth.boolValue);
+            eyes.boolValue = EditorGUILayout.Toggle(Lang.AnimMaskEyes, eyes.boolValue);
+            hip.boolValue = EditorGUILayout.Toggle(Lang.AnimMaskHip, hip.boolValue);
+            rightHand.boolValue = EditorGUILayout.Toggle(Lang.AnimMaskRightHand, rightHand.boolValue);
+            leftHand.boolValue = EditorGUILayout.Toggle(Lang.AnimMaskLeftHand, leftHand.boolValue);
+            rightFingers.boolValue = EditorGUILayout.Toggle(Lang.AnimMaskRightFingers, rightFingers.boolValue);
+            leftFingers.boolValue = EditorGUILayout.Toggle(Lang.AnimMaskLeftFingers, leftFingers.boolValue);
+            rightFoot.boolValue = EditorGUILayout.Toggle(Lang.AnimMaskRightFoot, rightFoot.boolValue);
+            leftFoot.boolValue = EditorGUILayout.Toggle(Lang.AnimMaskLeftFoot, leftFoot.boolValue);
+            fx.boolValue = EditorGUILayout.Toggle(Lang.AnimMaskFx, fx.boolValue);
+            GUILayout.EndScrollView();
+            mask.serializedObject.ApplyModifiedProperties();
         }
     }
 }

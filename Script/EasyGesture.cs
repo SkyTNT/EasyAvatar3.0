@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using VRC.SDK3.Avatars.Components;
 
 namespace EasyAvatar
 {
@@ -25,18 +26,19 @@ namespace EasyAvatar
             Any
         }
 
-        [SerializeField]
-        public List<EasyBehavior> behaviors1, behaviors2;
-        [SerializeField]
-        public List<AnimationClip> animations1, animations2;
+        
         [SerializeField]
         public GestureType gestureType;
         [SerializeField]
         public HandType handType;
         [SerializeField]
-        public bool useAnimClip;
-        [SerializeField]
         public bool autoRestore = true;
+        [SerializeField]
+        public bool autoTrackingControl;
+        [SerializeField]
+        public VRCAnimatorTrackingControl offTrackingControl, onTrackingControl;
+        [SerializeField]
+        public List<EasyBehavior> behaviors1, behaviors2;
 
         // Start is called before the first frame update
         void Start()

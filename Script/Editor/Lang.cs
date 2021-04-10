@@ -38,11 +38,23 @@ namespace EasyAvatar
             OnRadialPuppet0,
             OnRadialPuppet1,
             OnRadialPuppetOff,
-            BehaviorListLabel,
-            AnimClipListLabel,
-            UseAnimClip,
+            Behavior,
+            BehaviorType,
+            BehaviorTypeProperty,
+            BehaviorTypeAnim,
             AnimClip,
-            AnimClipOffNote,
+            AnimMask,
+            AnimMaskHead,
+            AnimMaskMouth,
+            AnimMaskEyes,
+            AnimMaskHip,
+            AnimMaskRightHand,
+            AnimMaskLeftHand,
+            AnimMaskRightFingers,
+            AnimMaskLeftFingers,
+            AnimMaskRightFoot,
+            AnimMaskLeftFoot,
+            AnimMaskFx,
             GestureManager,
             Gesture,
             GestureType,
@@ -62,6 +74,7 @@ namespace EasyAvatar
             AnyHand,
             BuildSucceed,
             AutoRestore,
+            autoTrackingControl,
             About,
             ErrAvatarMenuLen1,
             ErrAvatarGestureMenuLen1,
@@ -127,11 +140,23 @@ namespace EasyAvatar
             OnRadialPuppet0 = "旋钮值为零时";
             OnRadialPuppet1 = "旋钮旋满时";
             OnRadialPuppetOff = "旋钮关闭时";
-            BehaviorListLabel = "进行的修改";
-            AnimClipListLabel = "播放的动画";
-            UseAnimClip = "使用动画文件";
+            Behavior = "行为";
+            BehaviorType = "行为类型";
+            BehaviorTypeProperty = "修改物体属性";
+            BehaviorTypeAnim = "播放动画";
             AnimClip = "动画文件";
-            AnimClipOffNote = "控件关闭时的动画只有非人体动画部分会播放";
+            AnimMask = "动画有效部分";
+            AnimMaskHead = "头";
+            AnimMaskMouth = "嘴";
+            AnimMaskEyes = "眼睛";
+            AnimMaskHip = "臀部";
+            AnimMaskRightHand = "右手";
+            AnimMaskLeftHand = "左手";
+            AnimMaskRightFingers = "右手指";
+            AnimMaskLeftFingers = "左手指";
+            AnimMaskRightFoot = "右脚";
+            AnimMaskLeftFoot = "左脚";
+            AnimMaskFx = "非人体";
             GestureManager = "手势管理";
             Gesture = "手势";
             GestureType = "手势类型";
@@ -151,6 +176,7 @@ namespace EasyAvatar
             AnyHand = "任何手";
             BuildSucceed = "成功";
             AutoRestore = "关闭时自动恢复修改的内容到默认状态";
+            autoTrackingControl = "自动设置追踪状态";
             About = "由SkyTNT制作\n项目地址：https://github.com/SkyTNT/EasyAvatar3.0/";
             ErrAvatarMenuLen1 = "一个模型中只能有一个主菜单，请考虑创建子菜单";
             ErrAvatarGestureMenuLen1 = "一个模型中只能有一个手势菜单";
@@ -197,11 +223,23 @@ namespace EasyAvatar
             OnRadialPuppet0 = "On Value Is 0%";
             OnRadialPuppet1 = "On Value Is 100%";
             OnRadialPuppetOff = "On Radial Puppet Off";
-            BehaviorListLabel = "Behaviors";
-            AnimClipListLabel = "Animation Clips";
-            UseAnimClip = "Use Animation Clip";
+            Behavior = "Behaviors";
+            BehaviorType = "Behavior Type";
+            BehaviorTypeProperty = "Change Property";
+            BehaviorTypeAnim = "Play Animation";
             AnimClip = "Animation Clip";
-            AnimClipOffNote = "When the control is switched off, only the non human animation is played";
+            AnimMask = "Animation Mask";
+            AnimMaskHead = "Head";
+            AnimMaskMouth = "Mouth";
+            AnimMaskEyes = "Eyes";
+            AnimMaskHip = "Hip";
+            AnimMaskRightHand = "Right Hand";
+            AnimMaskLeftHand = "Left Hand";
+            AnimMaskRightFingers = "Right Fingers";
+            AnimMaskLeftFingers = "Left Fingers";
+            AnimMaskRightFoot = "Right Foot";
+            AnimMaskLeftFoot = "Left Foot";
+            AnimMaskFx = "FX";
             GestureManager = "Gesture Manager";
             Gesture = "Gesture";
             GestureType = "Gesture Type";
@@ -221,6 +259,7 @@ namespace EasyAvatar
             AnyHand = "AnyHand";
             BuildSucceed = "Succeed";
             AutoRestore = "Auto restore to default state when off";
+            autoTrackingControl = "Auto set tracking state";
             About = " Made by SkyTNT\nProject:https://github.com/SkyTNT/EasyAvatar3.0/";
             ErrAvatarMenuLen1 = "There should only be one main menu in a avatar. Consider creating a submenu.";
             ErrAvatarGestureMenuLen1 = "There should only be one gesture menu in a avatar.";
