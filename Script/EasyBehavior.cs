@@ -54,9 +54,24 @@ namespace EasyAvatar
     }
 
     [Serializable]
-    class EasyTrackingControl
+    public class EasyTrackingControl
     {
-       
+       public enum Type
+        {
+            NoChange,
+            Tracking,
+            Animation 
+        }
+        public Type head;
+        public Type mouth;
+        public Type eyes;
+        public Type hip;
+        public Type rightHand;
+        public Type leftHand;
+        public Type rightFingers;
+        public Type leftFingers;
+        public Type rightFoot;
+        public Type leftFoot;
     }
 
 

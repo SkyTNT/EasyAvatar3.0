@@ -22,7 +22,7 @@ namespace EasyAvatar
         [SerializeField]
         public bool autoTrackingControl = true;
         [SerializeField]
-        public VRCAnimatorTrackingControl offTrackingControl, onTrackingControl;
+        public EasyTrackingControl offTrackingControl, onTrackingControl;
         [SerializeField]
         public List<EasyBehaviors> behaviors;//Toggle型的为2个，RadialPuppet型的为3个
 
