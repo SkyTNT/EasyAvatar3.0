@@ -44,17 +44,21 @@ namespace EasyAvatar
             BehaviorTypeAnim,
             AnimClip,
             AnimMask,
-            AnimMaskHead,
-            AnimMaskMouth,
-            AnimMaskEyes,
-            AnimMaskHip,
-            AnimMaskRightHand,
-            AnimMaskLeftHand,
-            AnimMaskRightFingers,
-            AnimMaskLeftFingers,
-            AnimMaskRightFoot,
-            AnimMaskLeftFoot,
-            AnimMaskFx,
+            BodyPartAll,
+            BodyPartHead,
+            BodyPartMouth,
+            BodyPartEyes,
+            BodyPartHip,
+            BodyPartRightHand,
+            BodyPartLeftHand,
+            BodyPartRightFingers,
+            BodyPartLeftFingers,
+            BodyPartRightFoot,
+            BodyPartLeftFoot,
+            BodyPartFx,
+            TrackingTypeNoChange,
+            TrackingTypeTracking,
+            TrackingTypeAnimation,
             GestureManager,
             Gesture,
             GestureType,
@@ -146,17 +150,21 @@ namespace EasyAvatar
             BehaviorTypeAnim = "播放动画";
             AnimClip = "动画文件";
             AnimMask = "动画有效部分";
-            AnimMaskHead = "头";
-            AnimMaskMouth = "嘴";
-            AnimMaskEyes = "眼睛";
-            AnimMaskHip = "臀部";
-            AnimMaskRightHand = "右手";
-            AnimMaskLeftHand = "左手";
-            AnimMaskRightFingers = "右手指";
-            AnimMaskLeftFingers = "左手指";
-            AnimMaskRightFoot = "右脚";
-            AnimMaskLeftFoot = "左脚";
-            AnimMaskFx = "非人体";
+            BodyPartAll = "全部";
+            BodyPartHead = "头";
+            BodyPartMouth = "嘴";
+            BodyPartEyes = "眼睛";
+            BodyPartHip = "臀部";
+            BodyPartRightHand = "右手";
+            BodyPartLeftHand = "左手";
+            BodyPartRightFingers = "右手指";
+            BodyPartLeftFingers = "左手指";
+            BodyPartRightFoot = "右脚";
+            BodyPartLeftFoot = "左脚";
+            BodyPartFx = "非人体";
+            TrackingTypeNoChange = "不变";
+            TrackingTypeTracking = "追踪中";
+            TrackingTypeAnimation = "动画中";
             GestureManager = "手势管理";
             Gesture = "手势";
             GestureType = "手势类型";
@@ -229,17 +237,21 @@ namespace EasyAvatar
             BehaviorTypeAnim = "Play Animation";
             AnimClip = "Animation Clip";
             AnimMask = "Animation Mask";
-            AnimMaskHead = "Head";
-            AnimMaskMouth = "Mouth";
-            AnimMaskEyes = "Eyes";
-            AnimMaskHip = "Hip";
-            AnimMaskRightHand = "Right Hand";
-            AnimMaskLeftHand = "Left Hand";
-            AnimMaskRightFingers = "Right Fingers";
-            AnimMaskLeftFingers = "Left Fingers";
-            AnimMaskRightFoot = "Right Foot";
-            AnimMaskLeftFoot = "Left Foot";
-            AnimMaskFx = "FX";
+            BodyPartAll = "All";
+            BodyPartHead = "Head";
+            BodyPartMouth = "Mouth";
+            BodyPartEyes = "Eyes";
+            BodyPartHip = "Hip";
+            BodyPartRightHand = "Right Hand";
+            BodyPartLeftHand = "Left Hand";
+            BodyPartRightFingers = "Right Fingers";
+            BodyPartLeftFingers = "Left Fingers";
+            BodyPartRightFoot = "Right Foot";
+            BodyPartLeftFoot = "Left Foot";
+            BodyPartFx = "FX";
+            TrackingTypeNoChange = "No Change";
+            TrackingTypeTracking = "Tracking";
+            TrackingTypeAnimation = "Animation";
             GestureManager = "Gesture Manager";
             Gesture = "Gesture";
             GestureType = "Gesture Type";

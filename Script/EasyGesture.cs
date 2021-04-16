@@ -34,11 +34,11 @@ namespace EasyAvatar
         [SerializeField]
         public bool autoRestore = true;
         [SerializeField]
-        public bool autoTrackingControl;
+        public bool autoTrackingControl = true;
         [SerializeField]
-        public VRCAnimatorTrackingControl offTrackingControl, onTrackingControl;
+        public EasyTrackingControl offTrackingControl, onTrackingControl;
         [SerializeField]
-        public List<EasyBehavior> behaviors1, behaviors2;
+        public EasyBehaviors behaviors1, behaviors2;
 
         // Start is called before the first frame update
         void Start()

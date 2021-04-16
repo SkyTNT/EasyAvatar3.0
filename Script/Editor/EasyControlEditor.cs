@@ -28,26 +28,7 @@ namespace EasyAvatar
             offTrackingControl = serializedObject.FindProperty("offTrackingControl");
             onTrackingControl = serializedObject.FindProperty("onTrackingControl");
             behaviorsList = serializedObject.FindProperty("behaviors");
-            if (controlType.enumValueIndex==(int)EasyControl.Type.Toggle)
-            {
-                behaviorsList.arraySize = 2;
-                behaviors1 = behaviorsList.GetArrayElementAtIndex(0);
-                behaviors2 = behaviorsList.GetArrayElementAtIndex(1);
-                editor1 = new EasyBehaviorsEditor(behaviors1);
-                editor2 = new EasyBehaviorsEditor(behaviors2);
-            }
-            else if(controlType.enumValueIndex == (int)EasyControl.Type.RadialPuppet)
-            {
-                behaviorsList.arraySize =3;
-                behaviors1 = behaviorsList.GetArrayElementAtIndex(0);
-                behaviors2 = behaviorsList.GetArrayElementAtIndex(1);
-                behaviors3 = behaviorsList.GetArrayElementAtIndex(2);
-                editor1 = new EasyBehaviorsEditor(behaviors1);
-                editor2 = new EasyBehaviorsEditor(behaviors2);
-                editor3 = new EasyBehaviorsEditor(behaviors3);
-                
-            }
-            
+            ChangeType((EasyControl.Type)controlType.enumValueIndex);
 
             typeLabels = new string[] { Lang.Toggle, Lang.RadialPuppet };
             
@@ -56,6 +37,32 @@ namespace EasyAvatar
 
         private void OnDestroy()
         {
+
+        }
+
+        private void ChangeType(EasyControl.Type type)
+        {
+            switch (type)
+            {
+                case EasyControl.Type.Toggle:
+                    behaviorsList.arraySize = 2;
+                    behaviors1 = behaviorsList.GetArrayElementAtIndex(0);
+                    behaviors2 = behaviorsList.GetArrayElementAtIndex(1);
+                    editor1 = new EasyBehaviorsEditor(behaviors1);
+                    editor2 = new EasyBehaviorsEditor(behaviors2);
+                    break;
+                case EasyControl.Type.RadialPuppet:
+                    behaviorsList.arraySize = 3;
+                    behaviors1 = behaviorsList.GetArrayElementAtIndex(0);
+                    behaviors2 = behaviorsList.GetArrayElementAtIndex(1);
+                    behaviors3 = behaviorsList.GetArrayElementAtIndex(2);
+                    editor1 = new EasyBehaviorsEditor(behaviors1);
+                    editor2 = new EasyBehaviorsEditor(behaviors2);
+                    editor3 = new EasyBehaviorsEditor(behaviors3);
+                    break;
+                default:
+                    break;
+            }
         }
 
         public override void OnInspectorGUI()
@@ -71,7 +78,10 @@ namespace EasyAvatar
             //图标设置
             EditorGUILayout.PropertyField(icon, new GUIContent(Lang.Icon));
             //控件类型
+            EditorGUI.BeginChangeCheck();
             controlType.enumValueIndex = EditorGUILayout.IntPopup(Lang.ControlType, controlType.enumValueIndex, typeLabels, typeIndex);
+            if (EditorGUI.EndChangeCheck())
+                ChangeType((EasyControl.Type)controlType.enumValueIndex);
             //是否自动恢复
             autoRestore.boolValue = EditorGUILayout.ToggleLeft(Lang.AutoRestore, autoRestore.boolValue);
             //是否自动设置追踪
@@ -79,7 +89,9 @@ namespace EasyAvatar
 
             if (!autoTrackingControl.boolValue)
             {
+                GUILayout.Label(Lang.OnSwitchOn, EditorStyles.boldLabel);
                 EditorGUILayout.PropertyField(offTrackingControl);
+                GUILayout.Label(Lang.OnSwitchOff, EditorStyles.boldLabel);
                 EditorGUILayout.PropertyField(onTrackingControl);
             }
 

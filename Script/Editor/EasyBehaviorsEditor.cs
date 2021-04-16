@@ -479,27 +479,27 @@ namespace EasyAvatar
 
             string result = "";
             if (head.boolValue)
-                result += Lang.AnimMaskHead + ",";
+                result += Lang.BodyPartHead + ",";
             if (mouth.boolValue)
-                result += Lang.AnimMaskMouth + ",";
+                result += Lang.BodyPartMouth + ",";
             if (eyes.boolValue)
-                result += Lang.AnimMaskEyes + ",";
+                result += Lang.BodyPartEyes + ",";
             if (hip.boolValue)
-                result += Lang.AnimMaskHip + ",";
+                result += Lang.BodyPartHip + ",";
             if (rightHand.boolValue)
-                result += Lang.AnimMaskRightHand + ",";
+                result += Lang.BodyPartRightHand + ",";
             if (leftHand.boolValue)
-                result += Lang.AnimMaskLeftHand + ",";
+                result += Lang.BodyPartLeftHand + ",";
             if (rightFingers.boolValue)
-                result += Lang.AnimMaskRightFingers + ",";
+                result += Lang.BodyPartRightFingers + ",";
             if (leftFingers.boolValue)
-                result += Lang.AnimMaskLeftFingers + ",";
+                result += Lang.BodyPartLeftFingers + ",";
             if (rightFoot.boolValue)
-                result += Lang.AnimMaskRightFoot + ",";
+                result += Lang.BodyPartRightFoot + ",";
             if (leftFoot.boolValue)
-                result += Lang.AnimMaskLeftFoot + ",";
+                result += Lang.BodyPartLeftFoot + ",";
             if (fx.boolValue)
-                result += Lang.AnimMaskFx;
+                result += Lang.BodyPartFx;
 
             if (result.Length > 0 && result[result.Length - 1] == ',')
                 result = result.Substring(0, result.Length - 1);
@@ -574,17 +574,17 @@ namespace EasyAvatar
             GetMaskProperties(mask, out SerializedProperty head, out SerializedProperty mouth, out SerializedProperty eyes, out SerializedProperty hip, out SerializedProperty rightHand, out SerializedProperty leftHand, out SerializedProperty rightFingers, out SerializedProperty leftFingers, out SerializedProperty rightFoot, out SerializedProperty leftFoot, out SerializedProperty fx);
 
             scroll = GUILayout.BeginScrollView(scroll);
-            head.boolValue = EditorGUILayout.Toggle(Lang.AnimMaskHead, head.boolValue);
-            mouth.boolValue = EditorGUILayout.Toggle(Lang.AnimMaskMouth, mouth.boolValue);
-            eyes.boolValue = EditorGUILayout.Toggle(Lang.AnimMaskEyes, eyes.boolValue);
-            hip.boolValue = EditorGUILayout.Toggle(Lang.AnimMaskHip, hip.boolValue);
-            rightHand.boolValue = EditorGUILayout.Toggle(Lang.AnimMaskRightHand, rightHand.boolValue);
-            leftHand.boolValue = EditorGUILayout.Toggle(Lang.AnimMaskLeftHand, leftHand.boolValue);
-            rightFingers.boolValue = EditorGUILayout.Toggle(Lang.AnimMaskRightFingers, rightFingers.boolValue);
-            leftFingers.boolValue = EditorGUILayout.Toggle(Lang.AnimMaskLeftFingers, leftFingers.boolValue);
-            rightFoot.boolValue = EditorGUILayout.Toggle(Lang.AnimMaskRightFoot, rightFoot.boolValue);
-            leftFoot.boolValue = EditorGUILayout.Toggle(Lang.AnimMaskLeftFoot, leftFoot.boolValue);
-            fx.boolValue = EditorGUILayout.Toggle(Lang.AnimMaskFx, fx.boolValue);
+            head.boolValue = EditorGUILayout.Toggle(Lang.BodyPartHead, head.boolValue);
+            mouth.boolValue = EditorGUILayout.Toggle(Lang.BodyPartMouth, mouth.boolValue);
+            eyes.boolValue = EditorGUILayout.Toggle(Lang.BodyPartEyes, eyes.boolValue);
+            hip.boolValue = EditorGUILayout.Toggle(Lang.BodyPartHip, hip.boolValue);
+            rightHand.boolValue = EditorGUILayout.Toggle(Lang.BodyPartRightHand, rightHand.boolValue);
+            leftHand.boolValue = EditorGUILayout.Toggle(Lang.BodyPartLeftHand, leftHand.boolValue);
+            rightFingers.boolValue = EditorGUILayout.Toggle(Lang.BodyPartRightFingers, rightFingers.boolValue);
+            leftFingers.boolValue = EditorGUILayout.Toggle(Lang.BodyPartLeftFingers, leftFingers.boolValue);
+            rightFoot.boolValue = EditorGUILayout.Toggle(Lang.BodyPartRightFoot, rightFoot.boolValue);
+            leftFoot.boolValue = EditorGUILayout.Toggle(Lang.BodyPartLeftFoot, leftFoot.boolValue);
+            fx.boolValue = EditorGUILayout.Toggle(Lang.BodyPartFx, fx.boolValue);
             GUILayout.EndScrollView();
             mask.serializedObject.ApplyModifiedProperties();
         }
