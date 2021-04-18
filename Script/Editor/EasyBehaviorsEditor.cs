@@ -47,7 +47,7 @@ namespace EasyAvatar
                 }
             };
 
-            typeLabels = new string[] {Lang.BehaviorTypeProperty,Lang.BehaviorTypeAnim };
+            typeLabels = new string[] { Lang.BehaviorTypeProperty, Lang.BehaviorTypeAnim };
         }
 
         public void DoLayout()
@@ -103,7 +103,7 @@ namespace EasyAvatar
                 Utility.CopyBehavior(behaviors.GetArrayElementAtIndex(i), copiedBehaviors.GetArrayElementAtIndex(i));
             }
         }
-        
+
 
         /// <summary>
         /// 准备预览
@@ -148,7 +148,7 @@ namespace EasyAvatar
             AnimationMode.BeginSampling();
             AnimationClip previewClip = Utility.GenerateAnimClip(behaviors);
             //if (useAnimClip)
-             //   previewClip = Utility.MergeAnimClip(Utility.MergeAnimClip(animClips), previewClip);
+            //   previewClip = Utility.MergeAnimClip(Utility.MergeAnimClip(animClips), previewClip);
             AnimationMode.SampleAnimationClip(avatar, previewClip, 0);
             AnimationMode.EndSampling();
         }
@@ -161,7 +161,7 @@ namespace EasyAvatar
         /// <param name="behavior">Behavior</param>
         public void BehaviorField(Rect position, SerializedProperty behavior)
         {
-            SerializedProperty type= behavior.FindPropertyRelative("type");
+            SerializedProperty type = behavior.FindPropertyRelative("type");
 
             position.y += 3;
             position.height = EditorGUIUtility.singleLineHeight;
@@ -473,7 +473,7 @@ namespace EasyAvatar
 
         public static string GetMaskStr(SerializedProperty mask)
         {
-            GetMaskProperties(mask, out SerializedProperty head,  out SerializedProperty body, out SerializedProperty rightArm, out SerializedProperty leftArm, out SerializedProperty rightFingers, out SerializedProperty leftFingers, out SerializedProperty rightLeg, out SerializedProperty leftLeg, out SerializedProperty fx);
+            GetMaskProperties(mask, out SerializedProperty head, out SerializedProperty body, out SerializedProperty rightArm, out SerializedProperty leftArm, out SerializedProperty rightFingers, out SerializedProperty leftFingers, out SerializedProperty rightLeg, out SerializedProperty leftLeg, out SerializedProperty fx);
 
             string result = "";
             if (head.boolValue)
@@ -490,7 +490,7 @@ namespace EasyAvatar
                 result += Lang.AnimMaskLeftFingers + ",";
             if (rightLeg.boolValue)
                 result += Lang.AnimMaskRightLeg + ",";
-            if (leftLeg .boolValue)
+            if (leftLeg.boolValue)
                 result += Lang.AnimMaskLeftLeg + ",";
             if (fx.boolValue)
                 result += Lang.AnimMaskFx;
@@ -525,11 +525,11 @@ namespace EasyAvatar
                 if (binding.type == typeof(Animator) && binding.path == "")
                 {
                     string name = binding.propertyName;
-                    if (name.Contains("Head")||name.Contains("Neck")|| name.Contains("Eye")|| name.Contains("Jaw"))
+                    if (name.Contains("Head") || name.Contains("Neck") || name.Contains("Eye") || name.Contains("Jaw"))
                         head.boolValue = true;
-                    else if (name.Contains("Root")|| name.Contains("Spine")||name.Contains("Chest"))
+                    else if (name.Contains("Root") || name.Contains("Spine") || name.Contains("Chest"))
                         body.boolValue = true;
-                    else if (name.Contains("Left Hand")|| name.Contains("Left Arm")|| name.Contains("Left Forearm"))
+                    else if (name.Contains("Left Hand") || name.Contains("Left Arm") || name.Contains("Left Forearm"))
                         leftArm.boolValue = true;
                     else if (name.Contains("LeftHand"))
                         leftFingers.boolValue = true;
@@ -537,7 +537,7 @@ namespace EasyAvatar
                         rightArm.boolValue = true;
                     else if (name.Contains("RightHand"))
                         rightFingers.boolValue = true;
-                    else if (name.Contains("Left Upper Leg")|| name.Contains("Left Lower Leg") || name.Contains("Left Foot") || name.Contains("Left Toes"))
+                    else if (name.Contains("Left Upper Leg") || name.Contains("Left Lower Leg") || name.Contains("Left Foot") || name.Contains("Left Toes"))
                         leftLeg.boolValue = true;
                     else if (name.Contains("Right Upper Leg") || name.Contains("Right Lower Leg") || name.Contains("Right Foot") || name.Contains("Right Toes"))
                         rightLeg.boolValue = true;
@@ -554,7 +554,7 @@ namespace EasyAvatar
             mask = animationMask;
         }
 
-        Vector2 scroll =new Vector2();
+        Vector2 scroll = new Vector2();
 
         public void OnGUI()
         {

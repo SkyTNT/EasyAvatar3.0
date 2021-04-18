@@ -54,11 +54,11 @@ namespace EasyAvatar
     [Serializable]
     public class EasyTrackingControl
     {
-       public enum Type
+        public enum Type
         {
             NoChange,
             Tracking,
-            Animation 
+            Animation
         }
         public Type head;
         public Type mouth;
@@ -74,4 +74,3 @@ namespace EasyAvatar
 
 
 }
-

@@ -61,7 +61,7 @@ namespace EasyAvatar
         {
             AnimationClip clip = new AnimationClip();
             clip.frameRate = 60;
-            
+
             int behaviorsCount = behaviors.arraySize;
             for (int i = 0; i < behaviorsCount; i++)
             {
@@ -95,7 +95,7 @@ namespace EasyAvatar
                         }
                     }
                 }
-                else if(type.enumValueIndex == (int)EasyBehavior.Type.AnimationClip)
+                else if (type.enumValueIndex == (int)EasyBehavior.Type.AnimationClip)
                 {
                     SerializedProperty anim = behavior.FindPropertyRelative("anim");
                     AnimationClip animClip = anim.objectReferenceValue as AnimationClip;
@@ -107,7 +107,7 @@ namespace EasyAvatar
                             AnimationUtility.SetObjectReferenceCurve(clip, binding, AnimationUtility.GetObjectReferenceCurve(animClip, binding));
                     }
                 }
-                
+
             }
             return clip;
         }
@@ -126,7 +126,7 @@ namespace EasyAvatar
             for (int i = 0; i < behaviorsCount; i++)
             {
                 EasyBehavior behavior = behaviors[i];
-                if(behavior.type == EasyBehavior.Type.Property)
+                if (behavior.type == EasyBehavior.Type.Property)
                 {
                     List<EasyProperty> propertyGroup = behavior.propertyGroup;
                     int propertyCount = propertyGroup.Count;

@@ -19,7 +19,7 @@ namespace EasyAvatar
         string[] typeLabels;
         private void OnEnable()
         {
-            
+
             serializedObject.Update();
             controlType = serializedObject.FindProperty("type");
             icon = serializedObject.FindProperty("icon");
@@ -31,7 +31,7 @@ namespace EasyAvatar
             ChangeType((EasyControl.Type)controlType.enumValueIndex);
 
             typeLabels = new string[] { Lang.Toggle, Lang.RadialPuppet };
-            
+
             serializedObject.ApplyModifiedProperties();
         }
 
@@ -68,11 +68,11 @@ namespace EasyAvatar
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
-            
+
             avatar = Utility.GetAvatar(((EasyControl)target).gameObject);
 
             //名字设置
-            target.name = EditorGUILayout.TextField(Lang.Name,target.name);
+            target.name = EditorGUILayout.TextField(Lang.Name, target.name);
             if (target.name == "")
                 target.name = Lang.Control;
             //图标设置
@@ -104,7 +104,7 @@ namespace EasyAvatar
                 GUILayout.Label(Lang.OnSwitchOff, EditorStyles.boldLabel);
                 editor2.DoLayout();
             }
-            else if(controlType.enumValueIndex == (int)EasyControl.Type.RadialPuppet)
+            else if (controlType.enumValueIndex == (int)EasyControl.Type.RadialPuppet)
             {
                 editor1.avatar = editor2.avatar = editor3.avatar = avatar;
 
@@ -117,10 +117,10 @@ namespace EasyAvatar
                 GUILayout.Label(Lang.OnRadialPuppetOff, EditorStyles.boldLabel);
                 editor3.DoLayout();
             }
-            
+
             serializedObject.ApplyModifiedProperties();
-            
+
         }
-        
+
     }
 }

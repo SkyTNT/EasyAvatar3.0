@@ -2,11 +2,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
+using UnityEditor;
 using UnityEngine;
 
 namespace EasyAvatar
 {
-    public class EasyReflection
+    public static class EasyReflection
     {
         static Dictionary<string, Type> types = new Dictionary<string, Type>();
 
@@ -31,6 +32,34 @@ namespace EasyAvatar
             return _type;
         }
 
+        //SerializedProperty获取对应实例
+        public static object GetObject(this SerializedProperty serializedProperty)
+        {
+            object target = serializedProperty.serializedObject.targetObject;
+            Type type = target.GetType();
+            bool isArray = false;
+            //按照路径寻找字段
+            foreach (var name in serializedProperty.propertyPath.Split('.'))
+            {
+                if(name == "Array")//数组类型
+                {
+                    isArray = true;
+                    continue;
+                }
+                if (isArray)//name为data[index]形式
+                {
+                    int startIndex = name.IndexOf('[') + 1;
+                    int endIndex = name.IndexOf(']');
+                    string indexStr = name.Substring(startIndex, endIndex - startIndex);
+                    target = (target as IList)[Convert.ToInt32(indexStr)];
+                    isArray = false;
+                    continue;
+                }
+                target = type.GetField(name).GetValue(target);
+                type = target.GetType();
+            }
+            return target;
+        }
 
         /// <summary>
         /// Uinty内部美化PropertyGroup名
@@ -39,6 +68,7 @@ namespace EasyAvatar
 
         static EasyReflection()
         {
+            
             internalNicifyPropertyGroupName = FindType("UnityEditorInternal.AnimationWindowUtility").GetMethod("NicifyPropertyGroupName", BindingFlags.Static | BindingFlags.Public);
         }
             
