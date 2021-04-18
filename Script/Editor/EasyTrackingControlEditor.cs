@@ -34,7 +34,7 @@ namespace EasyAvatar
 
             //全选，第二行
             position.y += EditorGUIUtility.singleLineHeight;
-            EditorGUI.LabelField(new Rect(position) { width = position.width / 2 }, Lang.BodyPartAll);
+            EditorGUI.LabelField(new Rect(position) { width = position.width / 2 }, Lang.TrackingAll);
             EasyTrackingControl.Type type = (EasyTrackingControl.Type)head.enumValueIndex;
             bool all = 
                 (head.enumValueIndex == mouth.enumValueIndex) && 
@@ -61,16 +61,16 @@ namespace EasyAvatar
                 SetAll(EasyTrackingControl.Type.Animation);
 
             int linecCount = 1;
-            DrawSingleProperty(position, ref linecCount, head, Lang.BodyPartHead);
-            DrawSingleProperty(position, ref linecCount, mouth, Lang.BodyPartMouth);
-            DrawSingleProperty(position, ref linecCount, eyes, Lang.BodyPartEyes);
-            DrawSingleProperty(position, ref linecCount, hip, Lang.BodyPartHip);
-            DrawSingleProperty(position, ref linecCount, rightHand, Lang.BodyPartRightHand);
-            DrawSingleProperty(position, ref linecCount, leftHand, Lang.BodyPartLeftHand);
-            DrawSingleProperty(position, ref linecCount, rightFingers, Lang.BodyPartRightFingers);
-            DrawSingleProperty(position, ref linecCount, leftFingers, Lang.BodyPartLeftFingers);
-            DrawSingleProperty(position, ref linecCount, rightFoot, Lang.BodyPartRightFoot);
-            DrawSingleProperty(position, ref linecCount, leftFoot, Lang.BodyPartLeftFoot);
+            DrawSingleProperty(position, ref linecCount, head, Lang.TrackingHead);
+            DrawSingleProperty(position, ref linecCount, mouth, Lang.TrackingMouth);
+            DrawSingleProperty(position, ref linecCount, eyes, Lang.TrackingEyes);
+            DrawSingleProperty(position, ref linecCount, hip, Lang.TrackingHip);
+            DrawSingleProperty(position, ref linecCount, rightHand, Lang.TrackingRightHand);
+            DrawSingleProperty(position, ref linecCount, leftHand, Lang.TrackingLeftHand);
+            DrawSingleProperty(position, ref linecCount, rightFingers, Lang.TrackingRightFingers);
+            DrawSingleProperty(position, ref linecCount, leftFingers, Lang.TrackingLeftFingers);
+            DrawSingleProperty(position, ref linecCount, rightFoot, Lang.TrackingRightFoot);
+            DrawSingleProperty(position, ref linecCount, leftFoot, Lang.TrackingLeftFoot);
         }
 
 

@@ -458,48 +458,42 @@ namespace EasyAvatar
 
         }
 
-        public static void GetMaskProperties(SerializedProperty mask, out SerializedProperty head, out SerializedProperty mouth, out SerializedProperty eyes, out SerializedProperty hip, out SerializedProperty rightHand, out SerializedProperty leftHand, out SerializedProperty rightFingers, out SerializedProperty leftFingers, out SerializedProperty rightFoot, out SerializedProperty leftFoot, out SerializedProperty fx)
+        public static void GetMaskProperties(SerializedProperty mask, out SerializedProperty head, out SerializedProperty body, out SerializedProperty rightArm, out SerializedProperty leftArm, out SerializedProperty rightFingers, out SerializedProperty leftFingers, out SerializedProperty rightLeg, out SerializedProperty leftLeg, out SerializedProperty fx)
         {
             head = mask.FindPropertyRelative("head");
-            mouth = mask.FindPropertyRelative("mouth");
-            eyes = mask.FindPropertyRelative("eyes");
-            hip = mask.FindPropertyRelative("hip");
-            rightHand = mask.FindPropertyRelative("rightHand");
-            leftHand = mask.FindPropertyRelative("leftHand");
+            body = mask.FindPropertyRelative("body");
+            rightArm = mask.FindPropertyRelative("rightArm");
+            leftArm = mask.FindPropertyRelative("leftArm");
             rightFingers = mask.FindPropertyRelative("rightFingers");
             leftFingers = mask.FindPropertyRelative("leftFingers");
-            rightFoot = mask.FindPropertyRelative("rightFoot");
-            leftFoot = mask.FindPropertyRelative("leftFoot");
+            rightLeg = mask.FindPropertyRelative("rightLeg");
+            leftLeg = mask.FindPropertyRelative("leftLeg");
             fx = mask.FindPropertyRelative("fx");
         }
 
         public static string GetMaskStr(SerializedProperty mask)
         {
-            GetMaskProperties(mask, out SerializedProperty head, out SerializedProperty mouth, out SerializedProperty eyes, out SerializedProperty hip, out SerializedProperty rightHand, out SerializedProperty leftHand, out SerializedProperty rightFingers, out SerializedProperty leftFingers, out SerializedProperty rightFoot, out SerializedProperty leftFoot, out SerializedProperty fx);
+            GetMaskProperties(mask, out SerializedProperty head,  out SerializedProperty body, out SerializedProperty rightArm, out SerializedProperty leftArm, out SerializedProperty rightFingers, out SerializedProperty leftFingers, out SerializedProperty rightLeg, out SerializedProperty leftLeg, out SerializedProperty fx);
 
             string result = "";
             if (head.boolValue)
-                result += Lang.BodyPartHead + ",";
-            if (mouth.boolValue)
-                result += Lang.BodyPartMouth + ",";
-            if (eyes.boolValue)
-                result += Lang.BodyPartEyes + ",";
-            if (hip.boolValue)
-                result += Lang.BodyPartHip + ",";
-            if (rightHand.boolValue)
-                result += Lang.BodyPartRightHand + ",";
-            if (leftHand.boolValue)
-                result += Lang.BodyPartLeftHand + ",";
+                result += Lang.AnimMaskHead + ",";
+            if (body.boolValue)
+                result += Lang.AnimMaskBody + ",";
+            if (rightArm.boolValue)
+                result += Lang.AnimMaskRightArm + ",";
+            if (leftArm.boolValue)
+                result += Lang.AnimMaskLeftArm + ",";
             if (rightFingers.boolValue)
-                result += Lang.BodyPartRightFingers + ",";
+                result += Lang.AnimMaskRightFingers + ",";
             if (leftFingers.boolValue)
-                result += Lang.BodyPartLeftFingers + ",";
-            if (rightFoot.boolValue)
-                result += Lang.BodyPartRightFoot + ",";
-            if (leftFoot.boolValue)
-                result += Lang.BodyPartLeftFoot + ",";
+                result += Lang.AnimMaskLeftFingers + ",";
+            if (rightLeg.boolValue)
+                result += Lang.AnimMaskRightLeg + ",";
+            if (leftLeg .boolValue)
+                result += Lang.AnimMaskLeftLeg + ",";
             if (fx.boolValue)
-                result += Lang.BodyPartFx;
+                result += Lang.AnimMaskFx;
 
             if (result.Length > 0 && result[result.Length - 1] == ',')
                 result = result.Substring(0, result.Length - 1);
@@ -509,19 +503,17 @@ namespace EasyAvatar
 
         public static void CalculateMask(AnimationClip clip, SerializedProperty mask)
         {
-            GetMaskProperties(mask, out SerializedProperty head, out SerializedProperty mouth, out SerializedProperty eyes, out SerializedProperty hip, out SerializedProperty rightHand, out SerializedProperty leftHand, out SerializedProperty rightFingers, out SerializedProperty leftFingers, out SerializedProperty rightFoot, out SerializedProperty leftFoot, out SerializedProperty fx);
+            GetMaskProperties(mask, out SerializedProperty head, out SerializedProperty body, out SerializedProperty rightArm, out SerializedProperty leftArm, out SerializedProperty rightFingers, out SerializedProperty leftFingers, out SerializedProperty rightLeg, out SerializedProperty leftLeg, out SerializedProperty fx);
 
             //重置
             head.boolValue = false;
-            mouth.boolValue = false;
-            eyes.boolValue = false;
-            hip.boolValue = false;
-            rightHand.boolValue = false;
-            leftHand.boolValue = false;
+            body.boolValue = false;
+            rightArm.boolValue = false;
+            leftArm.boolValue = false;
             rightFingers.boolValue = false;
             leftFingers.boolValue = false;
-            rightFoot.boolValue = false;
-            leftFoot.boolValue = false;
+            rightLeg.boolValue = false;
+            leftLeg.boolValue = false;
             fx.boolValue = false;
 
             if (!clip)
@@ -533,26 +525,22 @@ namespace EasyAvatar
                 if (binding.type == typeof(Animator) && binding.path == "")
                 {
                     string name = binding.propertyName;
-                    if (name.Contains("Head"))
+                    if (name.Contains("Head")||name.Contains("Neck")|| name.Contains("Eye")|| name.Contains("Jaw"))
                         head.boolValue = true;
-                    else if (name.Contains("Root"))
-                        hip.boolValue = true;
-                    else if (name.Contains("Eye"))
-                        eyes.boolValue = true;
-                    else if (name.Contains("Jaw"))
-                        mouth.boolValue = true;
-                    else if (name.Contains("Left Hand"))
-                        leftHand.boolValue = true;
+                    else if (name.Contains("Root")|| name.Contains("Spine")||name.Contains("Chest"))
+                        body.boolValue = true;
+                    else if (name.Contains("Left Hand")|| name.Contains("Left Arm")|| name.Contains("Left Forearm"))
+                        leftArm.boolValue = true;
                     else if (name.Contains("LeftHand"))
                         leftFingers.boolValue = true;
-                    else if (name.Contains("Right Hand"))
-                        rightHand.boolValue = true;
+                    else if (name.Contains("Right Hand") || name.Contains("Right Arm") || name.Contains("Right Forearm"))
+                        rightArm.boolValue = true;
                     else if (name.Contains("RightHand"))
                         rightFingers.boolValue = true;
-                    else if (name.Contains("Left Foot"))
-                        leftFoot.boolValue = true;
-                    else if (name.Contains("Right Foot"))
-                        rightFoot.boolValue = true;
+                    else if (name.Contains("Left Upper Leg")|| name.Contains("Left Lower Leg") || name.Contains("Left Foot") || name.Contains("Left Toes"))
+                        leftLeg.boolValue = true;
+                    else if (name.Contains("Right Upper Leg") || name.Contains("Right Lower Leg") || name.Contains("Right Foot") || name.Contains("Right Toes"))
+                        rightLeg.boolValue = true;
                 }
                 else
                     fx.boolValue = true;
@@ -571,20 +559,18 @@ namespace EasyAvatar
         public void OnGUI()
         {
             mask.serializedObject.Update();
-            GetMaskProperties(mask, out SerializedProperty head, out SerializedProperty mouth, out SerializedProperty eyes, out SerializedProperty hip, out SerializedProperty rightHand, out SerializedProperty leftHand, out SerializedProperty rightFingers, out SerializedProperty leftFingers, out SerializedProperty rightFoot, out SerializedProperty leftFoot, out SerializedProperty fx);
+            GetMaskProperties(mask, out SerializedProperty head, out SerializedProperty body, out SerializedProperty rightArm, out SerializedProperty leftArm, out SerializedProperty rightFingers, out SerializedProperty leftFingers, out SerializedProperty rightLeg, out SerializedProperty leftLeg, out SerializedProperty fx);
 
             scroll = GUILayout.BeginScrollView(scroll);
-            head.boolValue = EditorGUILayout.Toggle(Lang.BodyPartHead, head.boolValue);
-            mouth.boolValue = EditorGUILayout.Toggle(Lang.BodyPartMouth, mouth.boolValue);
-            eyes.boolValue = EditorGUILayout.Toggle(Lang.BodyPartEyes, eyes.boolValue);
-            hip.boolValue = EditorGUILayout.Toggle(Lang.BodyPartHip, hip.boolValue);
-            rightHand.boolValue = EditorGUILayout.Toggle(Lang.BodyPartRightHand, rightHand.boolValue);
-            leftHand.boolValue = EditorGUILayout.Toggle(Lang.BodyPartLeftHand, leftHand.boolValue);
-            rightFingers.boolValue = EditorGUILayout.Toggle(Lang.BodyPartRightFingers, rightFingers.boolValue);
-            leftFingers.boolValue = EditorGUILayout.Toggle(Lang.BodyPartLeftFingers, leftFingers.boolValue);
-            rightFoot.boolValue = EditorGUILayout.Toggle(Lang.BodyPartRightFoot, rightFoot.boolValue);
-            leftFoot.boolValue = EditorGUILayout.Toggle(Lang.BodyPartLeftFoot, leftFoot.boolValue);
-            fx.boolValue = EditorGUILayout.Toggle(Lang.BodyPartFx, fx.boolValue);
+            head.boolValue = EditorGUILayout.Toggle(Lang.AnimMaskHead, head.boolValue);
+            body.boolValue = EditorGUILayout.Toggle(Lang.AnimMaskBody, body.boolValue);
+            rightArm.boolValue = EditorGUILayout.Toggle(Lang.AnimMaskRightArm, rightArm.boolValue);
+            leftArm.boolValue = EditorGUILayout.Toggle(Lang.AnimMaskLeftArm, leftArm.boolValue);
+            rightFingers.boolValue = EditorGUILayout.Toggle(Lang.AnimMaskRightFingers, rightFingers.boolValue);
+            leftFingers.boolValue = EditorGUILayout.Toggle(Lang.AnimMaskRightFingers, leftFingers.boolValue);
+            rightLeg.boolValue = EditorGUILayout.Toggle(Lang.AnimMaskRightLeg, rightLeg.boolValue);
+            leftLeg.boolValue = EditorGUILayout.Toggle(Lang.AnimMaskLeftLeg, leftLeg.boolValue);
+            fx.boolValue = EditorGUILayout.Toggle(Lang.AnimMaskFx, fx.boolValue);
             GUILayout.EndScrollView();
             mask.serializedObject.ApplyModifiedProperties();
         }

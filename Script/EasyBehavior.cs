@@ -41,15 +41,13 @@ namespace EasyAvatar
     public class EasyAnimationMask
     {
         public bool head;
-        public bool mouth;
-        public bool eyes;
-        public bool hip;
-        public bool rightHand;
-        public bool leftHand;
+        public bool body;
+        public bool rightArm;
+        public bool leftArm;
         public bool rightFingers;
         public bool leftFingers;
-        public bool rightFoot;
-        public bool leftFoot;
+        public bool rightLeg;
+        public bool leftLeg;
         public bool fx;
     }
 

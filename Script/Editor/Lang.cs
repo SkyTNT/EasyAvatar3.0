@@ -44,18 +44,26 @@ namespace EasyAvatar
             BehaviorTypeAnim,
             AnimClip,
             AnimMask,
-            BodyPartAll,
-            BodyPartHead,
-            BodyPartMouth,
-            BodyPartEyes,
-            BodyPartHip,
-            BodyPartRightHand,
-            BodyPartLeftHand,
-            BodyPartRightFingers,
-            BodyPartLeftFingers,
-            BodyPartRightFoot,
-            BodyPartLeftFoot,
-            BodyPartFx,
+            AnimMaskHead,
+            AnimMaskBody,
+            AnimMaskRightArm,
+            AnimMaskLeftArm,
+            AnimMaskRightFingers,
+            AnimMaskLeftFingers,
+            AnimMaskRightLeg,
+            AnimMaskLeftLeg,
+            AnimMaskFx,
+            TrackingAll,
+            TrackingHead,
+            TrackingMouth,
+            TrackingEyes,
+            TrackingHip,
+            TrackingRightHand,
+            TrackingLeftHand,
+            TrackingRightFingers,
+            TrackingLeftFingers,
+            TrackingRightFoot,
+            TrackingLeftFoot,
             TrackingTypeNoChange,
             TrackingTypeTracking,
             TrackingTypeAnimation,
@@ -150,18 +158,26 @@ namespace EasyAvatar
             BehaviorTypeAnim = "播放动画";
             AnimClip = "动画文件";
             AnimMask = "动画有效部分";
-            BodyPartAll = "全部";
-            BodyPartHead = "头";
-            BodyPartMouth = "嘴";
-            BodyPartEyes = "眼睛";
-            BodyPartHip = "臀部";
-            BodyPartRightHand = "右手";
-            BodyPartLeftHand = "左手";
-            BodyPartRightFingers = "右手指";
-            BodyPartLeftFingers = "左手指";
-            BodyPartRightFoot = "右脚";
-            BodyPartLeftFoot = "左脚";
-            BodyPartFx = "非人体";
+            AnimMaskHead = "头";
+            AnimMaskBody = "主体";
+            AnimMaskRightArm  = "右手";
+            AnimMaskLeftArm  = "左手";
+            AnimMaskRightFingers   = "右手指";
+            AnimMaskLeftFingers  = "左手指";
+            AnimMaskRightLeg  = "右脚";
+            AnimMaskLeftLeg  = "左脚";
+            AnimMaskFx = "非人体";
+            TrackingAll = "全部";
+            TrackingHead = "头";
+            TrackingMouth = "嘴";
+            TrackingEyes = "眼睛";
+            TrackingHip = "臀部";
+            TrackingRightHand = "右手";
+            TrackingLeftHand = "左手";
+            TrackingRightFingers = "右手指";
+            TrackingLeftFingers = "左手指";
+            TrackingRightFoot = "右脚";
+            TrackingLeftFoot = "左脚";
             TrackingTypeNoChange = "不变";
             TrackingTypeTracking = "追踪中";
             TrackingTypeAnimation = "动画中";
@@ -237,18 +253,26 @@ namespace EasyAvatar
             BehaviorTypeAnim = "Play Animation";
             AnimClip = "Animation Clip";
             AnimMask = "Animation Mask";
-            BodyPartAll = "All";
-            BodyPartHead = "Head";
-            BodyPartMouth = "Mouth";
-            BodyPartEyes = "Eyes";
-            BodyPartHip = "Hip";
-            BodyPartRightHand = "Right Hand";
-            BodyPartLeftHand = "Left Hand";
-            BodyPartRightFingers = "Right Fingers";
-            BodyPartLeftFingers = "Left Fingers";
-            BodyPartRightFoot = "Right Foot";
-            BodyPartLeftFoot = "Left Foot";
-            BodyPartFx = "FX";
+            AnimMaskHead = "Head";
+            AnimMaskBody = "Body";
+            AnimMaskRightArm = "Right Arm";
+            AnimMaskLeftArm = "Left Arm";
+            AnimMaskRightFingers = "Right Fingers";
+            AnimMaskLeftFingers = "Left Fingers";
+            AnimMaskRightLeg = "Right Leg";
+            AnimMaskLeftLeg = "Left Leg";
+            AnimMaskFx = "FX";
+            TrackingAll = "All";
+            TrackingHead = "Head";
+            TrackingMouth = "Mouth";
+            TrackingEyes = "Eyes";
+            TrackingHip = "Hip";
+            TrackingRightHand = "Right Hand";
+            TrackingLeftHand = "Left Hand";
+            TrackingRightFingers = "Right Fingers";
+            TrackingLeftFingers = "Left Fingers";
+            TrackingRightFoot = "Right Foot";
+            TrackingLeftFoot = "Left Foot";
             TrackingTypeNoChange = "No Change";
             TrackingTypeTracking = "Tracking";
             TrackingTypeAnimation = "Animation";

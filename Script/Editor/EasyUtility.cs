@@ -24,46 +24,90 @@ namespace EasyAvatar
             return result;
         }
 
+        public static bool CheckCurveBinding(EditorCurveBinding binding, EasyAnimationMask mask)
+        {
+            if (binding.type == typeof(Animator) && binding.path == "")
+            {
+                string name = binding.propertyName;
+                if (name.Contains("Head") || name.Contains("Neck") || name.Contains("Eye") || name.Contains("Jaw"))
+                    return mask.head;
+                else if (name.Contains("Root") || name.Contains("Spine") || name.Contains("Chest"))
+                    return mask.body;
+                else if (name.Contains("Left Hand") || name.Contains("Left Arm") || name.Contains("Left Forearm"))
+                    return mask.leftArm;
+                else if (name.Contains("LeftHand"))
+                    return mask.leftFingers;
+                else if (name.Contains("Right Hand") || name.Contains("Right Arm") || name.Contains("Right Forearm"))
+                    return mask.rightArm;
+                else if (name.Contains("RightHand"))
+                    return mask.rightFingers;
+                else if (name.Contains("Left Upper Leg") || name.Contains("Left Lower Leg") || name.Contains("Left Foot") || name.Contains("Left Toes"))
+                    return mask.leftLeg;
+                else if (name.Contains("Right Upper Leg") || name.Contains("Right Lower Leg") || name.Contains("Right Foot") || name.Contains("Right Toes"))
+                    return mask.rightLeg;
+                else
+                    return true;
+            }
+            else
+                return mask.fx;
+        }
+
         /// <summary>
         /// 通过behaviors生成动画
         /// </summary>
-        /// <param name="behaviors">序列化的EasyBehvior列表</param>
+        /// <param name="behaviors">序列化的EasyBehviors</param>
         /// <returns>生成的动画</returns>
         public static AnimationClip GenerateAnimClip(SerializedProperty behaviors)
         {
             AnimationClip clip = new AnimationClip();
             clip.frameRate = 60;
-
-
+            
             int behaviorsCount = behaviors.arraySize;
             for (int i = 0; i < behaviorsCount; i++)
             {
                 SerializedProperty behavior = behaviors.GetArrayElementAtIndex(i);
-                SerializedProperty propertyGroup = behavior.FindPropertyRelative("propertyGroup");
-                int propertyCount = propertyGroup.arraySize;
-                for (int j = 0; j < propertyCount; j++)
+                SerializedProperty type = behavior.FindPropertyRelative("type");
+                if (type.enumValueIndex == (int)EasyBehavior.Type.Property)
                 {
-                    SerializedProperty property = propertyGroup.GetArrayElementAtIndex(j);
-                    if (property.FindPropertyRelative("targetProperty").stringValue == "")
-                        continue;
-
-                    EditorCurveBinding binding = GetBinding(property);
-
-                    if (!binding.isPPtrCurve)
+                    SerializedProperty propertyGroup = behavior.FindPropertyRelative("propertyGroup");
+                    int propertyCount = propertyGroup.arraySize;
+                    for (int j = 0; j < propertyCount; j++)
                     {
-                        float value = property.FindPropertyRelative("floatValue").floatValue;
-                        AnimationUtility.SetEditorCurve(clip, binding, AnimationCurve.Linear(0, value, 1.0f / 60, value));
-                    }
-                    else
-                    {
-                        UnityEngine.Object obj = property.FindPropertyRelative("objectValue").objectReferenceValue;
-                        ObjectReferenceKeyframe[] objectReferenceKeyframes = {
+                        SerializedProperty property = propertyGroup.GetArrayElementAtIndex(j);
+                        if (property.FindPropertyRelative("targetProperty").stringValue == "")
+                            continue;
+
+                        EditorCurveBinding binding = GetBinding(property);
+
+                        if (!binding.isPPtrCurve)
+                        {
+                            float value = property.FindPropertyRelative("floatValue").floatValue;
+                            AnimationUtility.SetEditorCurve(clip, binding, AnimationCurve.Linear(0, value, 1.0f / 60, value));
+                        }
+                        else
+                        {
+                            UnityEngine.Object obj = property.FindPropertyRelative("objectValue").objectReferenceValue;
+                            ObjectReferenceKeyframe[] objectReferenceKeyframes = {
                         new ObjectReferenceKeyframe() { time = 0, value = obj },
                         new ObjectReferenceKeyframe() { time = 1.0f / 60, value = obj }
                         };
-                        AnimationUtility.SetObjectReferenceCurve(clip, binding, objectReferenceKeyframes);
+                            AnimationUtility.SetObjectReferenceCurve(clip, binding, objectReferenceKeyframes);
+                        }
                     }
                 }
+                else if(type.enumValueIndex == (int)EasyBehavior.Type.AnimationClip)
+                {
+                    SerializedProperty anim = behavior.FindPropertyRelative("anim");
+                    AnimationClip animClip = anim.objectReferenceValue as AnimationClip;
+                    if (animClip)
+                    {
+                        foreach (EditorCurveBinding binding in AnimationUtility.GetCurveBindings(animClip))
+                            AnimationUtility.SetEditorCurve(clip, binding, AnimationUtility.GetEditorCurve(animClip, binding));
+                        foreach (EditorCurveBinding binding in AnimationUtility.GetObjectReferenceCurveBindings(animClip))
+                            AnimationUtility.SetObjectReferenceCurve(clip, binding, AnimationUtility.GetObjectReferenceCurve(animClip, binding));
+                    }
+                }
+                
             }
             return clip;
         }
@@ -82,28 +126,41 @@ namespace EasyAvatar
             for (int i = 0; i < behaviorsCount; i++)
             {
                 EasyBehavior behavior = behaviors[i];
-                List<EasyProperty> propertyGroup = behavior.propertyGroup;
-                int propertyCount = propertyGroup.Count;
-                for (int j = 0; j < propertyCount; j++)
+                if(behavior.type == EasyBehavior.Type.Property)
                 {
-                    EasyProperty property = propertyGroup[j];
-                    if (property.targetProperty == "")
-                        continue;
-
-                    EditorCurveBinding binding = GetBinding(property);
-
-                    if (!binding.isPPtrCurve)
+                    List<EasyProperty> propertyGroup = behavior.propertyGroup;
+                    int propertyCount = propertyGroup.Count;
+                    for (int j = 0; j < propertyCount; j++)
                     {
-                        AnimationUtility.SetEditorCurve(clip, binding, AnimationCurve.Linear(0, property.floatValue, 1.0f / 60, property.floatValue));
-                    }
-                    else
-                    {
+                        EasyProperty property = propertyGroup[j];
+                        if (property.targetProperty == "")
+                            continue;
 
-                        ObjectReferenceKeyframe[] objectReferenceKeyframes = {
+                        EditorCurveBinding binding = GetBinding(property);
+
+                        if (!binding.isPPtrCurve)
+                        {
+                            AnimationUtility.SetEditorCurve(clip, binding, AnimationCurve.Linear(0, property.floatValue, 1.0f / 60, property.floatValue));
+                        }
+                        else
+                        {
+
+                            ObjectReferenceKeyframe[] objectReferenceKeyframes = {
                                 new ObjectReferenceKeyframe() { time = 0, value = property.objectValue },
                                 new ObjectReferenceKeyframe() { time = 1.0f / 60, value = property.objectValue }
                             };
-                        AnimationUtility.SetObjectReferenceCurve(clip, binding, objectReferenceKeyframes);
+                            AnimationUtility.SetObjectReferenceCurve(clip, binding, objectReferenceKeyframes);
+                        }
+                    }
+                }
+                else if (behavior.type == EasyBehavior.Type.AnimationClip)
+                {
+                    if (behavior.anim)
+                    {
+                        foreach (EditorCurveBinding binding in AnimationUtility.GetCurveBindings(behavior.anim))
+                            AnimationUtility.SetEditorCurve(clip, binding, AnimationUtility.GetEditorCurve(behavior.anim, binding));
+                        foreach (EditorCurveBinding binding in AnimationUtility.GetObjectReferenceCurveBindings(behavior.anim))
+                            AnimationUtility.SetObjectReferenceCurve(clip, binding, AnimationUtility.GetObjectReferenceCurve(behavior.anim, binding));
                     }
                 }
             }
