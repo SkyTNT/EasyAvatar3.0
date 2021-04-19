@@ -55,66 +55,6 @@ namespace EasyAvatar
         /// <summary>
         /// 通过behaviors生成动画
         /// </summary>
-        /// <param name="behaviors">序列化的EasyBehviors</param>
-        /// <returns>生成的动画</returns>
-        public static AnimationClip GenerateAnimClip(SerializedProperty behaviors)
-        {
-            AnimationClip clip = new AnimationClip();
-            clip.frameRate = 60;
-
-            int behaviorsCount = behaviors.arraySize;
-            for (int i = 0; i < behaviorsCount; i++)
-            {
-                SerializedProperty behavior = behaviors.GetArrayElementAtIndex(i);
-                SerializedProperty type = behavior.FindPropertyRelative("type");
-                if (type.enumValueIndex == (int)EasyBehavior.Type.Property)
-                {
-                    SerializedProperty propertyGroup = behavior.FindPropertyRelative("propertyGroup");
-                    int propertyCount = propertyGroup.arraySize;
-                    for (int j = 0; j < propertyCount; j++)
-                    {
-                        SerializedProperty property = propertyGroup.GetArrayElementAtIndex(j);
-                        if (property.FindPropertyRelative("targetProperty").stringValue == "")
-                            continue;
-
-                        EditorCurveBinding binding = GetBinding(property);
-
-                        if (!binding.isPPtrCurve)
-                        {
-                            float value = property.FindPropertyRelative("floatValue").floatValue;
-                            AnimationUtility.SetEditorCurve(clip, binding, AnimationCurve.Linear(0, value, 1.0f / 60, value));
-                        }
-                        else
-                        {
-                            UnityEngine.Object obj = property.FindPropertyRelative("objectValue").objectReferenceValue;
-                            ObjectReferenceKeyframe[] objectReferenceKeyframes = {
-                        new ObjectReferenceKeyframe() { time = 0, value = obj },
-                        new ObjectReferenceKeyframe() { time = 1.0f / 60, value = obj }
-                        };
-                            AnimationUtility.SetObjectReferenceCurve(clip, binding, objectReferenceKeyframes);
-                        }
-                    }
-                }
-                else if (type.enumValueIndex == (int)EasyBehavior.Type.AnimationClip)
-                {
-                    SerializedProperty anim = behavior.FindPropertyRelative("anim");
-                    AnimationClip animClip = anim.objectReferenceValue as AnimationClip;
-                    if (animClip)
-                    {
-                        foreach (EditorCurveBinding binding in AnimationUtility.GetCurveBindings(animClip))
-                            AnimationUtility.SetEditorCurve(clip, binding, AnimationUtility.GetEditorCurve(animClip, binding));
-                        foreach (EditorCurveBinding binding in AnimationUtility.GetObjectReferenceCurveBindings(animClip))
-                            AnimationUtility.SetObjectReferenceCurve(clip, binding, AnimationUtility.GetObjectReferenceCurve(animClip, binding));
-                    }
-                }
-
-            }
-            return clip;
-        }
-
-        /// <summary>
-        /// 通过behaviors生成动画
-        /// </summary>
         /// <param name="behaviors">behaviors</param>
         /// <returns>动画</returns>
         public static AnimationClip GenerateAnimClip(List<EasyBehavior> behaviors)
@@ -128,15 +68,15 @@ namespace EasyAvatar
                 EasyBehavior behavior = behaviors[i];
                 if (behavior.type == EasyBehavior.Type.Property)
                 {
-                    List<EasyProperty> propertyGroup = behavior.propertyGroup;
-                    int propertyCount = propertyGroup.Count;
-                    for (int j = 0; j < propertyCount; j++)
+                    EasyPropertyGroup propertyGroup = behavior.propertyGroup;
+                    List<EasyProperty> properties = propertyGroup.properties;
+                    for (int j = 0; j < properties.Count; j++)
                     {
-                        EasyProperty property = propertyGroup[j];
+                        EasyProperty property = properties[j];
                         if (property.targetProperty == "")
                             continue;
 
-                        EditorCurveBinding binding = GetBinding(property);
+                        EditorCurveBinding binding = GetBinding(propertyGroup.targetPath, property);
 
                         if (!binding.isPPtrCurve)
                         {
@@ -158,9 +98,11 @@ namespace EasyAvatar
                     if (behavior.anim)
                     {
                         foreach (EditorCurveBinding binding in AnimationUtility.GetCurveBindings(behavior.anim))
-                            AnimationUtility.SetEditorCurve(clip, binding, AnimationUtility.GetEditorCurve(behavior.anim, binding));
+                            if (CheckCurveBinding(binding, behavior.mask))
+                                AnimationUtility.SetEditorCurve(clip, binding, AnimationUtility.GetEditorCurve(behavior.anim, binding));
                         foreach (EditorCurveBinding binding in AnimationUtility.GetObjectReferenceCurveBindings(behavior.anim))
-                            AnimationUtility.SetObjectReferenceCurve(clip, binding, AnimationUtility.GetObjectReferenceCurve(behavior.anim, binding));
+                            if (CheckCurveBinding(binding, behavior.mask))
+                                AnimationUtility.SetObjectReferenceCurve(clip, binding, AnimationUtility.GetObjectReferenceCurve(behavior.anim, binding));
                     }
                 }
             }
@@ -213,29 +155,6 @@ namespace EasyAvatar
         /// <summary>
         /// 合并动画
         /// </summary>
-        /// <param name="clips">序列化的动画列表</param>
-        /// <returns>动画</returns>
-        public static AnimationClip MergeAnimClip(SerializedProperty clips)
-        {
-            AnimationClip result = new AnimationClip();
-            result.frameRate = 60;
-
-            for (int i = 0; i < clips.arraySize; i++)
-            {
-                AnimationClip clip = (AnimationClip)clips.GetArrayElementAtIndex(i).objectReferenceValue;
-                if (!clip)
-                    continue;
-                foreach (EditorCurveBinding binding in AnimationUtility.GetCurveBindings(clip))
-                    AnimationUtility.SetEditorCurve(result, binding, AnimationUtility.GetEditorCurve(clip, binding));
-                foreach (EditorCurveBinding binding in AnimationUtility.GetObjectReferenceCurveBindings(clip))
-                    AnimationUtility.SetObjectReferenceCurve(result, binding, AnimationUtility.GetObjectReferenceCurve(clip, binding));
-            }
-            return result;
-        }
-
-        /// <summary>
-        /// 合并动画
-        /// </summary>
         /// <param name="clips">多个动画</param>
         /// <returns>合并的动画</returns>
         public static AnimationClip MergeAnimClip(params AnimationClip[] clips)
@@ -263,33 +182,6 @@ namespace EasyAvatar
         public static bool AnimationIsEmpty(AnimationClip clip)
         {
             return !clip || (AnimationUtility.GetCurveBindings(clip).Length == 0 && AnimationUtility.GetCurveBindings(clip).Length == 0);
-        }
-
-        /// <summary>
-        /// 分离人体动画
-        /// </summary>
-        /// <param name="clip">动画</param>
-        /// <returns>[0]人体动画，[1]非人体动画</returns>
-        public static AnimationClip[] SeparateHumanAnimation(AnimationClip clip)
-        {
-            AnimationClip humanAnim = new AnimationClip();
-            humanAnim.frameRate = 60;
-            AnimationClip fxAnim = new AnimationClip();
-            fxAnim.frameRate = 60;
-            foreach (EditorCurveBinding binding in AnimationUtility.GetCurveBindings(clip))
-            {
-
-                //一般在根物体也就是avatar上只用了人体动画
-                if (binding.path == "")
-                    AnimationUtility.SetEditorCurve(humanAnim, binding, AnimationUtility.GetEditorCurve(clip, binding));
-                else
-                    AnimationUtility.SetEditorCurve(fxAnim, binding, AnimationUtility.GetEditorCurve(clip, binding));
-            }
-            //Object类型的曲线一定不是人体动画
-            foreach (EditorCurveBinding binding in AnimationUtility.GetObjectReferenceCurveBindings(clip))
-                AnimationUtility.SetObjectReferenceCurve(fxAnim, binding, AnimationUtility.GetObjectReferenceCurve(clip, binding));
-
-            return new AnimationClip[] { humanAnim, fxAnim };
         }
 
         /// <summary>
@@ -325,38 +217,19 @@ namespace EasyAvatar
             dest.FindPropertyRelative("objectValue").objectReferenceValue = src.FindPropertyRelative("objectValue").objectReferenceValue;
             dest.FindPropertyRelative("floatValue").floatValue = src.FindPropertyRelative("floatValue").floatValue;
         }
-
-        /// <summary>
-        /// 获取binding
-        /// </summary>
-        /// <param name="property">序列化的EasyProperty</param>
-        /// <returns>对应binding</returns>
-        public static EditorCurveBinding GetBinding(SerializedProperty property)
-        {
-            SerializedProperty targetPath = property.FindPropertyRelative("targetPath");
-            SerializedProperty targetProperty = property.FindPropertyRelative("targetProperty");
-            SerializedProperty targetPropertyType = property.FindPropertyRelative("targetPropertyType");
-            SerializedProperty isDiscrete = property.FindPropertyRelative("isDiscrete");
-            SerializedProperty isPPtr = property.FindPropertyRelative("isPPtr");
-            if (isPPtr.boolValue)
-                return EditorCurveBinding.PPtrCurve(targetPath.stringValue, EasyReflection.FindType(targetPropertyType.stringValue), targetProperty.stringValue);
-            else if (isDiscrete.boolValue)
-                return EditorCurveBinding.DiscreteCurve(targetPath.stringValue, EasyReflection.FindType(targetPropertyType.stringValue), targetProperty.stringValue);
-            return EditorCurveBinding.FloatCurve(targetPath.stringValue, EasyReflection.FindType(targetPropertyType.stringValue), targetProperty.stringValue);
-        }
-
+        
         /// <summary>
         /// 获取binding
         /// </summary>
         /// <param name="property"></param>
         /// <returns></returns>
-        public static EditorCurveBinding GetBinding(EasyProperty property)
+        public static EditorCurveBinding GetBinding(string targetPath, EasyProperty property)
         {
             if (property.isPPtr)
-                return EditorCurveBinding.PPtrCurve(property.targetPath, EasyReflection.FindType(property.targetPropertyType), property.targetProperty);
+                return EditorCurveBinding.PPtrCurve(targetPath, EasyReflection.FindType(property.targetPropertyType), property.targetProperty);
             else if (property.isDiscrete)
-                return EditorCurveBinding.DiscreteCurve(property.targetPath, EasyReflection.FindType(property.targetPropertyType), property.targetProperty);
-            return EditorCurveBinding.FloatCurve(property.targetPath, EasyReflection.FindType(property.targetPropertyType), property.targetProperty);
+                return EditorCurveBinding.DiscreteCurve(targetPath, EasyReflection.FindType(property.targetPropertyType), property.targetProperty);
+            return EditorCurveBinding.FloatCurve(targetPath, EasyReflection.FindType(property.targetPropertyType), property.targetProperty);
         }
 
         /// <summary>
@@ -393,26 +266,15 @@ namespace EasyAvatar
         /// <param name="avatar">根物体</param>
         /// <param name="property">序列化的EasyProperty</param>
         /// <returns></returns>
-        public static bool CheckProperty(GameObject avatar, SerializedProperty property)
+        public static bool CheckProperty(GameObject avatar, SerializedProperty propertyGroup)
         {
-
-            if (!avatar || property.FindPropertyRelative("valueType").stringValue == "" || property.FindPropertyRelative("targetProperty").stringValue == "")
+            SerializedProperty properties = propertyGroup.FindPropertyRelative("properties");
+            if (!avatar || properties.arraySize == 0)
                 return false;
-            return AnimationUtility.GetEditorCurveValueType(avatar, GetBinding(property)) != null;
-        }
-
-        /// <summary>
-        /// 清除PropertyGroup只保留一个空的Property
-        /// </summary>
-        /// <param name="propertyGroup">序列化的EasyProperty列表</param>
-        public static void ClearPropertyGroup(SerializedProperty propertyGroup)
-        {
-            string targetPath = propertyGroup.GetArrayElementAtIndex(0).FindPropertyRelative("targetPath").stringValue;
-            propertyGroup.ClearArray();
-            propertyGroup.arraySize++;
-            propertyGroup.GetArrayElementAtIndex(0).FindPropertyRelative("targetPath").stringValue = targetPath;
-
-
+            SerializedProperty property = properties.GetArrayElementAtIndex(0);
+            if (property.FindPropertyRelative("valueType").stringValue == "" || property.FindPropertyRelative("targetProperty").stringValue == "")
+                return false;
+            return AnimationUtility.GetEditorCurveValueType(avatar, GetBinding(propertyGroup.FindPropertyRelative("targetPath").stringValue, property.GetObject<EasyProperty>())) != null;
         }
 
         /// <summary>
@@ -477,31 +339,6 @@ namespace EasyAvatar
         {
             string targetProperty = property.FindPropertyRelative("targetProperty").stringValue;
             return targetProperty.Substring(targetProperty.Length - 1);
-        }
-
-        /// <summary>
-        /// 检测PropertyGroup是否为颜色
-        /// </summary>
-        /// <param name="propertyGroup">序列化的EasyProperty列表</param>
-        /// <returns></returns>
-        public static bool PropertyGroupIsColor(SerializedProperty propertyGroup)
-        {
-            string targetProperty = propertyGroup.GetArrayElementAtIndex(0).FindPropertyRelative("targetProperty").stringValue;
-            //简单地判断一下
-            return targetProperty.ToLower().Contains("color") && propertyGroup.arraySize == 4;
-        }
-
-        /// <summary>
-        /// 检测EasyProperty是否为形态键
-        /// </summary>
-        /// <param name="propertyGroup">序列化的EasyProperty列表</param>
-        /// <returns></returns>
-        public static bool PropertyGroupIsBlendShape(SerializedProperty propertyGroup)
-        {
-            SerializedProperty property = propertyGroup.GetArrayElementAtIndex(0);
-            string targetProperty = property.FindPropertyRelative("targetProperty").stringValue;
-            string targetPropertyType = property.FindPropertyRelative("targetPropertyType").stringValue;
-            return targetPropertyType.Contains("SkinnedMeshRenderer") && targetProperty.Contains("blendShape") && propertyGroup.arraySize == 1;
         }
 
         /// <summary>

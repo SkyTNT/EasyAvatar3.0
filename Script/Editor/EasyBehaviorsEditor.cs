@@ -31,21 +31,7 @@ namespace EasyAvatar
             behaviorsList.drawHeaderCallback = (Rect rect) => EditorGUI.LabelField(rect, Lang.Behavior);
             behaviorsList.elementHeight = (EditorGUIUtility.singleLineHeight + 6) * 4;
             behaviorsList.drawElementCallback = (Rect rect, int index, bool selected, bool focused) => BehaviorField(rect, behaviors.GetArrayElementAtIndex(index));
-            behaviorsList.onAddCallback = (ReorderableList list) => {
-                if (list.serializedProperty != null)
-                {
-                    list.serializedProperty.arraySize++;
-                    list.index = list.serializedProperty.arraySize - 1;
-                    SerializedProperty propertyGroup = list.serializedProperty.GetArrayElementAtIndex(list.index).FindPropertyRelative("propertyGroup");
-                    //要求propertyGroup至少有一个元素
-                    if (propertyGroup.arraySize == 0)
-                        propertyGroup.arraySize++;
-                }
-                else
-                {
-                    ReorderableList.defaultBehaviours.DoAddButton(list);
-                }
-            };
+            
 
             typeLabels = new string[] { Lang.BehaviorTypeProperty, Lang.BehaviorTypeAnim };
         }
@@ -146,7 +132,7 @@ namespace EasyAvatar
             if (previewing != this || !AnimationMode.InAnimationMode() || !avatar)
                 return;
             AnimationMode.BeginSampling();
-            AnimationClip previewClip = Utility.GenerateAnimClip(behaviors);
+            AnimationClip previewClip = Utility.GenerateAnimClip(behaviors.GetObject<List<EasyBehavior>>());
             //if (useAnimClip)
             //   previewClip = Utility.MergeAnimClip(Utility.MergeAnimClip(animClips), previewClip);
             AnimationMode.SampleAnimationClip(avatar, previewClip, 0);
@@ -193,10 +179,8 @@ namespace EasyAvatar
         public void PropertyTypeBehaviorLayout(Rect position, SerializedProperty behavior)
         {
             SerializedProperty propertyGroup = behavior.FindPropertyRelative("propertyGroup");
-            SerializedProperty property = propertyGroup.GetArrayElementAtIndex(0);
-            SerializedProperty targetPath = property.FindPropertyRelative("targetPath");
-            SerializedProperty targetProperty = property.FindPropertyRelative("targetProperty");
-            SerializedProperty targetPropertyType = property.FindPropertyRelative("targetPropertyType");
+            SerializedProperty targetPath = propertyGroup.FindPropertyRelative("targetPath");
+            SerializedProperty properties = propertyGroup.FindPropertyRelative("properties");
 
             GameObject tempTarget = null, newTarget = null;
             //获取目标物体
@@ -250,35 +234,36 @@ namespace EasyAvatar
             EditorGUI.LabelField(targetLabelRect, Lang.Target);
             newTarget = (GameObject)EditorGUI.ObjectField(targetFieldRect, tempTarget, typeof(GameObject), true);
 
+            //目标物体缺失
             if (isMissing)
             {
                 Rect missingRect = new Rect(targetFieldRect) { width = targetFieldRect.width - targetFieldRect.height - 2 };
                 GUI.Box(missingRect, GUIContent.none, "Tag MenuItem");
                 EditorGUI.LabelField(missingRect, Lang.Missing + ":" + targetPath.stringValue, MyGUIStyle.yellowLabel);
             }
-            if (newTarget != tempTarget && !avatar)
-            {
-                EditorUtility.DisplayDialog("Error", Lang.ErrAvatarNotSet, "ok");
-            }
-
             //当修改目标时
             if (newTarget != tempTarget)
             {
-                if (avatar)
-                    Utility.PropertyGroupEdit(propertyGroup, "targetPath", CalculateGameObjectPath(newTarget));
-                //检查目标是否具有当前属性
-                if (!Utility.CheckProperty(avatar, property))
-                    Utility.ClearPropertyGroup(propertyGroup);
+                if (!avatar)
+                    EditorUtility.DisplayDialog("Error", Lang.ErrAvatarNotSet, "ok");
+                else
+                    targetPath.stringValue = CalculateGameObjectPath(newTarget);
+
+                //当前属性不在新目标中存在则删除属性
+                if (properties.arraySize > 0 && !Utility.CheckProperty(avatar, propertyGroup))
+                {
+                    Debug.Log("clear");
+                    properties.ClearArray();
+                }
+                    
             }
+            
             //属性选择
             EditorGUI.LabelField(propertyLabelRect, Lang.Property);
             EasyPropertySelector.PropertyField(propertyFieldRect, propertyGroup, avatar, tempTarget);
-            EditorGUI.LabelField(valueLabelRect, Lang.SetTo);
-
-
             //输入值
-            if (property.FindPropertyRelative("valueType").stringValue != "")
-                PropertyValueField(valueFieldRect, behavior.FindPropertyRelative("propertyGroup"));
+            EditorGUI.LabelField(valueLabelRect, Lang.SetTo);
+            PropertyValueField(valueFieldRect, propertyGroup);
         }
 
 
@@ -329,20 +314,30 @@ namespace EasyAvatar
         /// <param name="propertyGroup">PropertyGroup</param>
         public void PropertyValueField(Rect rect, SerializedProperty propertyGroup)
         {
+            SerializedProperty targetPath = propertyGroup.FindPropertyRelative("targetPath");
+            SerializedProperty properties = propertyGroup.FindPropertyRelative("properties");
+            int groupSize = properties.arraySize;
+            if (groupSize == 0)
+                return;
 
-            if (Utility.PropertyGroupIsBlendShape(propertyGroup))//特殊情况Blend Shape
+            SerializedProperty property0 = properties.GetArrayElementAtIndex(0);
+            SerializedProperty targetProperty0 = property0.FindPropertyRelative("targetProperty");
+            SerializedProperty targetPropertyType0 = property0.FindPropertyRelative("targetPropertyType");
+            //特殊情况Blend Shape
+            if (targetPropertyType0.stringValue.Contains("SkinnedMeshRenderer") && targetProperty0.stringValue.Contains("blendShape") && groupSize == 1)
             {
-                SerializedProperty value = propertyGroup.GetArrayElementAtIndex(0).FindPropertyRelative("floatValue");
+                SerializedProperty value = property0.FindPropertyRelative("floatValue");
                 value.floatValue = EditorGUI.Slider(rect, value.floatValue, 0, 100);
             }
-            else if (Utility.PropertyGroupIsColor(propertyGroup))//特殊情况Color
+            //特殊情况Color
+            else if (targetProperty0.stringValue.ToLower().Contains("color") && groupSize == 4)
             {
                 bool isVec4 = false;
                 SerializedProperty valueR, valueG, valueB, valueA;
                 Dictionary<string, SerializedProperty> colorMap = new Dictionary<string, SerializedProperty>();
-                for (int i = 0; i < propertyGroup.arraySize; i++)
+                for (int i = 0; i < groupSize; i++)
                 {
-                    SerializedProperty property = propertyGroup.GetArrayElementAtIndex(i);
+                    SerializedProperty property = properties.GetArrayElementAtIndex(i);
                     string subName = Utility.GetPropertyGroupSubname(property);
                     colorMap.Add(subName, property.FindPropertyRelative("floatValue"));
                     if (subName == "w")
@@ -378,11 +373,11 @@ namespace EasyAvatar
             {
                 rect.x -= 3;
                 rect.width += 6;
-
-                for (int i = 0; i < propertyGroup.arraySize; i++)
+                
+                for (int i = 0; i < groupSize; i++)
                 {
 
-                    SerializedProperty property = propertyGroup.GetArrayElementAtIndex(i);
+                    SerializedProperty property = properties.GetArrayElementAtIndex(i);
                     SerializedProperty propertyValueType = property.FindPropertyRelative("valueType");
                     SerializedProperty isPPtr = property.FindPropertyRelative("isPPtr");
                     SerializedProperty value = null;
@@ -391,14 +386,14 @@ namespace EasyAvatar
 
                     Rect fieldRect = new Rect(rect)
                     {
-                        x = rect.x + i * (rect.width / propertyGroup.arraySize) + 3,
-                        width = rect.width / propertyGroup.arraySize - 6
+                        x = rect.x + i * (rect.width / groupSize) + 3,
+                        width = rect.width / groupSize - 6
                     };
                     GUIContent label = GUIContent.none;
                     //显示Vector之类的x,y,z,w或r,g,b,a
-                    if (propertyGroup.arraySize > 1)
+                    if (groupSize > 1)
                     {
-                        label = new GUIContent(Utility.GetPropertyGroupSubname(propertyGroup, i).ToUpper());
+                        label = new GUIContent(Utility.GetPropertyGroupSubname(properties, i).ToUpper());
                     }
 
                     float preLabelWidth = EditorGUIUtility.labelWidth;

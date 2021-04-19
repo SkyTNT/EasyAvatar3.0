@@ -21,16 +21,20 @@ namespace EasyAvatar
         /// <param name="target">target</param>
         public static void PropertyField(Rect rect, SerializedProperty propertyGroup, GameObject avatar, GameObject target)
         {
-            SerializedProperty property = propertyGroup.GetArrayElementAtIndex(0);
-            SerializedProperty targetProperty = property.FindPropertyRelative("targetProperty");
-            SerializedProperty targetPropertyType = property.FindPropertyRelative("targetPropertyType");
+            SerializedProperty properties = propertyGroup.FindPropertyRelative("properties");
             GUIContent content = new GUIContent();
-            if (targetProperty.stringValue == "")
+
+            if(properties.arraySize == 0)
+            {
                 content.text = "None";
+            }
             else
             {
-                Type propertyType = EasyReflection.FindType(targetPropertyType.stringValue);
-                content.text = ObjectNames.NicifyVariableName(propertyType.Name) + ":" + Utility.NicifyPropertyGroupName(propertyType, targetProperty.stringValue);
+                SerializedProperty property0 = properties.GetArrayElementAtIndex(0);
+                SerializedProperty targetProperty0 = property0.FindPropertyRelative("targetProperty");
+                SerializedProperty targetPropertyType0 = property0.FindPropertyRelative("targetPropertyType");
+                Type propertyType = EasyReflection.FindType(targetPropertyType0.stringValue);
+                content.text = ObjectNames.NicifyVariableName(propertyType.Name) + ":" + Utility.NicifyPropertyGroupName(propertyType, targetProperty0.stringValue);
                 content.image = AssetPreview.GetMiniTypeThumbnail(propertyType);
             }
             
@@ -77,7 +81,7 @@ namespace EasyAvatar
     public class EasyPropertyTree : TreeView
     {
         GameObject avatar, target;
-        SerializedProperty propertyGroup,property, targetProperty, targetPropertyType, valueType, isDiscrete, isPPtr;
+        SerializedProperty propertyGroup;
         EditorCurveBinding[] bindings;
         Dictionary<string, List<EditorCurveBinding[]>> bindingsDictionary;
 
@@ -94,12 +98,6 @@ namespace EasyAvatar
             this.target = target;
             this.avatar = avatar;
             this.propertyGroup = propertyGroup;
-            property = propertyGroup.GetArrayElementAtIndex(0);
-            targetProperty = property.FindPropertyRelative("targetProperty");
-            targetPropertyType = property.FindPropertyRelative("targetPropertyType");
-            valueType = property.FindPropertyRelative("valueType");
-            isDiscrete = property.FindPropertyRelative("isDiscrete");
-            isPPtr = property.FindPropertyRelative("isPPtr");
             bindings = AnimationUtility.GetAnimatableBindings(target, avatar);
 
             //按照type分类
@@ -220,14 +218,16 @@ namespace EasyAvatar
             //获取到的旋转是四元数，把它转换成欧拉角
             if (bindingGroup[0].type == typeof(Transform) && bindingGroup[0].propertyName.Contains("m_LocalRotation"))
                 bindingGroup = ConvertRotationBindings(bindingGroup);
-            
-            propertyGroup.arraySize = bindingGroup.Length;
+
+            SerializedProperty properties = propertyGroup.FindPropertyRelative("properties");
+            properties.arraySize = bindingGroup.Length;
+
             for (int i = 0; i < bindingGroup.Length; i++)
             {
                 EditorCurveBinding binding = bindingGroup[i];
                 Type valueType = AnimationUtility.GetEditorCurveValueType(avatar, binding);
-                SerializedProperty property = propertyGroup.GetArrayElementAtIndex(i);
-                property.FindPropertyRelative("targetPath").stringValue = binding.path;
+                SerializedProperty property = properties.GetArrayElementAtIndex(i);
+                propertyGroup.FindPropertyRelative("targetPath").stringValue = binding.path;
                 property.FindPropertyRelative("targetProperty").stringValue = binding.propertyName;
                 property.FindPropertyRelative("targetPropertyType").stringValue = binding.type.FullName;
                 property.FindPropertyRelative("valueType").stringValue = valueType.FullName;

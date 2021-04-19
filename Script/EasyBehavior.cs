@@ -21,20 +21,26 @@ namespace EasyAvatar
         }
 
         public Type type;
-        public List<EasyProperty> propertyGroup;
+        public EasyPropertyGroup propertyGroup;
         public AnimationClip anim;
         public EasyAnimationMask mask;
     }
 
     [Serializable]
+    public class EasyPropertyGroup
+    {
+        public string targetPath;
+        public List<EasyProperty> properties;
+    }
+
+    [Serializable]
     public class EasyProperty
     {
-        public string targetPath, targetProperty, targetPropertyType, valueType;
+        public string targetProperty, targetPropertyType, valueType;
         public bool isDiscrete, isPPtr;
 
         public UnityEngine.Object objectValue;
         public float floatValue;
-
     }
 
     [Serializable]

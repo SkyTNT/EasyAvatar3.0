@@ -32,8 +32,13 @@ namespace EasyAvatar
             return _type;
         }
 
-        //SerializedProperty获取对应实例
-        public static object GetObject(this SerializedProperty serializedProperty)
+        /// <summary>
+        /// SerializedProperty获取对应实例
+        /// </summary>
+        /// <typeparam name="T">对应类型</typeparam>
+        /// <param name="serializedProperty">SerializedProperty</param>
+        /// <returns></returns>
+        public static T GetObject<T>(this SerializedProperty serializedProperty)
         {
             object target = serializedProperty.serializedObject.targetObject;
             Type type = target.GetType();
@@ -52,13 +57,14 @@ namespace EasyAvatar
                     int endIndex = name.IndexOf(']');
                     string indexStr = name.Substring(startIndex, endIndex - startIndex);
                     target = (target as IList)[Convert.ToInt32(indexStr)];
+                    type = target.GetType();
                     isArray = false;
                     continue;
                 }
                 target = type.GetField(name).GetValue(target);
                 type = target.GetType();
             }
-            return target;
+            return (T)target;
         }
 
         /// <summary>
