@@ -183,40 +183,6 @@ namespace EasyAvatar
         {
             return !clip || (AnimationUtility.GetCurveBindings(clip).Length == 0 && AnimationUtility.GetCurveBindings(clip).Length == 0);
         }
-
-        /// <summary>
-        /// 复制序列化的EasyBehavior
-        /// </summary>
-        /// <param name="dest">目标Behavior</param>
-        /// <param name="src">源Behavior</param>
-        public static void CopyBehavior(SerializedProperty dest, SerializedProperty src)
-        {
-            SerializedProperty destPropertyGroup = dest.FindPropertyRelative("propertyGroup");
-            SerializedProperty srcPropertyGroup = src.FindPropertyRelative("propertyGroup");
-            destPropertyGroup.arraySize = srcPropertyGroup.arraySize;
-
-            for (int i = 0; i < destPropertyGroup.arraySize; i++)
-            {
-                CopyProperty(destPropertyGroup.GetArrayElementAtIndex(i), srcPropertyGroup.GetArrayElementAtIndex(i));
-            }
-        }
-
-        /// <summary>
-        /// 复制序列化的EasyProperty
-        /// </summary>
-        /// <param name="dest">目标Property</param>
-        /// <param name="src">源Property</param>
-        public static void CopyProperty(SerializedProperty dest, SerializedProperty src)
-        {
-            dest.FindPropertyRelative("targetPath").stringValue = src.FindPropertyRelative("targetPath").stringValue;
-            dest.FindPropertyRelative("targetProperty").stringValue = src.FindPropertyRelative("targetProperty").stringValue;
-            dest.FindPropertyRelative("targetPropertyType").stringValue = src.FindPropertyRelative("targetPropertyType").stringValue;
-            dest.FindPropertyRelative("valueType").stringValue = src.FindPropertyRelative("valueType").stringValue;
-            dest.FindPropertyRelative("isDiscrete").boolValue = src.FindPropertyRelative("isDiscrete").boolValue;
-            dest.FindPropertyRelative("isPPtr").boolValue = src.FindPropertyRelative("isPPtr").boolValue;
-            dest.FindPropertyRelative("objectValue").objectReferenceValue = src.FindPropertyRelative("objectValue").objectReferenceValue;
-            dest.FindPropertyRelative("floatValue").floatValue = src.FindPropertyRelative("floatValue").floatValue;
-        }
         
         /// <summary>
         /// 获取binding

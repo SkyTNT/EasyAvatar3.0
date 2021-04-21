@@ -33,6 +33,22 @@ namespace EasyAvatar
         }
 
         /// <summary>
+        /// Uinty内部美化PropertyGroup名
+        /// </summary>
+        public static MethodInfo internalNicifyPropertyGroupName;
+
+        static EasyReflection()
+        {
+            
+            internalNicifyPropertyGroupName = FindType("UnityEditorInternal.AnimationWindowUtility").GetMethod("NicifyPropertyGroupName", BindingFlags.Static | BindingFlags.Public);
+        }
+            
+    }
+
+    public static class SerializedPropertyExtension
+    {
+
+        /// <summary>
         /// SerializedProperty获取对应实例
         /// </summary>
         /// <typeparam name="T">对应类型</typeparam>
@@ -40,13 +56,15 @@ namespace EasyAvatar
         /// <returns></returns>
         public static T GetObject<T>(this SerializedProperty serializedProperty)
         {
+            //如果修改了没有应用修改的话会读取不到修改后的值
+            serializedProperty.serializedObject.ApplyModifiedProperties();
             object target = serializedProperty.serializedObject.targetObject;
             Type type = target.GetType();
             bool isArray = false;
             //按照路径寻找字段
             foreach (var name in serializedProperty.propertyPath.Split('.'))
             {
-                if(name == "Array")//数组类型
+                if (name == "Array")//数组类型
                 {
                     isArray = true;
                     continue;
@@ -68,15 +86,117 @@ namespace EasyAvatar
         }
 
         /// <summary>
-        /// Uinty内部美化PropertyGroup名
+        /// 获取序列化属性的相对父级
         /// </summary>
-        public static MethodInfo internalNicifyPropertyGroupName;
-
-        static EasyReflection()
+        /// <param name="property"></param>
+        /// <returns></returns>
+        public static SerializedProperty Parent(this SerializedProperty property)
         {
-            
-            internalNicifyPropertyGroupName = FindType("UnityEditorInternal.AnimationWindowUtility").GetMethod("NicifyPropertyGroupName", BindingFlags.Static | BindingFlags.Public);
+            string path = property.propertyPath;
+            return property.serializedObject.FindProperty(path.Substring(0, path.LastIndexOf('.')));
         }
-            
+
+        /// <summary>
+        /// 复制序列化属性
+        /// </summary>
+        /// <param name="dest"></param>
+        /// <param name="src"></param>
+        public static void CopyFrom(this SerializedProperty dest, SerializedProperty src)
+        {
+            //避免影响原来的迭代
+            SerializedProperty src_c = src.Copy();
+            string prefix = src_c.propertyPath;
+            while (true)
+            {
+                //找到对应属性
+                SerializedProperty property = dest;
+                if (prefix != src_c.propertyPath)
+                    property = property.FindPropertyRelative(src_c.propertyPath.Substring(prefix.Length + 1));
+                if (property == null)
+                    continue;
+
+                switch (src_c.propertyType)
+                {
+                    case SerializedPropertyType.Generic:
+                        break;
+                    case SerializedPropertyType.Integer:
+                        property.intValue = src_c.intValue;
+                        break;
+                    case SerializedPropertyType.Boolean:
+                        property.boolValue = src_c.boolValue;
+                        break;
+                    case SerializedPropertyType.Float:
+                        property.floatValue = src_c.floatValue;
+                        break;
+                    case SerializedPropertyType.String:
+                        property.stringValue = src_c.stringValue;
+                        break;
+                    case SerializedPropertyType.Color:
+                        property.colorValue = src_c.colorValue;
+                        break;
+                    case SerializedPropertyType.ObjectReference:
+                        property.objectReferenceValue = src_c.objectReferenceValue;
+                        break;
+                    case SerializedPropertyType.LayerMask:
+                        break;
+                    case SerializedPropertyType.Enum:
+                        property.enumValueIndex = src_c.enumValueIndex;
+                        break;
+                    case SerializedPropertyType.Vector2:
+                        property.vector2Value = src_c.vector2Value;
+                        break;
+                    case SerializedPropertyType.Vector3:
+                        property.vector3Value = src_c.vector3Value;
+                        break;
+                    case SerializedPropertyType.Vector4:
+                        property.vector4Value = src_c.vector4Value;
+                        break;
+                    case SerializedPropertyType.Rect:
+                        property.rectValue = src_c.rectValue;
+                        break;
+                    case SerializedPropertyType.ArraySize:
+                        //去除.Array.size得到数组属性
+                        property.Parent().Parent().arraySize = src_c.Parent().Parent().arraySize;
+                        break;
+                    case SerializedPropertyType.Character:
+                        break;
+                    case SerializedPropertyType.AnimationCurve:
+                        property.animationCurveValue = src_c.animationCurveValue;
+                        break;
+                    case SerializedPropertyType.Bounds:
+                        property.boundsValue = src_c.boundsValue;
+                        break;
+                    case SerializedPropertyType.Gradient:
+                        break;
+                    case SerializedPropertyType.Quaternion:
+                        property.quaternionValue = src_c.quaternionValue;
+                        break;
+                    case SerializedPropertyType.ExposedReference:
+                        property.exposedReferenceValue = src_c.exposedReferenceValue;
+                        break;
+                    case SerializedPropertyType.FixedBufferSize:
+                        break;
+                    case SerializedPropertyType.Vector2Int:
+                        property.vector2IntValue = src_c.vector2IntValue;
+                        break;
+                    case SerializedPropertyType.Vector3Int:
+                        property.vector3IntValue = src_c.vector3IntValue;
+                        break;
+                    case SerializedPropertyType.RectInt:
+                        property.rectIntValue = src_c.rectIntValue;
+                        break;
+                    case SerializedPropertyType.BoundsInt:
+                        property.boundsIntValue = src_c.boundsIntValue;
+                        break;
+                    default:
+                        break;
+                }
+                if (!src_c.Next(true) || !src_c.propertyPath.StartsWith(prefix))
+                {
+                    break;
+                }
+            }
+        }
     }
+
 }

@@ -83,13 +83,9 @@ namespace EasyAvatar
             SerializedObject serializedObject = new SerializedObject(copiedTarget);
             serializedObject.Update();
             SerializedProperty copiedBehaviors = serializedObject.FindProperty(copiedBehaviorsPath);
-            behaviors.arraySize = copiedBehaviors.arraySize;
-            for (int i = 0; i < behaviors.arraySize; i++)
-            {
-                Utility.CopyBehavior(behaviors.GetArrayElementAtIndex(i), copiedBehaviors.GetArrayElementAtIndex(i));
-            }
+            behaviors.CopyFrom(copiedBehaviors);
         }
-
+        
 
         /// <summary>
         /// 准备预览
