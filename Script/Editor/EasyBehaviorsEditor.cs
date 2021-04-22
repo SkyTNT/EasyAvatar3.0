@@ -246,7 +246,7 @@ namespace EasyAvatar
                     targetPath.stringValue = CalculateGameObjectPath(newTarget);
 
                 //当前属性不在新目标中存在则删除属性
-                if (properties.arraySize > 0 && !Utility.CheckProperty(avatar, propertyGroup))
+                if (properties.arraySize > 0 && !HasPropertyGroup(avatar, propertyGroup))
                 {
                     Debug.Log("clear");
                     properties.ClearArray();
@@ -334,7 +334,7 @@ namespace EasyAvatar
                 for (int i = 0; i < groupSize; i++)
                 {
                     SerializedProperty property = properties.GetArrayElementAtIndex(i);
-                    string subName = Utility.GetPropertyGroupSubname(property);
+                    string subName = GetPropertyGroupSubname(property);
                     colorMap.Add(subName, property.FindPropertyRelative("floatValue"));
                     if (subName == "w")
                         isVec4 = true;
@@ -389,7 +389,7 @@ namespace EasyAvatar
                     //显示Vector之类的x,y,z,w或r,g,b,a
                     if (groupSize > 1)
                     {
-                        label = new GUIContent(Utility.GetPropertyGroupSubname(properties, i).ToUpper());
+                        label = new GUIContent(GetPropertyGroupSubname(properties.GetArrayElementAtIndex(i)).ToUpper());
                     }
 
                     float preLabelWidth = EditorGUIUtility.labelWidth;
@@ -414,6 +414,34 @@ namespace EasyAvatar
                     EditorGUIUtility.labelWidth = preLabelWidth;
                 }
             }
+        }
+
+        /// <summary>
+        /// 判断物体是否具有该属性
+        /// </summary>
+        /// <param name="avatar">根物体</param>
+        /// <param name="property">序列化的EasyProperty</param>
+        /// <returns></returns>
+        public static bool HasPropertyGroup(GameObject avatar, SerializedProperty propertyGroup)
+        {
+            SerializedProperty properties = propertyGroup.FindPropertyRelative("properties");
+            if (!avatar || properties.arraySize == 0)
+                return false;
+            SerializedProperty property = properties.GetArrayElementAtIndex(0);
+            if (property.FindPropertyRelative("valueType").stringValue == "" || property.FindPropertyRelative("targetProperty").stringValue == "")
+                return false;
+            return AnimationUtility.GetEditorCurveValueType(avatar, Utility.GetBinding(propertyGroup.FindPropertyRelative("targetPath").stringValue, property.GetObject<EasyProperty>())) != null;
+        }
+
+        /// <summary>
+        /// 获取Property在PropertyGroup中的后缀名
+        /// </summary>
+        /// <param name="property">序列化的EasyProperty</param>
+        /// <returns>后缀名</returns>
+        public static string GetPropertyGroupSubname(SerializedProperty property)
+        {
+            string targetProperty = property.FindPropertyRelative("targetProperty").stringValue;
+            return targetProperty.Substring(targetProperty.Length - 1);
         }
 
         /// <summary>

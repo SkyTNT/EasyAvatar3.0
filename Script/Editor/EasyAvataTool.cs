@@ -412,17 +412,23 @@ namespace EasyAvatar
             /// <param name="gesture">手势</param>
             private void BuildGesture(string name, EasyGesture gesture)
             {
-                /*AnimationClip onClip = Utility.GenerateAnimClip(gesture.behaviors1);
-                AnimationClip outClip = Utility.GenerateAnimClip(gesture.behaviors2);
-                if (gesture.useAnimClip)
-                {
-                    onClip = Utility.MergeAnimClip(Utility.MergeAnimClip(gesture.animations1.ToArray()), onClip);
-                    outClip = Utility.MergeAnimClip(Utility.MergeAnimClip(gesture.animations2.ToArray()), outClip);
-                }
+                AnimationClip onClip = Utility.GenerateAnimClip(gesture.behaviors1.list);
+                AnimationClip outClip = Utility.GenerateAnimClip(gesture.behaviors2.list);
                 if (gesture.handType == EasyGesture.HandType.Left || gesture.handType == EasyGesture.HandType.Any)
-                    easyAnimator.AddState(name + "L", outClip, onClip, gesture.autoRestore, "GestureLeft", (int)gesture.gestureType);
+                {
+                    if (gesture.autoTrackingControl)
+                        easyAnimator.AddState(name + "L", outClip, onClip, gesture.autoRestore, "GestureLeft", (int)gesture.gestureType);
+                    else
+                        easyAnimator.AddState(name + "L", outClip, onClip, gesture.offTrackingControl, gesture.onTrackingControl, gesture.autoRestore, "GestureLeft", (int)gesture.gestureType);
+                }
+
                 if (gesture.handType == EasyGesture.HandType.Right || gesture.handType == EasyGesture.HandType.Any)
-                    easyAnimator.AddState(name + "R", outClip, onClip, gesture.autoRestore, "GestureRight", (int)gesture.gestureType);*/
+                {
+                    if (gesture.autoTrackingControl)
+                        easyAnimator.AddState(name + "R", outClip, onClip, gesture.autoRestore, "GestureRight", (int)gesture.gestureType);
+                    else
+                        easyAnimator.AddState(name + "R", outClip, onClip, gesture.offTrackingControl, gesture.onTrackingControl, gesture.autoRestore, "GestureRight", (int)gesture.gestureType);
+                }
             }
 
             /// <summary>
@@ -433,16 +439,12 @@ namespace EasyAvatar
             private void BuildToggle(string name, EasyControl control)
             {
                 //EasyBehaviors生成动画
-                /*AnimationClip offClip = Utility.GenerateAnimClip(control.behaviors2);
-                AnimationClip onClip = Utility.GenerateAnimClip(control.behaviors1);
-                //使用动画文件
-                if (control.useAnimClip)
-                {
-                    //先将动画文件合并，在与Behaviors生成动画合并
-                    offClip = Utility.MergeAnimClip(Utility.MergeAnimClip(control.anims2.ToArray()), offClip);
-                    onClip = Utility.MergeAnimClip(Utility.MergeAnimClip(control.anims1.ToArray()), onClip);
-                }
-                easyAnimator.AddState(name, offClip, onClip, control.autoRestore, "control" + controlCount);*/
+                AnimationClip offClip = Utility.GenerateAnimClip(control.behaviors[1].list);
+                AnimationClip onClip = Utility.GenerateAnimClip(control.behaviors[0].list);
+                if (control.autoTrackingControl)
+                    easyAnimator.AddState(name, offClip, onClip, control.autoRestore, "control" + controlCount);
+                else
+                    easyAnimator.AddState(name, offClip, onClip, control.offTrackingControl, control.onTrackingControl, control.autoRestore, "control" + controlCount);
             }
             
             /// <summary>
@@ -454,19 +456,13 @@ namespace EasyAvatar
             {
 
                 //EasyBehaviors生成动画
-                /*AnimationClip offClip = Utility.GenerateAnimClip(control.behaviors3);
-                AnimationClip blend0 = Utility.GenerateAnimClip(control.behaviors1);
-                AnimationClip blend1 = Utility.GenerateAnimClip(control.behaviors2);
-                //使用动画文件
-                if (control.useAnimClip)
-                {
-                    //先将动画文件合并，在与Behaviors生成动画合并
-                    offClip = Utility.MergeAnimClip(Utility.MergeAnimClip(control.anims3.ToArray()), offClip);
-                    blend0 = Utility.MergeAnimClip(Utility.MergeAnimClip(control.anims1.ToArray()), blend0);
-                    blend1 = Utility.MergeAnimClip(Utility.MergeAnimClip(control.anims2.ToArray()), blend1);
-                }
-                
-                easyAnimator.AddState(name, offClip, blend0, blend1, control.autoRestore, "control" + controlCount);*/
+                AnimationClip offClip = Utility.GenerateAnimClip(control.behaviors[2].list);
+                AnimationClip blend0 = Utility.GenerateAnimClip(control.behaviors[0].list);
+                AnimationClip blend1 = Utility.GenerateAnimClip(control.behaviors[1].list);
+                if (control.autoTrackingControl)
+                    easyAnimator.AddState(name, offClip, blend0, blend1, control.autoRestore, "control" + controlCount);
+                else
+                    easyAnimator.AddState(name, offClip, blend0, blend1, control.offTrackingControl, control.onTrackingControl, control.autoRestore, "control" + controlCount);
             }
 
         }

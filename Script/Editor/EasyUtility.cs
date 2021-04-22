@@ -199,81 +199,6 @@ namespace EasyAvatar
         }
 
         /// <summary>
-        /// 获取欧拉角
-        /// </summary>
-        /// <param name="propertyGroup">序列化的EasyProperty列表</param>
-        /// <returns>欧拉角</returns>
-        public static Vector3 GetEulerAngles(SerializedProperty propertyGroup)
-        {
-            Dictionary<string, SerializedProperty> rotationMap = new Dictionary<string, SerializedProperty>();
-            for (int i = 0; i < propertyGroup.arraySize; i++)
-            {
-                SerializedProperty property = propertyGroup.GetArrayElementAtIndex(i);
-                rotationMap.Add(GetPropertyGroupSubname(property), property.FindPropertyRelative("floatValue"));
-            }
-
-            return new Vector3(rotationMap["x"].floatValue, rotationMap["y"].floatValue, rotationMap["z"].floatValue);
-        }
-
-        /// <summary>
-        /// 获取EasyProperty的值类型
-        /// </summary>
-        /// <param name="property">序列化的EasyProperty</param>
-        /// <returns>值类型</returns>
-        public static Type GetValueType(SerializedProperty property)
-        {
-            string valueTypeName = property.FindPropertyRelative("valueType").stringValue;
-            return valueTypeName == "" ? null : EasyReflection.FindType(valueTypeName);
-        }
-
-        /// <summary>
-        /// 检测物体是否具有该属性
-        /// </summary>
-        /// <param name="avatar">根物体</param>
-        /// <param name="property">序列化的EasyProperty</param>
-        /// <returns></returns>
-        public static bool CheckProperty(GameObject avatar, SerializedProperty propertyGroup)
-        {
-            SerializedProperty properties = propertyGroup.FindPropertyRelative("properties");
-            if (!avatar || properties.arraySize == 0)
-                return false;
-            SerializedProperty property = properties.GetArrayElementAtIndex(0);
-            if (property.FindPropertyRelative("valueType").stringValue == "" || property.FindPropertyRelative("targetProperty").stringValue == "")
-                return false;
-            return AnimationUtility.GetEditorCurveValueType(avatar, GetBinding(propertyGroup.FindPropertyRelative("targetPath").stringValue, property.GetObject<EasyProperty>())) != null;
-        }
-
-        /// <summary>
-        /// 修改PropertyGroup中每一个Property
-        /// </summary>
-        /// <param name="propertyGroup">序列化的EasyProperty列表</param>
-        /// <param name="relativePath">要修改的字段名</param>
-        /// <param name="value">修改的值</param>
-        public static void PropertyGroupEdit(SerializedProperty propertyGroup, string relativePath, string value)
-        {
-            for (int i = 0; i < propertyGroup.arraySize; i++)
-            {
-                SerializedProperty property = propertyGroup.GetArrayElementAtIndex(i).FindPropertyRelative(relativePath);
-                property.stringValue = value;
-            }
-        }
-
-        /// <summary>
-        /// 修改PropertyGroup中每一个Property
-        /// </summary>
-        /// <param name="propertyGroup">序列化的EasyProperty列表</param>
-        /// <param name="relativePath">要修改的字段名</param>
-        /// <param name="value">修改的值</param>
-        public static void PropertyGroupEdit(SerializedProperty propertyGroup, string relativePath, bool value)
-        {
-            for (int i = 0; i < propertyGroup.arraySize; i++)
-            {
-                SerializedProperty property = propertyGroup.GetArrayElementAtIndex(i).FindPropertyRelative(relativePath);
-                property.boolValue = value;
-            }
-        }
-
-        /// <summary>
         /// 美化PropertyGroup名
         /// </summary>
         /// <param name="animatableObjectType">Property的类型</param>
@@ -283,28 +208,6 @@ namespace EasyAvatar
         {
 
             return (string)EasyReflection.internalNicifyPropertyGroupName.Invoke(null, new object[] { animatableObjectType, propertyGroupName });
-        }
-
-        /// <summary>
-        /// 获取Property在PropertyGroup中的后缀名
-        /// </summary>
-        /// <param name="propertyGroup">序列化的EasyProperty列表</param>
-        /// <param name="index">Property的索引</param>
-        /// <returns>后缀名</returns>
-        public static string GetPropertyGroupSubname(SerializedProperty propertyGroup, int index)
-        {
-            return GetPropertyGroupSubname(propertyGroup.GetArrayElementAtIndex(index));
-        }
-
-        /// <summary>
-        /// 获取Property在PropertyGroup中的后缀名
-        /// </summary>
-        /// <param name="property">序列化的EasyProperty</param>
-        /// <returns>后缀名</returns>
-        public static string GetPropertyGroupSubname(SerializedProperty property)
-        {
-            string targetProperty = property.FindPropertyRelative("targetProperty").stringValue;
-            return targetProperty.Substring(targetProperty.Length - 1);
         }
 
         /// <summary>

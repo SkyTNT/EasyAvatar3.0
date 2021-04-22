@@ -49,7 +49,12 @@ namespace EasyAvatar
             driver = new AnimatorDriver(fxBuilder);
         }
 
-        public void AddState(string name, AnimationClip offAnim, AnimationClip onAnim, bool autoRestore, string parameterName,int threshold = -999)
+        public void AddState(string name, AnimationClip offAnim, AnimationClip onAnim, bool autoRestore, string parameterName, int threshold = -999)
+        {
+            AddState(name, offAnim, onAnim, null, null, autoRestore, parameterName, threshold);
+        }
+
+        public void AddState(string name, AnimationClip offAnim, AnimationClip onAnim, EasyTrackingControl offTracking, EasyTrackingControl onTracking, bool autoRestore, string parameterName, int threshold = -999)
         {
             AnimationClip off_fx, off_action, off_gesture;
             AnimationClip on_fx, on_action, on_gesture;
@@ -59,8 +64,9 @@ namespace EasyAvatar
             {
                 off_fx = Utility.MergeAnimClip(Utility.GenerateRestoreAnimClip(avatar, on_fx), off_fx);
                 off_gesture = Utility.MergeAnimClip(Utility.GenerateRestoreAnimClip(avatar, on_gesture), off_gesture);
+                off_action = VRCAssets.proxy_stand_still;
             }
-            off_action = VRCAssets.proxy_stand_still;
+            
 
             int driverId;
 
@@ -75,11 +81,21 @@ namespace EasyAvatar
             fxBuilder.AddToInitState(off_fx);
             if (!Utility.AnimationIsEmpty(on_action))
             {
-                var trackingControl = VRCStateMachineBehaviour.CalculateTrackingControl(on_action);
                 actionBuilder.AddDrivedState(driverId, name + "_on", on_action);
-                actionBuilder.AddDrivedStateBehaviour(driverId, trackingControl, VRCStateMachineBehaviour.ActionLayerControl(1));
                 actionBuilder.AddDrivedState(driverId + 1, name + "_off", off_action);
-                actionBuilder.AddDrivedStateBehaviour(driverId + 1, VRCStateMachineBehaviour.ReverseTrackingControl(trackingControl), VRCStateMachineBehaviour.ActionLayerControl(0));
+                if (offTracking != null && onTracking != null)
+                {
+                    actionBuilder.AddDrivedStateBehaviour(driverId, VRCStateMachineBehaviourUtility.GetTrackingControl(onTracking), VRCStateMachineBehaviourUtility.ActionLayerControl(1));
+                    actionBuilder.AddDrivedStateBehaviour(driverId + 1, VRCStateMachineBehaviourUtility.GetTrackingControl(offTracking), VRCStateMachineBehaviourUtility.ActionLayerControl(0));
+
+                }
+                else
+                {
+                    var trackingControl = VRCStateMachineBehaviourUtility.CalculateTrackingControl(on_action);
+                    actionBuilder.AddDrivedStateBehaviour(driverId, trackingControl, VRCStateMachineBehaviourUtility.ActionLayerControl(1));
+                    actionBuilder.AddDrivedStateBehaviour(driverId + 1, VRCStateMachineBehaviourUtility.ReverseTrackingControl(trackingControl), VRCStateMachineBehaviourUtility.ActionLayerControl(0));
+                }
+                
 
             }
             if (!Utility.AnimationIsEmpty(on_gesture))
@@ -90,6 +106,11 @@ namespace EasyAvatar
         }
 
         public void AddState(string name, AnimationClip offAnim, AnimationClip blendTree0, AnimationClip blendTree1, bool autoRestore, string parameterName, int threshold = -999)
+        {
+            AddState(name, offAnim, blendTree0, blendTree1, null, null, autoRestore, parameterName, threshold);
+        }
+
+        public void AddState(string name, AnimationClip offAnim, AnimationClip blendTree0, AnimationClip blendTree1, EasyTrackingControl offTracking, EasyTrackingControl onTracking, bool autoRestore, string parameterName, int threshold = -999)
         {
             AnimationClip off_fx, off_action, off_gesture;
             AnimationClip blend0_fx, blend0_action, blend0_gesture;
@@ -102,8 +123,8 @@ namespace EasyAvatar
             {
                 off_fx = Utility.MergeAnimClip(Utility.GenerateRestoreAnimClip(avatar, Utility.MergeAnimClip(blend0_fx, blend1_fx)), off_fx);
                 off_gesture = Utility.MergeAnimClip(Utility.GenerateRestoreAnimClip(avatar, Utility.MergeAnimClip(blend0_gesture, blend1_gesture)), off_gesture);
+                off_action = VRCAssets.proxy_stand_still;
             }
-            off_action = VRCAssets.proxy_stand_still;
 
             int driverId;
             if (threshold != -999)
@@ -119,11 +140,20 @@ namespace EasyAvatar
             if(!Utility.AnimationIsEmpty(blend0_action) || !Utility.AnimationIsEmpty(blend1_action))
             {
                 blendTree_action = Utility.Generate1DBlendTree(name + "_on", "float1", blend0_action, blend1_action);
-                var trackingControl = VRCStateMachineBehaviour.CalculateTrackingControl(blendTree_action);
                 actionBuilder.AddDrivedState(driverId, name + "_on", blendTree_action);
-                actionBuilder.AddDrivedStateBehaviour(driverId, trackingControl, VRCStateMachineBehaviour.ActionLayerControl(1));
                 actionBuilder.AddDrivedState(driverId + 1, name + "_off", off_action);
-                actionBuilder.AddDrivedStateBehaviour(driverId + 1, VRCStateMachineBehaviour.ReverseTrackingControl(trackingControl), VRCStateMachineBehaviour.ActionLayerControl(0));
+                if (offTracking != null && onTracking != null)
+                {
+                    actionBuilder.AddDrivedStateBehaviour(driverId, VRCStateMachineBehaviourUtility.GetTrackingControl(onTracking), VRCStateMachineBehaviourUtility.ActionLayerControl(1));
+                    actionBuilder.AddDrivedStateBehaviour(driverId + 1, VRCStateMachineBehaviourUtility.GetTrackingControl(offTracking), VRCStateMachineBehaviourUtility.ActionLayerControl(0));
+
+                }
+                else
+                {
+                    var trackingControl = VRCStateMachineBehaviourUtility.CalculateTrackingControl(blendTree_action);
+                    actionBuilder.AddDrivedStateBehaviour(driverId, trackingControl, VRCStateMachineBehaviourUtility.ActionLayerControl(1));
+                    actionBuilder.AddDrivedStateBehaviour(driverId + 1, VRCStateMachineBehaviourUtility.ReverseTrackingControl(trackingControl), VRCStateMachineBehaviourUtility.ActionLayerControl(0));
+                }
             }
             if (!Utility.AnimationIsEmpty(blend0_gesture) || !Utility.AnimationIsEmpty(blend1_gesture))
             {
@@ -138,9 +168,9 @@ namespace EasyAvatar
             {
                 int afkDriverId = driver.GetDriverId("AFK");
                 actionBuilder.AddDrivedState(afkDriverId, "afk", VRCAssets.proxy_afk);
-                actionBuilder.AddDrivedStateBehaviour(afkDriverId, VRCStateMachineBehaviour.FullAnimation(), VRCStateMachineBehaviour.ActionLayerControl(1));
+                actionBuilder.AddDrivedStateBehaviour(afkDriverId, VRCStateMachineBehaviourUtility.FullAnimation(), VRCStateMachineBehaviourUtility.ActionLayerControl(1));
                 actionBuilder.AddDrivedState(afkDriverId + 1, "afk_off", VRCAssets.proxy_stand_still);
-                actionBuilder.AddDrivedStateBehaviour(afkDriverId + 1, VRCStateMachineBehaviour.FullTracking(), VRCStateMachineBehaviour.ActionLayerControl(0));
+                actionBuilder.AddDrivedStateBehaviour(afkDriverId + 1, VRCStateMachineBehaviourUtility.FullTracking(), VRCStateMachineBehaviourUtility.ActionLayerControl(0));
             }
             fxBuilder.Build();
             actionBuilder.Build();
@@ -506,8 +536,24 @@ namespace EasyAvatar
         }
     }
 
-    public class VRCStateMachineBehaviour
+    public class VRCStateMachineBehaviourUtility
     {
+        public static VRCAnimatorTrackingControl GetTrackingControl(EasyTrackingControl easyTrackingControl)
+        {
+            VRCAnimatorTrackingControl trackingControl = ScriptableObject.CreateInstance<VRCAnimatorTrackingControl>();
+            trackingControl.trackingHead = (VRCAnimatorTrackingControl.TrackingType)easyTrackingControl.head;
+            trackingControl.trackingEyes = (VRCAnimatorTrackingControl.TrackingType)easyTrackingControl.eyes;
+            trackingControl.trackingMouth = (VRCAnimatorTrackingControl.TrackingType)easyTrackingControl.mouth;
+            trackingControl.trackingHip = (VRCAnimatorTrackingControl.TrackingType)easyTrackingControl.hip;
+            trackingControl.trackingRightHand = (VRCAnimatorTrackingControl.TrackingType)easyTrackingControl.rightHand ;
+            trackingControl.trackingLeftHand = (VRCAnimatorTrackingControl.TrackingType)easyTrackingControl.leftHand;
+            trackingControl.trackingRightFingers = (VRCAnimatorTrackingControl.TrackingType)easyTrackingControl.rightFingers;
+            trackingControl.trackingLeftFingers  = (VRCAnimatorTrackingControl.TrackingType)easyTrackingControl.leftFingers;
+            trackingControl.trackingRightFoot  = (VRCAnimatorTrackingControl.TrackingType)easyTrackingControl.rightFoot;
+            trackingControl.trackingLeftFoot = (VRCAnimatorTrackingControl.TrackingType)easyTrackingControl.leftFoot;
+            return trackingControl;
+        }
+
         public static VRCAnimatorTrackingControl FullTracking()
         {
             VRCAnimatorTrackingControl trackingControl = ScriptableObject.CreateInstance<VRCAnimatorTrackingControl>();

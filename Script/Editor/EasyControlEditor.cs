@@ -82,8 +82,7 @@ namespace EasyAvatar
             controlType.enumValueIndex = EditorGUILayout.IntPopup(Lang.ControlType, controlType.enumValueIndex, typeLabels, typeIndex);
             if (EditorGUI.EndChangeCheck())
                 ChangeType((EasyControl.Type)controlType.enumValueIndex);
-            //是否自动恢复
-            autoRestore.boolValue = EditorGUILayout.ToggleLeft(Lang.AutoRestore, autoRestore.boolValue);
+            
             //是否自动设置追踪
             autoTrackingControl.boolValue = EditorGUILayout.ToggleLeft(Lang.autoTrackingControl, autoTrackingControl.boolValue);
 
@@ -101,6 +100,9 @@ namespace EasyAvatar
                 GUILayout.Label(Lang.OnSwitchOn, EditorStyles.boldLabel);
                 editor1.DoLayout();
 
+                //是否自动恢复
+                autoRestore.boolValue = EditorGUILayout.ToggleLeft(Lang.AutoRestore, autoRestore.boolValue);
+
                 GUILayout.Label(Lang.OnSwitchOff, EditorStyles.boldLabel);
                 editor2.DoLayout();
             }
@@ -113,6 +115,9 @@ namespace EasyAvatar
 
                 GUILayout.Label(Lang.OnRadialPuppet1, EditorStyles.boldLabel);
                 editor2.DoLayout();
+
+                //是否自动恢复
+                autoRestore.boolValue = EditorGUILayout.ToggleLeft(Lang.AutoRestore, autoRestore.boolValue);
 
                 GUILayout.Label(Lang.OnRadialPuppetOff, EditorStyles.boldLabel);
                 editor3.DoLayout();
