@@ -123,7 +123,8 @@ namespace EasyAvatar
                 if (!CreateAvatarHelper())
                     return false;
             }
-            CreateObject<EasyGestureManager>(Lang.GestureManager);
+            GameObject gameObject = CreateObject<EasyGestureManager>(Lang.GestureManager);
+            EasyGestureManagerEditor.SetDefaultGesture(new SerializedObject(gameObject.GetComponent<EasyGestureManager>()));
             return true;
         }
 
@@ -166,7 +167,7 @@ namespace EasyAvatar
         /// </summary>
         /// <typeparam name="T">组件</typeparam>
         /// <param name="name">新建物体的名字</param>
-        public static void CreateObject<T>(string name) where T : Component
+        public static GameObject CreateObject<T>(string name) where T : Component
         {
             GameObject gameObject = new GameObject(name);
             Undo.RegisterCreatedObjectUndo(gameObject, "Create "+ name);
@@ -174,6 +175,7 @@ namespace EasyAvatar
             if (Selection.activeGameObject)
                 gameObject.transform.parent = Selection.activeGameObject.transform;
             Selection.activeGameObject = gameObject;
+            return gameObject;
         }
 
         /// <summary>
@@ -393,6 +395,23 @@ namespace EasyAvatar
             /// <param name="gestures">手势管理</param>
             private void BuildGestures( EasyGestureManager gestures)
             {
+                easyAnimator.SetGestureAnimation("Neutral", gestures.leftNeutral, false, 0);
+                easyAnimator.SetGestureAnimation("Fist", gestures.leftFist, false, 1);
+                easyAnimator.SetGestureAnimation("HandOpen", gestures.leftHandOpen, false, 2);
+                easyAnimator.SetGestureAnimation("FingerPoint", gestures.leftFingerPoint, false, 3);
+                easyAnimator.SetGestureAnimation("Victory", gestures.leftVictory, false, 4);
+                easyAnimator.SetGestureAnimation("RockNRoll", gestures.leftRockNRoll, false, 5);
+                easyAnimator.SetGestureAnimation("HandGun", gestures.leftHandGun, false, 6);
+                easyAnimator.SetGestureAnimation("ThumbsUp", gestures.leftThumbsUp, false, 7);
+                easyAnimator.SetGestureAnimation("Neutral", gestures.rightNeutral, true, 0);
+                easyAnimator.SetGestureAnimation("Fist", gestures.rightFist, true, 1);
+                easyAnimator.SetGestureAnimation("HandOpen", gestures.rightHandOpen, true, 2);
+                easyAnimator.SetGestureAnimation("FingerPoint", gestures.rightFingerPoint, true, 3);
+                easyAnimator.SetGestureAnimation("Victory", gestures.rightVictory, true, 4);
+                easyAnimator.SetGestureAnimation("RockNRoll", gestures.rightRockNRoll, true, 5);
+                easyAnimator.SetGestureAnimation("HandGun", gestures.rightHandGun, true, 6);
+                easyAnimator.SetGestureAnimation("ThumbsUp", gestures.rightThumbsUp, true, 7);
+
                 int count = 0;
                 foreach (Transform child in gestures.gameObject.transform)
                 {

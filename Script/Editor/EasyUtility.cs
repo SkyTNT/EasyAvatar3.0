@@ -119,6 +119,9 @@ namespace EasyAvatar
         {
             AnimationClip result = new AnimationClip();
             result.frameRate = 60;
+            if (!clip)
+                return result;
+
             foreach (EditorCurveBinding binding in AnimationUtility.GetCurveBindings(clip))
             {
                 float value;

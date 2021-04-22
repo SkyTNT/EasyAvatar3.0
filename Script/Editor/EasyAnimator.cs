@@ -49,6 +49,14 @@ namespace EasyAvatar
             driver = new AnimatorDriver(fxBuilder);
         }
 
+        public void SetGestureAnimation(string name, AnimationClip animation, bool rightHand, int threshold)
+        {
+            int driverId = driver.GetDriverId(rightHand ? "GestureRight" : "GestureLeft", threshold);
+            name += rightHand ? "_R" : "_L";
+            gestureBuilder.AddDrivedState(driverId, name + "On", animation);
+            gestureBuilder.AddDrivedState(driverId + 1, name + "Off", Utility.GenerateRestoreAnimClip(avatar, animation));
+        }
+
         public void AddState(string name, AnimationClip offAnim, AnimationClip onAnim, bool autoRestore, string parameterName, int threshold = -999)
         {
             AddState(name, offAnim, onAnim, null, null, autoRestore, parameterName, threshold);
@@ -56,14 +64,11 @@ namespace EasyAvatar
 
         public void AddState(string name, AnimationClip offAnim, AnimationClip onAnim, EasyTrackingControl offTracking, EasyTrackingControl onTracking, bool autoRestore, string parameterName, int threshold = -999)
         {
-            AnimationClip off_fx, off_action, off_gesture;
-            AnimationClip on_fx, on_action, on_gesture;
-            SeparateAnimation(offAnim, out off_action, out off_gesture, out off_fx);
-            SeparateAnimation(onAnim, out on_action, out on_gesture, out on_fx);
+            SeparateAnimation(offAnim, out AnimationClip off_action, out AnimationClip off_fx);
+            SeparateAnimation(onAnim, out AnimationClip on_action, out AnimationClip on_fx);
             if (autoRestore)
             {
                 off_fx = Utility.MergeAnimClip(Utility.GenerateRestoreAnimClip(avatar, on_fx), off_fx);
-                off_gesture = Utility.MergeAnimClip(Utility.GenerateRestoreAnimClip(avatar, on_gesture), off_gesture);
                 off_action = VRCAssets.proxy_stand_still;
             }
             
@@ -95,13 +100,6 @@ namespace EasyAvatar
                     actionBuilder.AddDrivedStateBehaviour(driverId, trackingControl, VRCStateMachineBehaviourUtility.ActionLayerControl(1));
                     actionBuilder.AddDrivedStateBehaviour(driverId + 1, VRCStateMachineBehaviourUtility.ReverseTrackingControl(trackingControl), VRCStateMachineBehaviourUtility.ActionLayerControl(0));
                 }
-                
-
-            }
-            if (!Utility.AnimationIsEmpty(on_gesture))
-            {
-                gestureBuilder.AddDrivedState(driverId, name + "_on", on_gesture);
-                gestureBuilder.AddDrivedState(driverId + 1, name + "_off", off_gesture);
             }
         }
 
@@ -112,17 +110,13 @@ namespace EasyAvatar
 
         public void AddState(string name, AnimationClip offAnim, AnimationClip blendTree0, AnimationClip blendTree1, EasyTrackingControl offTracking, EasyTrackingControl onTracking, bool autoRestore, string parameterName, int threshold = -999)
         {
-            AnimationClip off_fx, off_action, off_gesture;
-            AnimationClip blend0_fx, blend0_action, blend0_gesture;
-            AnimationClip blend1_fx, blend1_action, blend1_gesture;
-            SeparateAnimation(offAnim, out off_action, out off_gesture, out off_fx);
-            SeparateAnimation(blendTree0, out blend0_action, out blend0_gesture, out blend0_fx);
-            SeparateAnimation(blendTree1, out blend1_action, out blend1_gesture, out blend1_fx);
+            SeparateAnimation(offAnim, out AnimationClip off_action, out AnimationClip off_fx);
+            SeparateAnimation(blendTree0, out AnimationClip blend0_action, out AnimationClip blend0_fx);
+            SeparateAnimation(blendTree1, out AnimationClip blend1_action, out AnimationClip blend1_fx);
 
             if (autoRestore)
             {
                 off_fx = Utility.MergeAnimClip(Utility.GenerateRestoreAnimClip(avatar, Utility.MergeAnimClip(blend0_fx, blend1_fx)), off_fx);
-                off_gesture = Utility.MergeAnimClip(Utility.GenerateRestoreAnimClip(avatar, Utility.MergeAnimClip(blend0_gesture, blend1_gesture)), off_gesture);
                 off_action = VRCAssets.proxy_stand_still;
             }
 
@@ -132,11 +126,12 @@ namespace EasyAvatar
             else
                 driverId = driver.GetDriverId(parameterName);
 
-            BlendTree blendTree_fx, blendTree_action, blendTree_gesture;
+            BlendTree blendTree_fx, blendTree_action;
             blendTree_fx = Utility.Generate1DBlendTree(name + "_on", "float1", blend0_fx, blend1_fx);
             fxBuilder.AddDrivedState(driverId, name + "_on", blendTree_fx);
             fxBuilder.AddDrivedState(driverId + 1, name + "_off", off_fx);
             fxBuilder.AddToInitState(off_fx);
+
             if(!Utility.AnimationIsEmpty(blend0_action) || !Utility.AnimationIsEmpty(blend1_action))
             {
                 blendTree_action = Utility.Generate1DBlendTree(name + "_on", "float1", blend0_action, blend1_action);
@@ -155,12 +150,6 @@ namespace EasyAvatar
                     actionBuilder.AddDrivedStateBehaviour(driverId + 1, VRCStateMachineBehaviourUtility.ReverseTrackingControl(trackingControl), VRCStateMachineBehaviourUtility.ActionLayerControl(0));
                 }
             }
-            if (!Utility.AnimationIsEmpty(blend0_gesture) || !Utility.AnimationIsEmpty(blend1_gesture))
-            {
-                blendTree_gesture = Utility.Generate1DBlendTree(name + "_on", "float1", blend0_gesture, blend1_gesture);
-                gestureBuilder.AddDrivedState(driverId, name + "_on", blendTree_gesture);
-                gestureBuilder.AddDrivedState(driverId + 1, name + "_off", off_gesture);
-            }
         }
         
         public void Build()
@@ -178,30 +167,22 @@ namespace EasyAvatar
             gestureBuilder.SetMask(VRCAssets.hands_only);
         }
         
-        public static void SeparateAnimation(AnimationClip clip, out AnimationClip action, out AnimationClip gesture,out AnimationClip fx)
+        public static void SeparateAnimation(AnimationClip clip, out AnimationClip action, out AnimationClip fx)
         {
             action = new AnimationClip();
-            gesture = new AnimationClip();
             fx = new AnimationClip();
             action.frameRate = 60;
-            gesture.frameRate = 60;
             fx.frameRate = 60;
             foreach (EditorCurveBinding binding in AnimationUtility.GetCurveBindings(clip))
             {
                 if (binding.type == typeof(Animator) && binding.path == "")
-                {
-                    if (binding.propertyName.Contains("LeftHand") || binding.propertyName.Contains("RightHand"))
-                        AnimationUtility.SetEditorCurve(gesture, binding, AnimationUtility.GetEditorCurve(clip, binding));
-                    else
-                        AnimationUtility.SetEditorCurve(action, binding, AnimationUtility.GetEditorCurve(clip, binding));
-                }
+                    AnimationUtility.SetEditorCurve(action, binding, AnimationUtility.GetEditorCurve(clip, binding));
                 else
                     AnimationUtility.SetEditorCurve(fx, binding, AnimationUtility.GetEditorCurve(clip, binding));
 
             }
             foreach (EditorCurveBinding binding in AnimationUtility.GetObjectReferenceCurveBindings(clip))
                 AnimationUtility.SetObjectReferenceCurve(fx, binding, AnimationUtility.GetObjectReferenceCurve(clip, binding));
-            
         }
     }
 

@@ -68,6 +68,7 @@ namespace EasyAvatar
             TrackingTypeTracking,
             TrackingTypeAnimation,
             GestureManager,
+            GestureBaseAnimation,
             Gesture,
             GestureType,
             HandType,
@@ -84,6 +85,7 @@ namespace EasyAvatar
             LeftHand,
             RightHand,
             AnyHand,
+            DefaultValue,
             BuildSucceed,
             AutoRestore,
             autoTrackingControl,
@@ -182,6 +184,7 @@ namespace EasyAvatar
             TrackingTypeTracking = "追踪中";
             TrackingTypeAnimation = "动画中";
             GestureManager = "手势管理";
+            GestureBaseAnimation = "基本手势动画";
             Gesture = "手势";
             GestureType = "手势类型";
             HandType = "手类型";
@@ -198,6 +201,7 @@ namespace EasyAvatar
             LeftHand = "左手";
             RightHand = "右手";
             AnyHand = "任何手";
+            DefaultValue = "默认值";
             BuildSucceed = "成功";
             AutoRestore = "关闭时自动恢复修改的内容到默认状态";
             autoTrackingControl = "自动设置追踪状态";
@@ -277,6 +281,7 @@ namespace EasyAvatar
             TrackingTypeTracking = "Tracking";
             TrackingTypeAnimation = "Animation";
             GestureManager = "Gesture Manager";
+            GestureBaseAnimation = "Basic Gesture Animations";
             Gesture = "Gesture";
             GestureType = "Gesture Type";
             HandType = "Hand Type";
@@ -284,15 +289,16 @@ namespace EasyAvatar
             OnGestureOut = "On Switch to Other Gesture";
             GestureNeutral = "Neutral";
             GestureFist = "Fist";
-            GestureHandOpen = "HandOpen";
-            GestureFingerPoint = "FingerPoint";
+            GestureHandOpen = "Hand Open";
+            GestureFingerPoint = "Finger Point";
             GestureVictory = "Victory";
             GestureRockNRoll = "RockNRoll";
-            GestureHandGun = "HandGun";
-            GestureThumbsUp = "ThumbsUp";
-            LeftHand = "LeftHand";
-            RightHand = "RightHand";
-            AnyHand = "AnyHand";
+            GestureHandGun = "Hand Gun";
+            GestureThumbsUp = "Thumbs Up";
+            LeftHand = "Left Hand";
+            RightHand = "Right Hand";
+            AnyHand = "Any Hand";
+            DefaultValue = "Default Value";
             BuildSucceed = "Succeed";
             AutoRestore = "Auto restore to default state when off";
             autoTrackingControl = "Auto set tracking state";

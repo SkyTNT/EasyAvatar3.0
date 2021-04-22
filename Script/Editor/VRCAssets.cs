@@ -9,13 +9,33 @@ namespace EasyAvatar
     {
         private static string animPath = "Assets/VRCSDK/Examples3/Animation/ProxyAnim/";
         private static string maskPath = "Assets/VRCSDK/Examples3/Animation/Masks/";
-        public static AnimationClip proxy_stand_still;
-        public static AnimationClip proxy_afk;
+        public static AnimationClip 
+            proxy_stand_still,
+            proxy_afk,
+            proxy_hands_idle,
+            proxy_hands_fist,
+            proxy_hands_gun,
+            proxy_hands_open,
+            proxy_hands_peace,
+            proxy_hands_point,
+            proxy_hands_rock,
+            proxy_hands_thumbs_up;
+
         public static AvatarMask hands_only;
         static VRCAssets()
         {
             proxy_stand_still = GetProxyAnim("proxy_stand_still");
             proxy_afk = GetProxyAnim("proxy_afk");
+
+            proxy_hands_idle = GetProxyAnim("proxy_hands_idle");
+            proxy_hands_fist = GetProxyAnim("proxy_hands_fist");
+            proxy_hands_gun = GetProxyAnim("proxy_hands_gun");
+            proxy_hands_open = GetProxyAnim("proxy_hands_open");
+            proxy_hands_peace = GetProxyAnim("proxy_hands_peace");
+            proxy_hands_point = GetProxyAnim("proxy_hands_point");
+            proxy_hands_rock = GetProxyAnim("proxy_hands_rock");
+            proxy_hands_thumbs_up = GetProxyAnim("proxy_hands_thumbs_up");
+
             hands_only = GetAvatarMask("vrc_HandsOnly");
         }
 
