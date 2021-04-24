@@ -21,7 +21,7 @@ namespace EasyAvatar
             proxy_hands_rock,
             proxy_hands_thumbs_up;
 
-        public static AvatarMask hands_only;
+        public static AvatarMask hands_only, hand_left, hand_right;
         static VRCAssets()
         {
             proxy_stand_still = GetProxyAnim("proxy_stand_still");
@@ -37,6 +37,8 @@ namespace EasyAvatar
             proxy_hands_thumbs_up = GetProxyAnim("proxy_hands_thumbs_up");
 
             hands_only = GetAvatarMask("vrc_HandsOnly");
+            hand_right = GetAvatarMask("vrc_Hand Right");
+            hand_left = GetAvatarMask("vrc_Hand Left");
         }
 
         /// <summary>

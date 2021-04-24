@@ -13,6 +13,7 @@ namespace EasyAvatar
         string directoryPath;
         GameObject avatar;
         AnimatorControllerBuilder fxBuilder,actionBuilder,gestureBuilder;
+        AnimatorControllerLayer gestureLeftLayer, gestureRightLayer;
         AnimatorDriver driver;
 
         public AnimatorController fxController
@@ -46,6 +47,11 @@ namespace EasyAvatar
             fxBuilder = new AnimatorControllerBuilder(directoryPath + "FXLayer.controller");
             actionBuilder = new AnimatorControllerBuilder(directoryPath + "ActionLayer.controller");
             gestureBuilder = new AnimatorControllerBuilder(directoryPath + "GestureLayer.controller");
+            gestureLeftLayer = gestureBuilder.AddLayer("gesture Left");
+            gestureRightLayer = gestureBuilder.AddLayer("gesture Right");
+            gestureBuilder.baseLayer.avatarMask = VRCAssets.hands_only;
+            gestureLeftLayer.avatarMask = VRCAssets.hand_left;
+            gestureRightLayer.avatarMask = VRCAssets.hand_right;
             driver = new AnimatorDriver(fxBuilder);
         }
 
@@ -53,8 +59,9 @@ namespace EasyAvatar
         {
             int driverId = driver.GetDriverId(rightHand ? "GestureRight" : "GestureLeft", threshold);
             name += rightHand ? "_R" : "_L";
-            gestureBuilder.AddDrivedState(driverId, name + "On", animation);
-            gestureBuilder.AddDrivedState(driverId + 1, name + "Off", Utility.GenerateRestoreAnimClip(avatar, animation));
+            gestureBuilder.AddDrivedState(driverId, name , animation);
+            gestureBuilder.SetDrivedStateTimeParameter(driverId, rightHand ? "GestureRightWeight" : "GestureLeftWeight");
+            gestureBuilder.SetDrivedStateLayer(driverId, rightHand ? gestureRightLayer : gestureLeftLayer);
         }
 
         public void AddState(string name, AnimationClip offAnim, AnimationClip onAnim, bool autoRestore, string parameterName, int threshold = -999)
@@ -164,7 +171,6 @@ namespace EasyAvatar
             fxBuilder.Build();
             actionBuilder.Build();
             gestureBuilder.Build();
-            gestureBuilder.SetMask(VRCAssets.hands_only);
         }
         
         public static void SeparateAnimation(AnimationClip clip, out AnimationClip action, out AnimationClip fx)
@@ -190,22 +196,29 @@ namespace EasyAvatar
     public class AnimatorControllerBuilder
     {
         public AnimatorController controller;
-        AnimatorControllerLayer baseLayer;
+        public AnimatorControllerLayer baseLayer;
         string saveDir;
         Dictionary<int, Motion> drivedMotions;
         Dictionary<int, List<StateMachineBehaviour>> drivedStateBehaviour;
         Dictionary<int, string> stateNames;
+        Dictionary<int, string> timeParameters;
+        Dictionary<int, AnimatorControllerLayer> drivedStateLayer;
         Dictionary<string, AnimatorControllerLayer> layers;
         AnimationClip initAnimation;
 
         public AnimatorControllerBuilder(string path)
         {
-            controller = AnimatorController.CreateAnimatorControllerAtPath(path); ;
+            controller = AnimatorController.CreateAnimatorControllerAtPath(path);
+            //controller.layers是复制的
             baseLayer = controller.layers[0];
             drivedMotions = new Dictionary<int, Motion>();
             drivedStateBehaviour = new Dictionary<int, List<StateMachineBehaviour>>();
             stateNames = new Dictionary<int, string>();
+            timeParameters = new Dictionary<int, string>();
+            drivedStateLayer = new Dictionary<int, AnimatorControllerLayer>();
             layers = new Dictionary<string, AnimatorControllerLayer>();
+
+            layers.Add("Base Layer",baseLayer);
 
             AddParameterInt("driver");
             AddParameterFloat("float1");
@@ -213,14 +226,6 @@ namespace EasyAvatar
 
             saveDir = Path.GetDirectoryName(path) + "/" + Path.GetFileNameWithoutExtension(path) + "/";
             Directory.CreateDirectory(saveDir);
-        }
-
-        public void SetMask(AvatarMask mask)
-        {
-            //坑，controller.layers是复制的
-            var layers = controller.layers;
-            layers[0].avatarMask = mask;
-            controller.layers = layers;
         }
 
         public void AddDrivedState(int driverId, string name, Motion motion = null)
@@ -276,6 +281,27 @@ namespace EasyAvatar
                     drivedStateBehaviour.Add(driverId, behaviourList);
                 }
             }
+        }
+
+        public void SetDrivedStateTimeParameter(int driverId, string parameterName)
+        {
+            if (!CheckControllerParameter(parameterName))
+            {
+                AddParameterFloat(parameterName);
+            }
+
+            if (timeParameters.ContainsKey(driverId))
+                timeParameters[driverId] = parameterName;
+            else
+                timeParameters.Add(driverId, parameterName);
+        }
+
+        public void SetDrivedStateLayer(int driverId, AnimatorControllerLayer layer)
+        {
+            if (drivedStateLayer.ContainsKey(driverId))
+                drivedStateLayer[driverId] = layer;
+            else
+                drivedStateLayer.Add(driverId, layer);
         }
 
         public void AddToInitState(AnimationClip clip)
@@ -391,22 +417,40 @@ namespace EasyAvatar
             string name = stateNames[driverId];
             Motion motion = drivedMotions[driverId];
             CheckMotionAndSave(ref motion, name);
-            List<StateMachineBehaviour> stateMachineBehaviours = null;
-            drivedStateBehaviour.TryGetValue(driverId, out stateMachineBehaviours);
+            drivedStateBehaviour.TryGetValue(driverId, out List < StateMachineBehaviour > stateMachineBehaviours);
+            drivedStateLayer.TryGetValue(driverId, out AnimatorControllerLayer layer);
+            if (layer == null)
+                layer = baseLayer;
 
-            AnimatorStateMachine fxStateMachine = baseLayer.stateMachine;
+            AnimatorStateMachine fxStateMachine = layer.stateMachine;
             AnimatorState state = fxStateMachine.AddState(name);
             state.writeDefaultValues = false;
             state.motion = motion;
             state.behaviours = stateMachineBehaviours == null ? null : stateMachineBehaviours.ToArray();
+            timeParameters.TryGetValue(driverId, out string timeParameter);
+            if (timeParameter != null && timeParameter != "")
+            {
+                state.timeParameterActive = true;
+                state.timeParameter = timeParameter;
+            }
+
             //通过驱动id从anystate进入对应状态
             AnimatorStateTransition transition = fxStateMachine.AddAnyStateTransition(state);
             transition.AddCondition(AnimatorConditionMode.Equals, driverId, "driver");
             transition.duration = 0.05f;
+            transition.canTransitionToSelf = false;
         }
 
         public void Build()
         {
+            List<AnimatorControllerLayer> layerList=new List<AnimatorControllerLayer>();
+            foreach(var layer in layers)
+            {
+                layerList.Add(layer.Value);
+            }
+            //把修改后的层复制回去
+            controller.layers = layerList.ToArray();
+
             AnimatorState initState = baseLayer.stateMachine.AddState("init");
             initState.writeDefaultValues = false;
             initState.motion = initAnimation;
