@@ -73,12 +73,12 @@ namespace EasyAvatar
         {
             SeparateAnimation(offAnim, out AnimationClip off_action, out AnimationClip off_fx);
             SeparateAnimation(onAnim, out AnimationClip on_action, out AnimationClip on_fx);
+            //对于人体动画，关闭的动画只能是待机动画
+            off_action = VRCAssets.proxy_stand_still;
             if (autoRestore)
             {
                 off_fx = Utility.MergeAnimClip(Utility.GenerateRestoreAnimClip(avatar, on_fx), off_fx);
-                off_action = VRCAssets.proxy_stand_still;
             }
-            
 
             int driverId;
 
@@ -97,15 +97,15 @@ namespace EasyAvatar
                 actionBuilder.AddDrivedState(driverId + 1, name + "_off", off_action);
                 if (offTracking != null && onTracking != null)
                 {
-                    actionBuilder.AddDrivedStateBehaviour(driverId, VRCStateMachineBehaviourUtility.GetTrackingControl(onTracking), VRCStateMachineBehaviourUtility.ActionLayerControl(1));
-                    actionBuilder.AddDrivedStateBehaviour(driverId + 1, VRCStateMachineBehaviourUtility.GetTrackingControl(offTracking), VRCStateMachineBehaviourUtility.ActionLayerControl(0));
+                    actionBuilder.AddDrivedStateBehaviour(driverId, VRCStateMachineBehaviourUtility.GetTrackingControl(onTracking), VRCStateMachineBehaviourUtility.ActionLayerControl(1, 0));
+                    actionBuilder.AddDrivedStateBehaviour(driverId + 1, VRCStateMachineBehaviourUtility.GetTrackingControl(offTracking), VRCStateMachineBehaviourUtility.ActionLayerControl(0, 0));
 
                 }
                 else
                 {
                     var trackingControl = VRCStateMachineBehaviourUtility.CalculateTrackingControl(on_action);
-                    actionBuilder.AddDrivedStateBehaviour(driverId, trackingControl, VRCStateMachineBehaviourUtility.ActionLayerControl(1));
-                    actionBuilder.AddDrivedStateBehaviour(driverId + 1, VRCStateMachineBehaviourUtility.ReverseTrackingControl(trackingControl), VRCStateMachineBehaviourUtility.ActionLayerControl(0));
+                    actionBuilder.AddDrivedStateBehaviour(driverId, trackingControl, VRCStateMachineBehaviourUtility.ActionLayerControl(1, 0));
+                    actionBuilder.AddDrivedStateBehaviour(driverId + 1, VRCStateMachineBehaviourUtility.ReverseTrackingControl(trackingControl), VRCStateMachineBehaviourUtility.ActionLayerControl(0, 0));
                 }
             }
         }
@@ -120,11 +120,10 @@ namespace EasyAvatar
             SeparateAnimation(offAnim, out AnimationClip off_action, out AnimationClip off_fx);
             SeparateAnimation(blendTree0, out AnimationClip blend0_action, out AnimationClip blend0_fx);
             SeparateAnimation(blendTree1, out AnimationClip blend1_action, out AnimationClip blend1_fx);
-
+            off_action = VRCAssets.proxy_stand_still;
             if (autoRestore)
             {
                 off_fx = Utility.MergeAnimClip(Utility.GenerateRestoreAnimClip(avatar, Utility.MergeAnimClip(blend0_fx, blend1_fx)), off_fx);
-                off_action = VRCAssets.proxy_stand_still;
             }
 
             int driverId;
@@ -146,15 +145,15 @@ namespace EasyAvatar
                 actionBuilder.AddDrivedState(driverId + 1, name + "_off", off_action);
                 if (offTracking != null && onTracking != null)
                 {
-                    actionBuilder.AddDrivedStateBehaviour(driverId, VRCStateMachineBehaviourUtility.GetTrackingControl(onTracking), VRCStateMachineBehaviourUtility.ActionLayerControl(1));
-                    actionBuilder.AddDrivedStateBehaviour(driverId + 1, VRCStateMachineBehaviourUtility.GetTrackingControl(offTracking), VRCStateMachineBehaviourUtility.ActionLayerControl(0));
+                    actionBuilder.AddDrivedStateBehaviour(driverId, VRCStateMachineBehaviourUtility.GetTrackingControl(onTracking), VRCStateMachineBehaviourUtility.ActionLayerControl(1, 0));
+                    actionBuilder.AddDrivedStateBehaviour(driverId + 1, VRCStateMachineBehaviourUtility.GetTrackingControl(offTracking), VRCStateMachineBehaviourUtility.ActionLayerControl(0, 0));
 
                 }
                 else
                 {
                     var trackingControl = VRCStateMachineBehaviourUtility.CalculateTrackingControl(blendTree_action);
-                    actionBuilder.AddDrivedStateBehaviour(driverId, trackingControl, VRCStateMachineBehaviourUtility.ActionLayerControl(1));
-                    actionBuilder.AddDrivedStateBehaviour(driverId + 1, VRCStateMachineBehaviourUtility.ReverseTrackingControl(trackingControl), VRCStateMachineBehaviourUtility.ActionLayerControl(0));
+                    actionBuilder.AddDrivedStateBehaviour(driverId, trackingControl, VRCStateMachineBehaviourUtility.ActionLayerControl(1, 0));
+                    actionBuilder.AddDrivedStateBehaviour(driverId + 1, VRCStateMachineBehaviourUtility.ReverseTrackingControl(trackingControl), VRCStateMachineBehaviourUtility.ActionLayerControl(0, 0));
                 }
             }
         }
@@ -694,18 +693,18 @@ namespace EasyAvatar
             }
         }
 
-        public static VRCPlayableLayerControl PlayableLayerControl(VRC.SDKBase.VRC_PlayableLayerControl.BlendableLayer layer, float weight)
+        public static VRCPlayableLayerControl PlayableLayerControl(VRC.SDKBase.VRC_PlayableLayerControl.BlendableLayer layer, float weight, float blendDuration)
         {
             VRCPlayableLayerControl playableLayerControl = ScriptableObject.CreateInstance<VRCPlayableLayerControl>();
-            playableLayerControl.blendDuration = 1;
+            playableLayerControl.blendDuration = blendDuration;
             playableLayerControl.layer = layer;
             playableLayerControl.goalWeight = weight;
             return playableLayerControl;
         }
 
-        public static VRCPlayableLayerControl ActionLayerControl(float weight)
+        public static VRCPlayableLayerControl ActionLayerControl(float weight, float blendDuration = 1)
         {
-            return PlayableLayerControl(VRC.SDKBase.VRC_PlayableLayerControl.BlendableLayer.Action, weight);
+            return PlayableLayerControl(VRC.SDKBase.VRC_PlayableLayerControl.BlendableLayer.Action, weight, blendDuration);
         }
 
     }

@@ -8,6 +8,7 @@ using VRC.SDK3.Avatars.ScriptableObjects;
 using VRC.SDK3.Avatars.Components;
 using UnityEditor.Animations;
 using static VRC.SDK3.Avatars.Components.VRCAvatarDescriptor;
+using VRC.SDKBase.Editor;
 
 namespace EasyAvatar
 {
@@ -16,6 +17,10 @@ namespace EasyAvatar
     {
 
         public static string workingDirectory = "Assets/EasyAvatar3.0/";
+
+        static EasyAvatarTool()
+        {
+        }
 
         /// <summary>
         /// 创建AvatarHelper
