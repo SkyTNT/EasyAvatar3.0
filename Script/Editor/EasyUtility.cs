@@ -24,6 +24,13 @@ namespace EasyAvatar
             return result;
         }
 
+
+        /// <summary>
+        /// 检查曲线是否在遮罩中开启
+        /// </summary>
+        /// <param name="binding">曲线</param>
+        /// <param name="mask">遮罩</param>
+        /// <returns></returns>
         public static bool CheckCurveBinding(EditorCurveBinding binding, EasyAnimationMask mask)
         {
             if (binding.type == typeof(Animator) && binding.path == "")
@@ -144,6 +151,14 @@ namespace EasyAvatar
             return result;
         }
 
+        /// <summary>
+        /// 生成1维混合树
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="paramaName"></param>
+        /// <param name="motion1"></param>
+        /// <param name="motion2"></param>
+        /// <returns></returns>
         public static BlendTree Generate1DBlendTree(string name, string paramaName, Motion motion1, Motion motion2)
         {
             BlendTree blendTree = new BlendTree();

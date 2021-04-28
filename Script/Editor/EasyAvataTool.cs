@@ -240,7 +240,6 @@ namespace EasyAvatar
             /// <summary>
             /// 构建所有
             /// </summary>
-            /// <param name="helper">AvatarHelper</param>
             public void Build()
             {
                 VRCAvatarDescriptor avatarDescriptor = helper.avatar.GetComponent<VRCAvatarDescriptor>();
@@ -365,16 +364,26 @@ namespace EasyAvatar
                         vrcControl.name = control.name;
                         vrcControl.icon = control.icon;
                         vrcControl.parameter = new VRCExpressionsMenu.Control.Parameter() { name = "control" + controlCount };
-                        if (control.type == EasyControl.Type.Toggle)
+
+                        switch (control.type)
                         {
-                            vrcControl.type = VRCExpressionsMenu.Control.ControlType.Toggle;
-                            BuildToggle(prefix + "_" + count + "_" + control.name, control);
-                        }
-                        else if(control.type == EasyControl.Type.RadialPuppet)
-                        {
-                            vrcControl.type = VRCExpressionsMenu.Control.ControlType.RadialPuppet;
-                            vrcControl.subParameters = new VRCExpressionsMenu.Control.Parameter[] { new VRCExpressionsMenu.Control.Parameter() { name = "float1"} };
-                            BuildRadialPuppet(prefix + "_" + count + "_" + control.name, control);
+                            case EasyControl.Type.Toggle:
+                                vrcControl.type = VRCExpressionsMenu.Control.ControlType.Toggle;
+                                BuildToggle(prefix + "_" + count + "_" + control.name, control);
+                                break;
+                            case EasyControl.Type.Button:
+                                vrcControl.type = VRCExpressionsMenu.Control.ControlType.Button;
+                                BuildToggle(prefix + "_" + count + "_" + control.name, control);
+                                break;
+                            case EasyControl.Type.RadialPuppet:
+                                vrcControl.type = VRCExpressionsMenu.Control.ControlType.RadialPuppet;
+                                vrcControl.subParameters = new VRCExpressionsMenu.Control.Parameter[] { new VRCExpressionsMenu.Control.Parameter() { name = "float1" } };
+                                BuildRadialPuppet(prefix + "_" + count + "_" + control.name, control);
+                                break;
+                            case EasyControl.Type.TwoAxisPuppet:
+                                break;
+                            default:
+                                break;
                         }
 
                         expressionsMenu.controls.Add(vrcControl);
@@ -463,8 +472,8 @@ namespace EasyAvatar
             private void BuildToggle(string name, EasyControl control)
             {
                 //EasyBehaviors生成动画
-                AnimationClip offClip = Utility.GenerateAnimClip(control.behaviors[1].list);
-                AnimationClip onClip = Utility.GenerateAnimClip(control.behaviors[0].list);
+                AnimationClip offClip = Utility.GenerateAnimClip(control.behaviors[0].list);
+                AnimationClip onClip = Utility.GenerateAnimClip(control.behaviors[1].list);
                 if (control.autoTrackingControl)
                     easyAnimator.AddState(name, offClip, onClip, control.autoRestore, "control" + controlCount);
                 else
@@ -480,9 +489,9 @@ namespace EasyAvatar
             {
 
                 //EasyBehaviors生成动画
-                AnimationClip offClip = Utility.GenerateAnimClip(control.behaviors[2].list);
-                AnimationClip blend0 = Utility.GenerateAnimClip(control.behaviors[0].list);
-                AnimationClip blend1 = Utility.GenerateAnimClip(control.behaviors[1].list);
+                AnimationClip offClip = Utility.GenerateAnimClip(control.behaviors[0].list);
+                AnimationClip blend0 = Utility.GenerateAnimClip(control.behaviors[1].list);
+                AnimationClip blend1 = Utility.GenerateAnimClip(control.behaviors[2].list);
                 if (control.autoTrackingControl)
                     easyAnimator.AddState(name, offClip, blend0, blend1, control.autoRestore, "control" + controlCount);
                 else

@@ -12,11 +12,11 @@ namespace EasyAvatar
     [CustomEditor(typeof(EasyControl))]
     public class EasyControlEditor : Editor
     {
-        SerializedProperty controlType, icon, autoRestore, autoTrackingControl, offTrackingControl, onTrackingControl, behaviorsList, behaviors1, behaviors2, behaviors3, behaviors4;
         GameObject avatar;
-        EasyBehaviorsEditor editor1, editor2, editor3, editor4, editor5;
-        int[] typeIndex = { 0, 1 };
-        string[] typeLabels;
+        SerializedProperty controlType, icon, autoRestore, autoTrackingControl, offTrackingControl, onTrackingControl, behaviorGroupList;
+        List<SerializedProperty> behaviorGroups;
+        List<EasyBehaviorsEditor> editors;
+        int[] typeIndex = { 0, 1, 2, 3 };
         private void OnEnable()
         {
 
@@ -27,10 +27,16 @@ namespace EasyAvatar
             autoTrackingControl = serializedObject.FindProperty("autoTrackingControl");
             offTrackingControl = serializedObject.FindProperty("offTrackingControl");
             onTrackingControl = serializedObject.FindProperty("onTrackingControl");
-            behaviorsList = serializedObject.FindProperty("behaviors");
-            ChangeType((EasyControl.Type)controlType.enumValueIndex);
-
-            typeLabels = new string[] { Lang.Toggle, Lang.RadialPuppet };
+            behaviorGroupList = serializedObject.FindProperty("behaviors");
+            behaviorGroups = new List<SerializedProperty>();
+            editors = new List<EasyBehaviorsEditor>();
+            for (int i = 0; i < behaviorGroupList.arraySize; i++)
+            {
+                SerializedProperty behaviourGroup = behaviorGroupList.GetArrayElementAtIndex(i);
+                behaviorGroups.Add(behaviourGroup);
+                editors.Add(new EasyBehaviorsEditor(behaviourGroup));
+            }
+            
 
             serializedObject.ApplyModifiedProperties();
         }
@@ -40,25 +46,32 @@ namespace EasyAvatar
 
         }
 
+        private void ResizeBehaviorGroupList(int size)
+        {
+            behaviorGroupList.arraySize = size;
+            behaviorGroups.Clear();
+            editors.Clear();
+            for (int i = 0; i < size; i++)
+            {
+                SerializedProperty behaviourGroup = behaviorGroupList.GetArrayElementAtIndex(i);
+                behaviorGroups.Add(behaviourGroup);
+                editors.Add(new EasyBehaviorsEditor(behaviourGroup));
+            }
+        }
+
         private void ChangeType(EasyControl.Type type)
         {
             switch (type)
             {
                 case EasyControl.Type.Toggle:
-                    behaviorsList.arraySize = 2;
-                    behaviors1 = behaviorsList.GetArrayElementAtIndex(0);
-                    behaviors2 = behaviorsList.GetArrayElementAtIndex(1);
-                    editor1 = new EasyBehaviorsEditor(behaviors1);
-                    editor2 = new EasyBehaviorsEditor(behaviors2);
+                case EasyControl.Type.Button:
+                    ResizeBehaviorGroupList(2);
                     break;
                 case EasyControl.Type.RadialPuppet:
-                    behaviorsList.arraySize = 3;
-                    behaviors1 = behaviorsList.GetArrayElementAtIndex(0);
-                    behaviors2 = behaviorsList.GetArrayElementAtIndex(1);
-                    behaviors3 = behaviorsList.GetArrayElementAtIndex(2);
-                    editor1 = new EasyBehaviorsEditor(behaviors1);
-                    editor2 = new EasyBehaviorsEditor(behaviors2);
-                    editor3 = new EasyBehaviorsEditor(behaviors3);
+                    ResizeBehaviorGroupList(3);
+                    break;
+                case EasyControl.Type.TwoAxisPuppet:
+                    ResizeBehaviorGroupList(5);
                     break;
                 default:
                     break;
@@ -79,10 +92,12 @@ namespace EasyAvatar
             EditorGUILayout.PropertyField(icon, new GUIContent(Lang.Icon));
             //控件类型
             EditorGUI.BeginChangeCheck();
-            controlType.enumValueIndex = EditorGUILayout.IntPopup(Lang.ControlType, controlType.enumValueIndex, typeLabels, typeIndex);
+            controlType.enumValueIndex = EditorGUILayout.IntPopup(Lang.ControlType, controlType.enumValueIndex, new string[] { Lang.Toggle, Lang.Button, Lang.RadialPuppet, Lang.TwoAxisPuppet }, typeIndex);
             if (EditorGUI.EndChangeCheck())
                 ChangeType((EasyControl.Type)controlType.enumValueIndex);
-            
+
+            //是否自动恢复
+            autoRestore.boolValue = EditorGUILayout.ToggleLeft(Lang.AutoRestore, autoRestore.boolValue);
             //是否自动设置追踪
             autoTrackingControl.boolValue = EditorGUILayout.ToggleLeft(Lang.autoTrackingControl, autoTrackingControl.boolValue);
 
@@ -94,33 +109,50 @@ namespace EasyAvatar
                 EditorGUILayout.PropertyField(onTrackingControl);
             }
 
-            if (controlType.enumValueIndex == (int)EasyControl.Type.Toggle)
+            string[] labels;
+            switch ((EasyControl.Type)controlType.enumValueIndex)
             {
-                editor1.avatar = editor2.avatar = avatar;
-                GUILayout.Label(Lang.OnSwitchOn, EditorStyles.boldLabel);
-                editor1.DoLayout();
-
-                //是否自动恢复
-                autoRestore.boolValue = EditorGUILayout.ToggleLeft(Lang.AutoRestore, autoRestore.boolValue);
-
-                GUILayout.Label(Lang.OnSwitchOff, EditorStyles.boldLabel);
-                editor2.DoLayout();
+                case EasyControl.Type.Toggle:
+                    labels = new string[] { Lang.OnSwitchOff, Lang.OnSwitchOn };
+                    break;
+                case EasyControl.Type.Button:
+                    labels = new string[] { Lang.OnRelease, Lang.OnPress };
+                    break;
+                case EasyControl.Type.RadialPuppet:
+                    labels = new string[] { Lang.OnRadialPuppetOff, Lang.OnRadialPuppet0, Lang.OnRadialPuppet1 };
+                    break;
+                case EasyControl.Type.TwoAxisPuppet:
+                    labels = new string[] { Lang.OnTwoAxisPuppetOff, Lang.OnTwoAxisPuppetPosition };
+                    break;
+                default:
+                    labels = new string[] { "" };
+                    break;
             }
-            else if (controlType.enumValueIndex == (int)EasyControl.Type.RadialPuppet)
+
+            for (int i = 0; i < editors.Count; i++)
             {
-                editor1.avatar = editor2.avatar = editor3.avatar = avatar;
+                EasyBehaviorsEditor editor = editors[i];
+                editor.avatar = avatar;
+                if ((EasyControl.Type)controlType.enumValueIndex == EasyControl.Type.TwoAxisPuppet)
+                {
+                    GUILayout.Label(i==0?labels[0]: labels[1], EditorStyles.boldLabel);
+                    
+                }
+                else
+                    GUILayout.Label(labels[i], EditorStyles.boldLabel);
+                editor.DoLayout();
+            }
 
-                GUILayout.Label(Lang.OnRadialPuppet0, EditorStyles.boldLabel);
-                editor1.DoLayout();
-
-                GUILayout.Label(Lang.OnRadialPuppet1, EditorStyles.boldLabel);
-                editor2.DoLayout();
-
-                //是否自动恢复
-                autoRestore.boolValue = EditorGUILayout.ToggleLeft(Lang.AutoRestore, autoRestore.boolValue);
-
-                GUILayout.Label(Lang.OnRadialPuppetOff, EditorStyles.boldLabel);
-                editor3.DoLayout();
+            if ((EasyControl.Type)controlType.enumValueIndex == EasyControl.Type.TwoAxisPuppet)
+            {
+                if (GUILayout.Button("Add"))
+                {
+                    int index = behaviorGroupList.arraySize++;
+                    SerializedProperty behaviorGroup = behaviorGroupList.GetArrayElementAtIndex(index);
+                    behaviorGroups.Add(behaviorGroup);
+                    editors.Add(new EasyBehaviorsEditor(behaviorGroup));
+                }
+                
             }
 
             serializedObject.ApplyModifiedProperties();

@@ -20,7 +20,6 @@ namespace EasyAvatar
         ReorderableList behaviorsList;
 
         int[] typeIndex = { 0, 1 };
-        string[] typeLabels;
 
         public EasyBehaviorsEditor(SerializedProperty behaviors)
         {
@@ -32,8 +31,6 @@ namespace EasyAvatar
             behaviorsList.elementHeight = (EditorGUIUtility.singleLineHeight + 6) * 4;
             behaviorsList.drawElementCallback = (Rect rect, int index, bool selected, bool focused) => BehaviorField(rect, behaviors.GetArrayElementAtIndex(index));
             
-
-            typeLabels = new string[] { Lang.BehaviorTypeProperty, Lang.BehaviorTypeAnim };
         }
 
         public void DoLayout()
@@ -164,7 +161,7 @@ namespace EasyAvatar
             };
 
             GUI.Label(typeLabelRect, Lang.BehaviorType);
-            type.enumValueIndex = EditorGUI.IntPopup(typeFieldRect, "", type.enumValueIndex, typeLabels, typeIndex);
+            type.enumValueIndex = EditorGUI.IntPopup(typeFieldRect, "", type.enumValueIndex, new string[] { Lang.BehaviorTypeProperty, Lang.BehaviorTypeAnim }, typeIndex);
 
             if (type.enumValueIndex == (int)EasyBehavior.Type.Property)
                 PropertyTypeBehaviorLayout(layoutRect, behavior);

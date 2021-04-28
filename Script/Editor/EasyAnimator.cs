@@ -8,6 +8,7 @@ using VRC.SDK3.Avatars.Components;
 
 namespace EasyAvatar
 {
+    
     public class EasyAnimator
     {
         string directoryPath;
@@ -55,6 +56,13 @@ namespace EasyAvatar
             driver = new AnimatorDriver(fxBuilder);
         }
 
+        /// <summary>
+        /// 设置手势动画
+        /// </summary>
+        /// <param name="name">名字</param>
+        /// <param name="animation">动画</param>
+        /// <param name="rightHand">是否为右手</param>
+        /// <param name="threshold">手势id</param>
         public void SetGestureAnimation(string name, AnimationClip animation, bool rightHand, int threshold)
         {
             int driverId = driver.GetDriverId(rightHand ? "GestureRight" : "GestureLeft", threshold);
@@ -64,11 +72,31 @@ namespace EasyAvatar
             gestureBuilder.SetDrivedStateLayer(driverId, rightHand ? gestureRightLayer : gestureLeftLayer);
         }
 
+        /// <summary>
+        /// 添加状态
+        /// </summary>
+        /// <param name="name">名字</param>
+        /// <param name="offAnim">关闭的动画</param>
+        /// <param name="onAnim">打开的动画</param>
+        /// <param name="autoRestore">是否自动恢复</param>
+        /// <param name="parameterName">控制开关的参数名</param>
+        /// <param name="threshold">参数值</param>
         public void AddState(string name, AnimationClip offAnim, AnimationClip onAnim, bool autoRestore, string parameterName, int threshold = -999)
         {
             AddState(name, offAnim, onAnim, null, null, autoRestore, parameterName, threshold);
         }
 
+        /// <summary>
+        /// 添加状态
+        /// </summary>
+        /// <param name="name">名字</param>
+        /// <param name="offAnim">关闭的动画</param>
+        /// <param name="onAnim">打开的动画</param>
+        /// <param name="offTracking">关闭时设置的追踪状态，null时自动生成</param>
+        /// <param name="onTracking">打开时设置的追踪状态，null时自动生成</param>
+        /// <param name="autoRestore">是否自动恢复</param>
+        /// <param name="parameterName">控制开关的参数名</param>
+        /// <param name="threshold">参数值</param>
         public void AddState(string name, AnimationClip offAnim, AnimationClip onAnim, EasyTrackingControl offTracking, EasyTrackingControl onTracking, bool autoRestore, string parameterName, int threshold = -999)
         {
             SeparateAnimation(offAnim, out AnimationClip off_action, out AnimationClip off_fx);
@@ -110,11 +138,33 @@ namespace EasyAvatar
             }
         }
 
+        /// <summary>
+        /// 添加状态
+        /// </summary>
+        /// <param name="name">名字</param>
+        /// <param name="offAnim">关闭的动画</param>
+        /// <param name="blendTree0">打开时混合树左端的动画</param>
+        /// <param name="blendTree1">打开时混合树右端的动画</param>
+        /// <param name="autoRestore">是否自动恢复</param>
+        /// <param name="parameterName">控制开关的参数名</param>
+        /// <param name="threshold">参数值</param>
         public void AddState(string name, AnimationClip offAnim, AnimationClip blendTree0, AnimationClip blendTree1, bool autoRestore, string parameterName, int threshold = -999)
         {
             AddState(name, offAnim, blendTree0, blendTree1, null, null, autoRestore, parameterName, threshold);
         }
 
+        /// <summary>
+        /// 添加状态
+        /// </summary>
+        /// <param name="name">名字</param>
+        /// <param name="offAnim">关闭的动画</param>
+        /// <param name="blendTree0">打开时混合树左端的动画</param>
+        /// <param name="blendTree1">打开时混合树右端的动画</param>
+        /// <param name="offTracking">关闭时设置的追踪状态，null时自动生成</param>
+        /// <param name="onTracking">打开时设置的追踪状态，null时自动生成</param>
+        /// <param name="autoRestore">是否自动恢复</param>
+        /// <param name="parameterName">控制开关的参数名</param>
+        /// <param name="threshold">参数值</param>
         public void AddState(string name, AnimationClip offAnim, AnimationClip blendTree0, AnimationClip blendTree1, EasyTrackingControl offTracking, EasyTrackingControl onTracking, bool autoRestore, string parameterName, int threshold = -999)
         {
             SeparateAnimation(offAnim, out AnimationClip off_action, out AnimationClip off_fx);
@@ -158,6 +208,9 @@ namespace EasyAvatar
             }
         }
         
+        /// <summary>
+        /// 生成所有动画控制器
+        /// </summary>
         public void Build()
         {
             {
@@ -172,6 +225,12 @@ namespace EasyAvatar
             gestureBuilder.Build();
         }
         
+        /// <summary>
+        /// 分离人体动画和非人体动画
+        /// </summary>
+        /// <param name="clip"></param>
+        /// <param name="action"></param>
+        /// <param name="fx"></param>
         public static void SeparateAnimation(AnimationClip clip, out AnimationClip action, out AnimationClip fx)
         {
             action = new AnimationClip();
@@ -191,7 +250,7 @@ namespace EasyAvatar
         }
     }
 
-
+    
     public class AnimatorControllerBuilder
     {
         public AnimatorController controller;
@@ -227,6 +286,12 @@ namespace EasyAvatar
             Directory.CreateDirectory(saveDir);
         }
 
+        /// <summary>
+        /// 添加驱动了的状态
+        /// </summary>
+        /// <param name="driverId">驱动id</param>
+        /// <param name="name">状态名字</param>
+        /// <param name="motion">动画或者混合树</param>
         public void AddDrivedState(int driverId, string name, Motion motion = null)
         {
             if (drivedMotions.ContainsKey(driverId))
@@ -248,6 +313,11 @@ namespace EasyAvatar
                 stateNames.Add(driverId, name);
         }
 
+        /// <summary>
+        /// 添加状态行为
+        /// </summary>
+        /// <param name="driverId"></param>
+        /// <param name="behaviours"></param>
         public void AddDrivedStateBehaviour(int driverId, params StateMachineBehaviour[] behaviours)
         {
             foreach (StateMachineBehaviour behaviour in behaviours)
@@ -281,7 +351,11 @@ namespace EasyAvatar
                 }
             }
         }
-
+        /// <summary>
+        /// 设置状态的时间参数
+        /// </summary>
+        /// <param name="driverId"></param>
+        /// <param name="parameterName"></param>
         public void SetDrivedStateTimeParameter(int driverId, string parameterName)
         {
             if (!CheckControllerParameter(parameterName))
@@ -295,6 +369,11 @@ namespace EasyAvatar
                 timeParameters.Add(driverId, parameterName);
         }
 
+        /// <summary>
+        /// 设置状态所在的层，默认为基础层
+        /// </summary>
+        /// <param name="driverId"></param>
+        /// <param name="layer"></param>
         public void SetDrivedStateLayer(int driverId, AnimatorControllerLayer layer)
         {
             if (drivedStateLayer.ContainsKey(driverId))
@@ -303,6 +382,10 @@ namespace EasyAvatar
                 drivedStateLayer.Add(driverId, layer);
         }
 
+        /// <summary>
+        /// 添加到初始化动画
+        /// </summary>
+        /// <param name="clip"></param>
         public void AddToInitState(AnimationClip clip)
         {
             if (!initAnimation)
@@ -312,6 +395,11 @@ namespace EasyAvatar
 
         }
 
+        /// <summary>
+        /// 添加层
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
         public AnimatorControllerLayer AddLayer(string name)
         {
             AnimatorControllerLayer newLayer = new AnimatorControllerLayer();
@@ -329,21 +417,38 @@ namespace EasyAvatar
             return newLayer;
         }
 
+        /// <summary>
+        /// 添加bool型参数
+        /// </summary>
+        /// <param name="name"></param>
         public void AddParameterBool(string name)
         {
             controller.AddParameter(name, AnimatorControllerParameterType.Bool);
         }
 
+        /// <summary>
+        /// 添加int型参数
+        /// </summary>
+        /// <param name="name"></param>
         public void AddParameterInt(string name)
         {
             controller.AddParameter(name, AnimatorControllerParameterType.Int);
         }
 
+        /// <summary>
+        /// 添加float型参数
+        /// </summary>
+        /// <param name="name"></param>
         public void AddParameterFloat(string name)
         {
             controller.AddParameter(name, AnimatorControllerParameterType.Float);
         }
 
+        /// <summary>
+        /// 检查参数是否存在
+        /// </summary>
+        /// <param name="paramaName"></param>
+        /// <returns></returns>
         public bool CheckControllerParameter(string paramaName)
         {
             if (controller.parameters == null)
@@ -356,6 +461,11 @@ namespace EasyAvatar
             return false;
         }
 
+        /// <summary>
+        /// 寻找层
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
         public AnimatorControllerLayer FindLayer(string name)
         {
             AnimatorControllerLayer layer = null;
@@ -363,6 +473,12 @@ namespace EasyAvatar
             return layer;
         }
 
+        /// <summary>
+        /// 寻找状态
+        /// </summary>
+        /// <param name="stateMachine">从这个状态机中寻找</param>
+        /// <param name="name">状态名</param>
+        /// <returns></returns>
         public AnimatorState FindState(AnimatorStateMachine stateMachine, string name)
         {
             foreach (var childState in stateMachine.states)
@@ -373,6 +489,11 @@ namespace EasyAvatar
             return null;
         }
 
+        /// <summary>
+        /// 检查动画或者混合树是否为空，不为空就保存
+        /// </summary>
+        /// <param name="motion">动画或者混合树</param>
+        /// <param name="name">保存名字</param>
         public void CheckMotionAndSave(ref Motion motion, string name)
         {
 
@@ -411,6 +532,10 @@ namespace EasyAvatar
             }
         }
 
+        /// <summary>
+        /// 构建状态
+        /// </summary>
+        /// <param name="driverId"></param>
         public void BuildDrivedState(int driverId)
         {
             string name = stateNames[driverId];
@@ -440,6 +565,9 @@ namespace EasyAvatar
             transition.canTransitionToSelf = false;
         }
 
+        /// <summary>
+        /// 构建动画控制器
+        /// </summary>
         public void Build()
         {
             List<AnimatorControllerLayer> layerList=new List<AnimatorControllerLayer>();
@@ -462,16 +590,29 @@ namespace EasyAvatar
         }
     }
 
+    /// <summary>
+    /// 驱动器
+    /// </summary>
     public class AnimatorDriver
     {
         Dictionary<KeyValuePair<string, int>, int> drivers;
         AnimatorControllerBuilder builder;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="builder">作为驱动的动画控制器构建器</param>
         public AnimatorDriver(AnimatorControllerBuilder builder)
         {
             drivers = new Dictionary<KeyValuePair<string, int>, int>();
             this.builder = builder;
         }
 
+        /// <summary>
+        /// 生成一个驱动id
+        /// </summary>
+        /// <param name="parameterName">bool型参数名</param>
+        /// <returns></returns>
         public int GetDriverId(string parameterName)
         {
             //查询drivers里是否已经有driver
@@ -510,6 +651,12 @@ namespace EasyAvatar
             return driverId;
         }
 
+        /// <summary>
+        /// 获取驱动id
+        /// </summary>
+        /// <param name="parameterName">int型参数名字</param>
+        /// <param name="threshold">参数值</param>
+        /// <returns></returns>
         public int GetDriverId(string parameterName, int threshold)
         {
             //查询drivers里是否已经有driver
@@ -562,6 +709,11 @@ namespace EasyAvatar
 
     public class VRCStateMachineBehaviourUtility
     {
+        /// <summary>
+        /// EasyTrackingControl转为VRCAnimatorTrackingControl
+        /// </summary>
+        /// <param name="easyTrackingControl"></param>
+        /// <returns></returns>
         public static VRCAnimatorTrackingControl GetTrackingControl(EasyTrackingControl easyTrackingControl)
         {
             VRCAnimatorTrackingControl trackingControl = ScriptableObject.CreateInstance<VRCAnimatorTrackingControl>();
@@ -578,6 +730,10 @@ namespace EasyAvatar
             return trackingControl;
         }
 
+        /// <summary>
+        /// 全部追踪
+        /// </summary>
+        /// <returns></returns>
         public static VRCAnimatorTrackingControl FullTracking()
         {
             VRCAnimatorTrackingControl trackingControl = ScriptableObject.CreateInstance<VRCAnimatorTrackingControl>();
@@ -595,6 +751,11 @@ namespace EasyAvatar
             return trackingControl;
         }
 
+
+        /// <summary>
+        /// 全部动画
+        /// </summary>
+        /// <returns></returns>
         public static VRCAnimatorTrackingControl FullAnimation()
         {
             VRCAnimatorTrackingControl trackingControl = ScriptableObject.CreateInstance<VRCAnimatorTrackingControl>();
@@ -612,6 +773,11 @@ namespace EasyAvatar
             return trackingControl;
         }
 
+        /// <summary>
+        /// 反转追踪状态
+        /// </summary>
+        /// <param name="src"></param>
+        /// <returns></returns>
         public static VRCAnimatorTrackingControl ReverseTrackingControl(VRCAnimatorTrackingControl src)
         {
             VRCAnimatorTrackingControl trackingControl = ScriptableObject.CreateInstance<VRCAnimatorTrackingControl>();
@@ -628,6 +794,11 @@ namespace EasyAvatar
             return trackingControl;
         }
 
+        /// <summary>
+        /// 反转单个追踪状态
+        /// </summary>
+        /// <param name="src"></param>
+        /// <returns></returns>
         private static VRC.SDKBase.VRC_AnimatorTrackingControl.TrackingType ReverseSingleTrackingControl(VRC.SDKBase.VRC_AnimatorTrackingControl.TrackingType src)
         {
             switch (src)
@@ -641,6 +812,11 @@ namespace EasyAvatar
             }
         }
 
+        /// <summary>
+        /// 计算追踪
+        /// </summary>
+        /// <param name="motion"></param>
+        /// <returns></returns>
         public static VRCAnimatorTrackingControl CalculateTrackingControl(Motion motion)
         {
             VRCAnimatorTrackingControl trackingControl = ScriptableObject.CreateInstance<VRCAnimatorTrackingControl>();
@@ -648,6 +824,11 @@ namespace EasyAvatar
             return trackingControl;
         }
 
+        /// <summary>
+        /// 计算追踪
+        /// </summary>
+        /// <param name="trackingControl"></param>
+        /// <param name="motion"></param>
         public static void CalculateTrackingControl(VRCAnimatorTrackingControl trackingControl, Motion motion)
         {
             VRC.SDKBase.VRC_AnimatorTrackingControl.TrackingType animation = VRC.SDKBase.VRC_AnimatorTrackingControl.TrackingType.Animation;
@@ -692,7 +873,13 @@ namespace EasyAvatar
                 }
             }
         }
-
+        /// <summary>
+        /// PlayableLayerControl设置
+        /// </summary>
+        /// <param name="layer">层</param>
+        /// <param name="weight">混合权重</param>
+        /// <param name="blendDuration">混合时间</param>
+        /// <returns></returns>
         public static VRCPlayableLayerControl PlayableLayerControl(VRC.SDKBase.VRC_PlayableLayerControl.BlendableLayer layer, float weight, float blendDuration)
         {
             VRCPlayableLayerControl playableLayerControl = ScriptableObject.CreateInstance<VRCPlayableLayerControl>();
@@ -701,7 +888,12 @@ namespace EasyAvatar
             playableLayerControl.goalWeight = weight;
             return playableLayerControl;
         }
-
+        /// <summary>
+        /// Action层控制
+        /// </summary>
+        /// <param name="weight">混合权重</param>
+        /// <param name="blendDuration">混合时间</param>
+        /// <returns></returns>
         public static VRCPlayableLayerControl ActionLayerControl(float weight, float blendDuration = 1)
         {
             return PlayableLayerControl(VRC.SDKBase.VRC_PlayableLayerControl.BlendableLayer.Action, weight, blendDuration);

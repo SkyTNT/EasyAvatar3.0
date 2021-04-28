@@ -7,7 +7,7 @@ namespace EasyAvatar
 {
 
     [Serializable]
-    public class EasyBehaviors
+    public class EasyBehaviorGroup
     {
         public List<EasyBehavior> list;
     }

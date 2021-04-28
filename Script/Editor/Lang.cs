@@ -23,7 +23,9 @@ namespace EasyAvatar
             Control,
             ControlType,
             Toggle,
+            Button,
             RadialPuppet,
+            TwoAxisPuppet,
             Icon,
             Target,
             Missing,
@@ -35,9 +37,13 @@ namespace EasyAvatar
             Paste,
             OnSwitchOff,
             OnSwitchOn,
+            OnPress,
+            OnRelease,
             OnRadialPuppet0,
             OnRadialPuppet1,
             OnRadialPuppetOff,
+            OnTwoAxisPuppetPosition,
+            OnTwoAxisPuppetOff,
             Behavior,
             BehaviorType,
             BehaviorTypeProperty,
@@ -139,7 +145,9 @@ namespace EasyAvatar
             Control = "控件";
             ControlType = "控件类型";
             Toggle = "开关";
+            Button = "按钮";
             RadialPuppet = "旋钮";
+            TwoAxisPuppet = "两轴操纵杆";
             Icon = "图标";
             Target = "目标";
             Missing = "缺失";
@@ -151,9 +159,13 @@ namespace EasyAvatar
             Paste = "粘贴";
             OnSwitchOff = "开关关闭时";
             OnSwitchOn = "开关打开时";
+            OnPress = "按钮按下时";
+            OnRelease = "按钮松开时";
             OnRadialPuppet0 = "旋钮值为零时";
             OnRadialPuppet1 = "旋钮旋满时";
             OnRadialPuppetOff = "旋钮关闭时";
+            OnTwoAxisPuppetPosition = "操纵杆在{0},{1}处时";
+            OnTwoAxisPuppetOff = "操纵杆关闭时";
             Behavior = "行为";
             BehaviorType = "行为类型";
             BehaviorTypeProperty = "修改物体属性";
@@ -236,7 +248,9 @@ namespace EasyAvatar
             Control = "Control";
             ControlType = "Control Type";
             Toggle = "Toggle";
+            Button = "Button";
             RadialPuppet = "Radial Puppet";
+            TwoAxisPuppet = "Two Axis Puppet";
             Icon = "Icon";
             Target = "Target";
             Missing = "Missing";
@@ -246,11 +260,15 @@ namespace EasyAvatar
             Preview = "Preview";
             Copy = "Copy";
             Paste = "Paste";
-            OnSwitchOff = "On Control Switch Off";
-            OnSwitchOn = "On Control Switch On";
+            OnSwitchOff = "On Switch Off";
+            OnSwitchOn = "On Switch On";
+            OnPress = "On Press Button";
+            OnRelease = "On Release Button";
             OnRadialPuppet0 = "On Value Is 0%";
             OnRadialPuppet1 = "On Value Is 100%";
-            OnRadialPuppetOff = "On Radial Puppet Off";
+            OnRadialPuppetOff = "On Close";
+            OnTwoAxisPuppetPosition = "On Position {0},{1}";
+            OnTwoAxisPuppetOff = "On Close";
             Behavior = "Behaviors";
             BehaviorType = "Behavior Type";
             BehaviorTypeProperty = "Change Property";

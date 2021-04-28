@@ -14,8 +14,6 @@ namespace EasyAvatar
 
         int[] handTypeIndex = { 0, 1, 2 };
         int[] gestureTypeIndex = { 0, 1, 2, 3, 4, 5, 6, 7 };
-        string[] handTypeLabels;
-        string[] gestureTypeLabels;
 
         private void OnEnable()
         {
@@ -30,8 +28,6 @@ namespace EasyAvatar
             onTrackingControl = serializedObject.FindProperty("onTrackingControl");
             editor1 = new EasyBehaviorsEditor(behaviors1);
             editor2 = new EasyBehaviorsEditor(behaviors2);
-            handTypeLabels = new string[] { Lang.LeftHand, Lang.RightHand, Lang.AnyHand };
-            gestureTypeLabels = new string[] {Lang.GestureNeutral, Lang.GestureFist, Lang.GestureHandOpen, Lang.GestureFingerPoint, Lang.GestureVictory, Lang.GestureRockNRoll, Lang.GestureHandGun, Lang.GestureThumbsUp };
             serializedObject.ApplyModifiedProperties();
         }
 
@@ -44,8 +40,9 @@ namespace EasyAvatar
         {
             serializedObject.Update();
             avatar = editor1.avatar = editor2.avatar = Utility.GetAvatar(((EasyGesture)target).gameObject);
-            handType.enumValueIndex = EditorGUILayout.IntPopup(Lang.HandType, handType.enumValueIndex, handTypeLabels, handTypeIndex);
-            gestureType.enumValueIndex = EditorGUILayout.IntPopup(Lang.GestureType, gestureType.enumValueIndex, gestureTypeLabels, gestureTypeIndex);
+            handType.enumValueIndex = EditorGUILayout.IntPopup(Lang.HandType, handType.enumValueIndex, new string[] { Lang.LeftHand, Lang.RightHand, Lang.AnyHand }, handTypeIndex);
+            gestureType.enumValueIndex = EditorGUILayout.IntPopup(Lang.GestureType, gestureType.enumValueIndex, new string[] { Lang.GestureNeutral, Lang.GestureFist, Lang.GestureHandOpen, Lang.GestureFingerPoint, Lang.GestureVictory, Lang.GestureRockNRoll, Lang.GestureHandGun, Lang.GestureThumbsUp }, gestureTypeIndex);
+            autoRestore.boolValue = EditorGUILayout.ToggleLeft(Lang.AutoRestore, autoRestore.boolValue);
             autoTrackingControl.boolValue = EditorGUILayout.ToggleLeft(Lang.autoTrackingControl, autoTrackingControl.boolValue);
             if (!autoTrackingControl.boolValue)
             {
@@ -56,7 +53,6 @@ namespace EasyAvatar
             }
             EditorGUILayout.LabelField(Lang.OnGesture,EditorStyles.boldLabel);
             editor1.DoLayout();
-            autoRestore.boolValue = EditorGUILayout.ToggleLeft(Lang.AutoRestore, autoRestore.boolValue);
             EditorGUILayout.LabelField(Lang.OnGestureOut, EditorStyles.boldLabel);
             editor2.DoLayout();
             serializedObject.ApplyModifiedProperties();
