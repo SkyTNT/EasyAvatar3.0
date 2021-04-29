@@ -37,6 +37,7 @@ namespace EasyAvatar
         {
             Color preBg = GUI.backgroundColor;
             GUI.backgroundColor = previewing == this ? MyGUIStyle.activeButtonColor : preBg;
+            EditorGUILayout.BeginHorizontal();
             if (GUILayout.Button(Lang.Preview))
             {
                 if (previewing != this)
@@ -45,7 +46,6 @@ namespace EasyAvatar
                     StopPreview();
             }
             GUI.backgroundColor = preBg;
-            EditorGUILayout.BeginHorizontal();
             if (GUILayout.Button(Lang.Copy))
             {
                 CopyBehaviors(behaviors);

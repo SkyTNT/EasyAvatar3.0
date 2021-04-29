@@ -129,30 +129,78 @@ namespace EasyAvatar
                     break;
             }
 
-            for (int i = 0; i < editors.Count; i++)
-            {
-                EasyBehaviorsEditor editor = editors[i];
-                editor.avatar = avatar;
-                if ((EasyControl.Type)controlType.enumValueIndex == EasyControl.Type.TwoAxisPuppet)
-                {
-                    GUILayout.Label(i==0?labels[0]: labels[1], EditorStyles.boldLabel);
-                    
-                }
-                else
-                    GUILayout.Label(labels[i], EditorStyles.boldLabel);
-                editor.DoLayout();
-            }
 
+            //TwoAxisPuppet是可以自己添加多个BehaviorGroup的
             if ((EasyControl.Type)controlType.enumValueIndex == EasyControl.Type.TwoAxisPuppet)
             {
-                if (GUILayout.Button("Add"))
+                int editorCount = editors.Count;
+                int removeIndex,changeIndex1, changeIndex2;
+                removeIndex = changeIndex1 = changeIndex2 = -1;
+
+                for (int i = 0; i < editorCount; i++)
+                {
+                    EasyBehaviorsEditor editor = editors[i];
+                    editor.avatar = avatar;
+                    GUILayout.BeginVertical(GUI.skin.box);
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Label(i == 0 ? labels[0] : labels[1], EditorStyles.boldLabel);
+                    GUILayout.FlexibleSpace();
+                    //0处为关闭，位置固定为0，不能删除
+                    if (i > 0)
+                    {
+                        //上移
+                        if (i>1&&GUILayout.Button(Lang.Up))
+                        {
+                            changeIndex1 = i - 1;
+                            changeIndex2 = i;
+                        }
+                        //下移
+                        if (i<editorCount-1&&GUILayout.Button(Lang.Down))
+                        {
+                            changeIndex1 = i;
+                            changeIndex2 = i + 1;
+                        }
+                        //删除
+                        if (GUILayout.Button(Lang.Delete))
+                        {
+                            removeIndex = i;
+                        }
+                    }
+                    
+                    GUILayout.EndHorizontal();
+                    editor.DoLayout();
+                    GUILayout.EndVertical();
+                }
+                
+                if (removeIndex != -1)
+                {
+                    editors.RemoveAt(removeIndex);
+                    behaviorGroupList.DeleteArrayElementAtIndex(removeIndex);
+                }
+                if (changeIndex1 != -1 && changeIndex2 != -1)
+                {
+
+                }
+                
+                if (GUILayout.Button(Lang.Add))
                 {
                     int index = behaviorGroupList.arraySize++;
                     SerializedProperty behaviorGroup = behaviorGroupList.GetArrayElementAtIndex(index);
                     behaviorGroups.Add(behaviorGroup);
                     editors.Add(new EasyBehaviorsEditor(behaviorGroup));
                 }
-                
+            }
+            else
+            {
+                for (int i = 0; i < editors.Count; i++)
+                {
+                    EasyBehaviorsEditor editor = editors[i];
+                    editor.avatar = avatar;
+                    GUILayout.BeginVertical(GUI.skin.box);
+                    GUILayout.Label(labels[i], EditorStyles.boldLabel);
+                    editor.DoLayout();
+                    GUILayout.EndVertical();
+                }
             }
 
             serializedObject.ApplyModifiedProperties();

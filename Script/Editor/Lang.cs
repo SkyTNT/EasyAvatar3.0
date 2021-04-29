@@ -18,6 +18,8 @@ namespace EasyAvatar
             Add,
             Clear,
             Delete,
+            Up,
+            Down,
             MainMenu,
             SubMenu,
             Control,
@@ -140,6 +142,8 @@ namespace EasyAvatar
             Add = "添加";
             Clear = "清空";
             Delete = "删除";
+            Up = "上移";
+            Down = "下移";
             MainMenu = "主菜单";
             SubMenu = "子菜单";
             Control = "控件";
@@ -243,6 +247,8 @@ namespace EasyAvatar
             Name = "Name";
             Clear = "Clear";
             Delete = "Delete";
+            Up = "Up";
+            Down = "Down";
             MainMenu = "Expression Menu";
             SubMenu = "Sub Menu";
             Control = "Control";
