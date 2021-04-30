@@ -10,6 +10,7 @@ namespace EasyAvatar
     public class EasyBehaviorGroup
     {
         public List<EasyBehavior> list;
+        public Vector2 position;//EasyBehaviorGroup放在TwoAxisPuppet才会用到
     }
     [Serializable]
     public class EasyBehavior

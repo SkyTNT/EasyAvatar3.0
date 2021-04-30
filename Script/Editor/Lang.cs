@@ -37,6 +37,8 @@ namespace EasyAvatar
             Preview,
             Copy,
             Paste,
+            OnOpen,
+            OnClose,
             OnSwitchOff,
             OnSwitchOn,
             OnPress,
@@ -46,6 +48,8 @@ namespace EasyAvatar
             OnRadialPuppetOff,
             OnTwoAxisPuppetPosition,
             OnTwoAxisPuppetOff,
+            OnTwoAxisPuppetH,
+            OnTwoAxisPuppetV,
             Behavior,
             BehaviorType,
             BehaviorTypeProperty,
@@ -99,12 +103,12 @@ namespace EasyAvatar
             autoTrackingControl,
             About,
             ErrAvatarMenuLen1,
-            ErrAvatarGestureMenuLen1,
+            ErrAvatarGestureManagerLen1,
             ErrMenuItemLen8,
-            ErrMenuInControl,
-            ErrControlInControl,
-            ErrGestureMenuNotInHelper,
-            ErrGestureNotInGestureManager,
+            ErrMenuPath,
+            ErrControlPath,
+            ErrGestureManagerPath,
+            ErrGesturePath,
             ErrAvatarNotSet,
             ErrAvatarHelperInAvatar;
 
@@ -161,6 +165,8 @@ namespace EasyAvatar
             Preview = "预览";
             Copy = "复制";
             Paste = "粘贴";
+            OnOpen = "打开时";
+            OnClose = "关闭时";
             OnSwitchOff = "开关关闭时";
             OnSwitchOn = "开关打开时";
             OnPress = "按钮按下时";
@@ -168,8 +174,10 @@ namespace EasyAvatar
             OnRadialPuppet0 = "旋钮值为零时";
             OnRadialPuppet1 = "旋钮旋满时";
             OnRadialPuppetOff = "旋钮关闭时";
-            OnTwoAxisPuppetPosition = "操纵杆在{0},{1}处时";
+            OnTwoAxisPuppetPosition = "操纵杆在({0},{1})处时";
             OnTwoAxisPuppetOff = "操纵杆关闭时";
+            OnTwoAxisPuppetH = "左/右";
+            OnTwoAxisPuppetV = "下/上";
             Behavior = "行为";
             BehaviorType = "行为类型";
             BehaviorTypeProperty = "修改物体属性";
@@ -223,12 +231,12 @@ namespace EasyAvatar
             autoTrackingControl = "自动设置追踪状态";
             About = "由SkyTNT制作\n项目地址：https://github.com/SkyTNT/EasyAvatar3.0/";
             ErrAvatarMenuLen1 = "一个模型中只能有一个主菜单，请考虑创建子菜单";
-            ErrAvatarGestureMenuLen1 = "一个模型中只能有一个手势菜单";
+            ErrAvatarGestureManagerLen1 = "一个模型中只能有一个手势管理";
             ErrMenuItemLen8 = "菜单中的项目数量不能超过8，请考虑创建子菜单";
-            ErrMenuInControl = "控件中不能加菜单";
-            ErrControlInControl = "控件中不能加控件";
-            ErrGestureMenuNotInHelper = "手势管理只能添加在模型助手下";
-            ErrGestureNotInGestureManager = "手势只能添加在手势管理中";
+            ErrMenuPath = "菜单只能放在模型助手或菜单中";
+            ErrControlPath = "控件只能放在菜单中";
+            ErrGestureManagerPath = "手势管理只能添加在模型助手下";
+            ErrGesturePath = "手势只能添加在手势管理中";
             ErrAvatarNotSet = "请确保模型助手绑定了模型";
             ErrAvatarHelperInAvatar = "模型助手不能包含在模型里，请放在模型的外边";
         }
@@ -266,6 +274,8 @@ namespace EasyAvatar
             Preview = "Preview";
             Copy = "Copy";
             Paste = "Paste";
+            OnOpen = "On Open";
+            OnClose = "On Close";
             OnSwitchOff = "On Switch Off";
             OnSwitchOn = "On Switch On";
             OnPress = "On Press Button";
@@ -273,8 +283,10 @@ namespace EasyAvatar
             OnRadialPuppet0 = "On Value Is 0%";
             OnRadialPuppet1 = "On Value Is 100%";
             OnRadialPuppetOff = "On Close";
-            OnTwoAxisPuppetPosition = "On Position {0},{1}";
+            OnTwoAxisPuppetPosition = "On Position ({0},{1})";
             OnTwoAxisPuppetOff = "On Close";
+            OnTwoAxisPuppetH = "X Axis";
+            OnTwoAxisPuppetV = "Y Axis";
             Behavior = "Behaviors";
             BehaviorType = "Behavior Type";
             BehaviorTypeProperty = "Change Property";
@@ -328,13 +340,13 @@ namespace EasyAvatar
             autoTrackingControl = "Auto set tracking state";
             About = " Made by SkyTNT\nProject:https://github.com/SkyTNT/EasyAvatar3.0/";
             ErrAvatarMenuLen1 = "There should only be one main menu in a avatar. Consider creating a submenu.";
-            ErrAvatarGestureMenuLen1 = "There should only be one gesture menu in a avatar.";
+            ErrAvatarGestureManagerLen1 = "There should only be one gesture manager in a avatar.";
             ErrMenuItemLen8 = "The number of items in the menu can not exceed 8. Consider creating a submenu.";
-            ErrMenuInControl = "Cannot add menu to control";
-            ErrControlInControl = "Cannot add control to control";
-            ErrGestureMenuNotInHelper = "Gesture Manager can only be added to the Avatar Helper";
-            ErrGestureNotInGestureManager = "Gesture can only be added to the Gesture Manager";
-            ErrAvatarNotSet = "Make sure your avatar is setted in the Avatar Helper";
+            ErrMenuPath = "Menu can only be added to the Avatar Helper or a parent menu";
+            ErrControlPath = "Control can only be added to a menu";
+            ErrGestureManagerPath = "Gesture Manager can only be added to the Avatar Helper";
+            ErrGesturePath = "Gesture can only be added to the Gesture Manager";
+            ErrAvatarNotSet = "Avatar is not set in the Avatar Helper";
             ErrAvatarHelperInAvatar = "Avatar Helper cannot be included in a avatar, Please put it outside the avatar.";
         }
 

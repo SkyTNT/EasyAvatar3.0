@@ -9,32 +9,36 @@ using AnimatorController = UnityEditor.Animations.AnimatorController;
 
 namespace EasyAvatar
 {
-    public class EasyBehaviorsEditor
+    public class EasyBehaviorGroupEditor
     {
         static Component copiedTarget;
         static string copiedBehaviorsPath;
-        static EasyBehaviorsEditor previewing;
-        public GameObject avatar;
+        static EasyBehaviorGroupEditor previewing;
+        GameObject avatar;
 
         SerializedProperty behaviors;
         ReorderableList behaviorsList;
 
         int[] typeIndex = { 0, 1 };
 
-        public EasyBehaviorsEditor(SerializedProperty behaviors)
+        public EasyBehaviorGroupEditor(SerializedProperty behaviors)
         {
             behaviors = behaviors.FindPropertyRelative("list");
             this.behaviors = behaviors;
 
             behaviorsList = new ReorderableList(behaviors.serializedObject, behaviors, true, true, true, true);
             behaviorsList.drawHeaderCallback = (Rect rect) => EditorGUI.LabelField(rect, Lang.Behavior);
-            behaviorsList.elementHeight = (EditorGUIUtility.singleLineHeight + 6) * 4;
             behaviorsList.drawElementCallback = (Rect rect, int index, bool selected, bool focused) => BehaviorField(rect, behaviors.GetArrayElementAtIndex(index));
-            
+            behaviorsList.elementHeightCallback = (int index) => {
+                if (behaviors.arraySize > 0)
+                    return (EditorGUIUtility.singleLineHeight + 6) * 4;
+                else return 0;
+            };
         }
 
-        public void DoLayout()
+        public void DoLayout(GameObject avatar)
         {
+            this.avatar = avatar;
             Color preBg = GUI.backgroundColor;
             GUI.backgroundColor = previewing == this ? MyGUIStyle.activeButtonColor : preBg;
             EditorGUILayout.BeginHorizontal();
@@ -53,6 +57,10 @@ namespace EasyAvatar
             if (GUILayout.Button(Lang.Paste))
             {
                 PasteBehaviors(behaviors);
+            }
+            if (GUILayout.Button(Lang.Clear))
+            {
+                behaviors.ClearArray();
             }
             EditorGUILayout.EndHorizontal();
             behaviorsList.DoLayoutList();
@@ -82,7 +90,7 @@ namespace EasyAvatar
             SerializedProperty copiedBehaviors = serializedObject.FindProperty(copiedBehaviorsPath);
             behaviors.CopyFrom(copiedBehaviors);
         }
-        
+
 
         /// <summary>
         /// 准备预览
@@ -248,9 +256,9 @@ namespace EasyAvatar
                     Debug.Log("clear");
                     properties.ClearArray();
                 }
-                    
+
             }
-            
+
             //属性选择
             EditorGUI.LabelField(propertyLabelRect, Lang.Property);
             EasyPropertySelector.PropertyField(propertyFieldRect, propertyGroup, avatar, tempTarget);
@@ -366,7 +374,7 @@ namespace EasyAvatar
             {
                 rect.x -= 3;
                 rect.width += 6;
-                
+
                 for (int i = 0; i < groupSize; i++)
                 {
 
@@ -592,4 +600,3 @@ namespace EasyAvatar
         }
     }
 }
-

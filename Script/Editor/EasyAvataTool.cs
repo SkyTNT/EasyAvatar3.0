@@ -18,15 +18,24 @@ namespace EasyAvatar
 
         public static string workingDirectory = "Assets/EasyAvatar3.0/";
 
-        static EasyAvatarTool()
+        [MenuItem("GameObject/EasyAvatar3.0/Template(模板)", priority = 0)]
+        public static bool CerateTemplate()
         {
+            GameObject helper = CreateObject<EasyAvatarHelper>(Lang.AvatarHelper);
+            GameObject menu = CreateObject<EasyMenu>(Lang.MainMenu);
+            CreateObject<EasyControl>(Lang.Control);
+            Selection.activeGameObject = helper;
+            GameObject gestureManager = CreateObject<EasyGestureManager>(Lang.GestureManager);
+            EasyGestureManagerEditor.SetDefaultGesture(new SerializedObject(gestureManager.GetComponent<EasyGestureManager>()));
+            CreateObject<EasyGesture>(Lang.Gesture);
+            Selection.activeGameObject = helper;
+            return true;
         }
-
         /// <summary>
         /// 创建AvatarHelper
         /// </summary>
         /// <returns>是否成功</returns>
-        [MenuItem("GameObject/EasyAvatar3.0/Avatar Helper", priority = 0)]
+        [MenuItem("GameObject/EasyAvatar3.0/Avatar Helper(模型助手)", priority = 0)]
         public static bool CreateAvatarHelper()
         {
             CreateObject<EasyAvatarHelper>(Lang.AvatarHelper);
@@ -37,23 +46,17 @@ namespace EasyAvatar
         /// 创建菜单
         /// </summary>
         /// <returns>是否成功</returns>
-        [MenuItem("GameObject/EasyAvatar3.0/Expression Menu", priority = 0)]
+        [MenuItem("GameObject/EasyAvatar3.0/Expression Menu(菜单)", priority = 0)]
         public static bool CreateExpressionMenu()
         {
             bool isSubMenu = false;
 
             if (Selection.activeGameObject)
             {
-                //检查控件是否超过8
-                if (GetMenuItemCount(Selection.activeGameObject.transform) >= 8)
+                //检查添加菜单位置
+                if (!Selection.activeGameObject.transform.GetComponent<EasyMenu>() && !Selection.activeGameObject.transform.GetComponent<EasyAvatarHelper>())
                 {
-                    EditorUtility.DisplayDialog("Error", Lang.ErrMenuItemLen8, "ok");
-                    return false;
-                }
-                //检查是否在控件中添加菜单
-                if (Selection.activeGameObject.transform.GetComponent<EasyControl>())
-                {
-                    EditorUtility.DisplayDialog("Error", Lang.ErrMenuInControl, "ok");
+                    EditorUtility.DisplayDialog("Error", Lang.ErrMenuPath, "ok");
                     return false;
                 }
                 //检查是否Avatar已有菜单
@@ -62,26 +65,30 @@ namespace EasyAvatar
                     EditorUtility.DisplayDialog("Error", Lang.ErrAvatarMenuLen1, "ok");
                     return false;
                 }
+                //检查控件是否超过8
+                if (GetMenuItemCount(Selection.activeGameObject.transform) >= 8)
+                {
+                    EditorUtility.DisplayDialog("Error", Lang.ErrMenuItemLen8, "ok");
+                    return false;
+                }
                 //检查是否为子菜单
                 if (Selection.activeGameObject.transform.GetComponent<EasyMenu>())
                 {
                     isSubMenu = true;
                 }
+                CreateObject<EasyMenu>(isSubMenu ? Lang.SubMenu : Lang.MainMenu);
+                return true;
             }
 
-            //检查是否直接创建
-            if (!Selection.activeGameObject || (!Selection.activeGameObject.transform.GetComponent<EasyAvatarHelper>() && !Selection.activeGameObject.transform.GetComponent<EasyMenu>()))
-                if (!CreateAvatarHelper())
-                    return false;
-            CreateObject<EasyMenu>(isSubMenu ? Lang.SubMenu : Lang.MainMenu);
-            return true;
+            EditorUtility.DisplayDialog("Error", Lang.ErrMenuPath, "ok");
+            return false;
         }
 
         /// <summary>
         /// 创建控件
         /// </summary>
         /// <returns>是否成功</returns>
-        [MenuItem("GameObject/EasyAvatar3.0/Expression Menu Control", priority = 0)]
+        [MenuItem("GameObject/EasyAvatar3.0/Expression Menu Control(控件)", priority = 0)]
         public static bool CreateExpressionMenuControl()
         {
             if (Selection.activeGameObject)
@@ -92,69 +99,56 @@ namespace EasyAvatar
                     EditorUtility.DisplayDialog("Error", Lang.ErrMenuItemLen8, "ok");
                     return false;
                 }
-                //检查是否在控件中添加控件
-                if (Selection.activeGameObject.transform.GetComponent<EasyControl>())
+                //检查是否在菜单控件
+                if (!Selection.activeGameObject.transform.GetComponent<EasyMenu>())
                 {
-                    EditorUtility.DisplayDialog("Error", Lang.ErrControlInControl, "ok");
+                    EditorUtility.DisplayDialog("Error", Lang.ErrControlPath, "ok");
                     return false;
                 }
-                
+                CreateObject<EasyControl>(Lang.Control);
+                return true;
             }
-            //没有菜单则创建菜单
-            if (!Selection.activeGameObject || !Selection.activeGameObject.transform.GetComponent<EasyMenu>())
-                if (!CreateExpressionMenu())
-                    return false;
-            CreateObject<EasyControl>(Lang.Control);
-            return true;
+            EditorUtility.DisplayDialog("Error", Lang.ErrControlPath, "ok");
+            return false;
         }
 
         /// <summary>
         /// 创建手势管理
         /// </summary>
         /// <returns></returns>
-        [MenuItem("GameObject/EasyAvatar3.0/Gesture Manager", priority = 0)]
+        [MenuItem("GameObject/EasyAvatar3.0/Gesture Manager(手势管理)", priority = 0)]
         public static bool CreateGestureManager()
         {
-            if (Selection.activeGameObject)
+            if (Selection.activeGameObject && Selection.activeGameObject.transform.GetComponent<EasyAvatarHelper>())
             {
-                if (!Selection.activeGameObject.transform.GetComponent<EasyAvatarHelper>())
+                //EasyGestureManager已经添加了
+                if (Selection.activeGameObject.transform.GetComponentInChildren<EasyGestureManager>())
                 {
-                    EditorUtility.DisplayDialog("Error", Lang.ErrGestureMenuNotInHelper, "ok");
+                    EditorUtility.DisplayDialog("Error", Lang.ErrAvatarGestureManagerLen1, "ok");
                     return false;
                 }
+                GameObject gameObject = CreateObject<EasyGestureManager>(Lang.GestureManager);
+                EasyGestureManagerEditor.SetDefaultGesture(new SerializedObject(gameObject.GetComponent<EasyGestureManager>()));
+                return true;
             }
-            else
-            {
-                if (!CreateAvatarHelper())
-                    return false;
-            }
-            GameObject gameObject = CreateObject<EasyGestureManager>(Lang.GestureManager);
-            EasyGestureManagerEditor.SetDefaultGesture(new SerializedObject(gameObject.GetComponent<EasyGestureManager>()));
-            return true;
+            EditorUtility.DisplayDialog("Error", Lang.ErrGestureManagerPath, "ok");
+            return false;
         }
 
         /// <summary>
         /// 创建手势
         /// </summary>
         /// <returns></returns>
-        [MenuItem("GameObject/EasyAvatar3.0/Gesture", priority = 0)]
+        [MenuItem("GameObject/EasyAvatar3.0/Gesture(手势)", priority = 0)]
         public static bool CreateGesture()
         {
-            if (Selection.activeGameObject)
+            if (Selection.activeGameObject && Selection.activeGameObject.transform.GetComponent<EasyGestureManager>())
             {
-                if (!Selection.activeGameObject.transform.GetComponent<EasyGestureManager>())
-                {
-                    EditorUtility.DisplayDialog("Error", Lang.ErrGestureNotInGestureManager, "ok");
-                    return false;
-                }
+                CreateObject<EasyGesture>(Lang.Gesture);
+                return true;
             }
-            else
-            {
-                if (!CreateGestureManager())
-                    return false;
-            }
-            CreateObject<EasyGesture>(Lang.Gesture);
-            return true;
+            EditorUtility.DisplayDialog("Error", Lang.ErrGesturePath, "ok");
+            return false;
         }
 
         /// <summary>
@@ -264,7 +258,7 @@ namespace EasyAvatar
                     {
                         if (gestureManager)//检测是否有多个手势菜单
                         {
-                            EditorUtility.DisplayDialog("Error", Lang.ErrAvatarGestureMenuLen1, "ok");
+                            EditorUtility.DisplayDialog("Error", Lang.ErrAvatarGestureManagerLen1, "ok");
                             return;
                         }
                         gestureManager = tempGestureManager;
@@ -381,6 +375,9 @@ namespace EasyAvatar
                                 BuildRadialPuppet(prefix + "_" + count + "_" + control.name, control);
                                 break;
                             case EasyControl.Type.TwoAxisPuppet:
+                                vrcControl.type = VRCExpressionsMenu.Control.ControlType.TwoAxisPuppet;
+                                vrcControl.subParameters = new VRCExpressionsMenu.Control.Parameter[] { new VRCExpressionsMenu.Control.Parameter() { name = "float1" }, new VRCExpressionsMenu.Control.Parameter() { name = "float2" } };
+                                BuildTwoAxisPuppet(prefix + "_" + count + "_" + control.name, control);
                                 break;
                             default:
                                 break;
@@ -445,8 +442,8 @@ namespace EasyAvatar
             /// <param name="gesture">手势</param>
             private void BuildGesture(string name, EasyGesture gesture)
             {
-                AnimationClip onClip = Utility.GenerateAnimClip(gesture.behaviors1.list);
-                AnimationClip outClip = Utility.GenerateAnimClip(gesture.behaviors2.list);
+                AnimationClip outClip = Utility.GenerateAnimClip(gesture.behaviors1.list);
+                AnimationClip onClip = Utility.GenerateAnimClip(gesture.behaviors2.list);
                 if (gesture.handType == EasyGesture.HandType.Left || gesture.handType == EasyGesture.HandType.Any)
                 {
                     if (gesture.autoTrackingControl)
@@ -471,6 +468,8 @@ namespace EasyAvatar
             /// <param name="control">控件</param>
             private void BuildToggle(string name, EasyControl control)
             {
+                if (control.behaviors.Count < 2)
+                    return;
                 //EasyBehaviors生成动画
                 AnimationClip offClip = Utility.GenerateAnimClip(control.behaviors[0].list);
                 AnimationClip onClip = Utility.GenerateAnimClip(control.behaviors[1].list);
@@ -487,15 +486,42 @@ namespace EasyAvatar
             /// <param name="control">控件</param>
             private void BuildRadialPuppet(string name, EasyControl control)
             {
-
+                if (control.behaviors.Count < 3)
+                    return;
                 //EasyBehaviors生成动画
                 AnimationClip offClip = Utility.GenerateAnimClip(control.behaviors[0].list);
                 AnimationClip blend0 = Utility.GenerateAnimClip(control.behaviors[1].list);
                 AnimationClip blend1 = Utility.GenerateAnimClip(control.behaviors[2].list);
+                BlendTree blendTree = Utility.Generate1DBlendTree(name, "float1", blend0, blend1);
                 if (control.autoTrackingControl)
-                    easyAnimator.AddState(name, offClip, blend0, blend1, control.autoRestore, "control" + controlCount);
+                    easyAnimator.AddState(name, offClip, blendTree, control.autoRestore, "control" + controlCount);
                 else
-                    easyAnimator.AddState(name, offClip, blend0, blend1, control.offTrackingControl, control.onTrackingControl, control.autoRestore, "control" + controlCount);
+                    easyAnimator.AddState(name, offClip, blendTree, control.offTrackingControl, control.onTrackingControl, control.autoRestore, "control" + controlCount);
+            }
+            /// <summary>
+            /// 构建操纵杆控件
+            /// </summary>
+            /// <param name="name">名字</param>
+            /// <param name="control">控件</param>
+            private void BuildTwoAxisPuppet(string name, EasyControl control)
+            {
+                if (control.behaviors.Count < 1)
+                    return;
+                List<EasyBehaviorGroup> behaviorGroups = control.behaviors;
+                AnimationClip offClip = Utility.GenerateAnimClip(behaviorGroups[0].list);
+                List<Vector2> positions = new List<Vector2>();
+                List<Motion> motions = new List<Motion>();
+                for (int i = 1; i < behaviorGroups.Count; i++)
+                {
+                    EasyBehaviorGroup behaviorGroup = behaviorGroups[i];
+                    positions.Add(behaviorGroup.position);
+                    motions.Add(Utility.GenerateAnimClip(behaviorGroup.list));
+                }
+                BlendTree blendTree = Utility.Generate2DBlendTree(name, "float1", "float2", positions, motions);
+                if (control.autoTrackingControl)
+                    easyAnimator.AddState(name, offClip, blendTree, control.autoRestore, "control" + controlCount);
+                else
+                    easyAnimator.AddState(name, offClip, blendTree, control.offTrackingControl, control.onTrackingControl, control.autoRestore, "control" + controlCount);
             }
 
         }

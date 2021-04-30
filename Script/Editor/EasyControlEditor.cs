@@ -14,12 +14,30 @@ namespace EasyAvatar
     {
         GameObject avatar;
         SerializedProperty controlType, icon, autoRestore, autoTrackingControl, offTrackingControl, onTrackingControl, behaviorGroupList;
-        List<SerializedProperty> behaviorGroups;
-        List<EasyBehaviorsEditor> editors;
+        List<EasyBehaviorGroupEditor> editors;
+        bool needReLoad;
         int[] typeIndex = { 0, 1, 2, 3 };
         private void OnEnable()
         {
+            ReLoad();
+            //初始behaviorGroupList为空，设置大小
+            if (behaviorGroupList.arraySize == 0)
+            {
+                
+                ChangeType((EasyControl.Type)controlType.enumValueIndex);
+                serializedObject.ApplyModifiedProperties();
+            }
+                
 
+        }
+
+        private void OnDestroy()
+        {
+
+        }
+
+        private void ReLoad()
+        {
             serializedObject.Update();
             controlType = serializedObject.FindProperty("type");
             icon = serializedObject.FindProperty("icon");
@@ -28,34 +46,24 @@ namespace EasyAvatar
             offTrackingControl = serializedObject.FindProperty("offTrackingControl");
             onTrackingControl = serializedObject.FindProperty("onTrackingControl");
             behaviorGroupList = serializedObject.FindProperty("behaviors");
-            behaviorGroups = new List<SerializedProperty>();
-            editors = new List<EasyBehaviorsEditor>();
+            editors = new List<EasyBehaviorGroupEditor>();
             for (int i = 0; i < behaviorGroupList.arraySize; i++)
             {
                 SerializedProperty behaviourGroup = behaviorGroupList.GetArrayElementAtIndex(i);
-                behaviorGroups.Add(behaviourGroup);
-                editors.Add(new EasyBehaviorsEditor(behaviourGroup));
+                editors.Add(new EasyBehaviorGroupEditor(behaviourGroup));
             }
-            
-
             serializedObject.ApplyModifiedProperties();
         }
-
-        private void OnDestroy()
-        {
-
-        }
+        
 
         private void ResizeBehaviorGroupList(int size)
         {
             behaviorGroupList.arraySize = size;
-            behaviorGroups.Clear();
             editors.Clear();
             for (int i = 0; i < size; i++)
             {
                 SerializedProperty behaviourGroup = behaviorGroupList.GetArrayElementAtIndex(i);
-                behaviorGroups.Add(behaviourGroup);
-                editors.Add(new EasyBehaviorsEditor(behaviourGroup));
+                editors.Add(new EasyBehaviorGroupEditor(behaviourGroup));
             }
         }
 
@@ -71,7 +79,37 @@ namespace EasyAvatar
                     ResizeBehaviorGroupList(3);
                     break;
                 case EasyControl.Type.TwoAxisPuppet:
-                    ResizeBehaviorGroupList(5);
+                    ResizeBehaviorGroupList(6);
+                    
+                    for (int i = 1; i < 6; i++)
+                    {
+                        SerializedProperty behaviourGroup = behaviorGroupList.GetArrayElementAtIndex(i);
+                        SerializedProperty position = behaviourGroup.FindPropertyRelative("position");
+                        //设置初始位置
+                        switch (i)
+                        {
+                            case 1:
+                                position.vector2Value = new Vector2(0, 0);//中
+                                break;
+                            case 2:
+                                position.vector2Value = new Vector2(-1, 0);//左
+                                break;
+                            case 3:
+                                position.vector2Value = new Vector2(1, 0);//右
+                                break;
+                            case 4:
+                                position.vector2Value = new Vector2(0, -1);//下
+                                break;
+                            case 5:
+                                position.vector2Value = new Vector2(0, 1);//上
+                                break;
+                            default:
+                                break;
+                        }
+                        //清除,不清除的话会设置为上一个behaviourGroup的值
+                        behaviourGroup.FindPropertyRelative("list").ClearArray();
+                    }
+                        
                     break;
                 default:
                     break;
@@ -81,6 +119,12 @@ namespace EasyAvatar
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
+            //behaviorGroupList.arraySize!=editors.Count判断撤销或重做是引起的behaviorGroupList.arraySize变化
+            if (needReLoad||behaviorGroupList.arraySize!=editors.Count)
+            {
+                needReLoad = false;
+                ReLoad();
+            }
 
             avatar = Utility.GetAvatar(((EasyControl)target).gameObject);
 
@@ -103,9 +147,9 @@ namespace EasyAvatar
 
             if (!autoTrackingControl.boolValue)
             {
-                GUILayout.Label(Lang.OnSwitchOn, EditorStyles.boldLabel);
+                GUILayout.Label(Lang.OnClose, EditorStyles.boldLabel);
                 EditorGUILayout.PropertyField(offTrackingControl);
-                GUILayout.Label(Lang.OnSwitchOff, EditorStyles.boldLabel);
+                GUILayout.Label(Lang.OnOpen, EditorStyles.boldLabel);
                 EditorGUILayout.PropertyField(onTrackingControl);
             }
 
@@ -134,28 +178,29 @@ namespace EasyAvatar
             if ((EasyControl.Type)controlType.enumValueIndex == EasyControl.Type.TwoAxisPuppet)
             {
                 int editorCount = editors.Count;
-                int removeIndex,changeIndex1, changeIndex2;
+                int removeIndex, changeIndex1, changeIndex2;
                 removeIndex = changeIndex1 = changeIndex2 = -1;
 
                 for (int i = 0; i < editorCount; i++)
                 {
-                    EasyBehaviorsEditor editor = editors[i];
-                    editor.avatar = avatar;
+                    SerializedProperty position = behaviorGroupList.GetArrayElementAtIndex(i).FindPropertyRelative("position");
+                    Vector2 positionVal = position.vector2Value;
+                    EasyBehaviorGroupEditor editor = editors[i];
                     GUILayout.BeginVertical(GUI.skin.box);
                     GUILayout.BeginHorizontal();
-                    GUILayout.Label(i == 0 ? labels[0] : labels[1], EditorStyles.boldLabel);
+                    GUILayout.Label(i == 0 ? labels[0] : string.Format(labels[1], positionVal.x, positionVal.y), EditorStyles.boldLabel);
                     GUILayout.FlexibleSpace();
                     //0处为关闭，位置固定为0，不能删除
                     if (i > 0)
                     {
                         //上移
-                        if (i>1&&GUILayout.Button(Lang.Up))
+                        if (i > 1 && GUILayout.Button(Lang.Up))
                         {
                             changeIndex1 = i - 1;
                             changeIndex2 = i;
                         }
                         //下移
-                        if (i<editorCount-1&&GUILayout.Button(Lang.Down))
+                        if (i < editorCount - 1 && GUILayout.Button(Lang.Down))
                         {
                             changeIndex1 = i;
                             changeIndex2 = i + 1;
@@ -168,37 +213,46 @@ namespace EasyAvatar
                     }
                     
                     GUILayout.EndHorizontal();
-                    editor.DoLayout();
+                    if (i > 0)
+                    {
+                        positionVal.x = EditorGUILayout.Slider(Lang.OnTwoAxisPuppetH, positionVal.x, -1, 1);
+                        positionVal.y = EditorGUILayout.Slider(Lang.OnTwoAxisPuppetV, positionVal.y, -1, 1);
+                    }
+                    editor.DoLayout(avatar);
                     GUILayout.EndVertical();
+                    position.vector2Value = positionVal;
                 }
-                
+
+                //只能在遍历外进行操作
                 if (removeIndex != -1)
                 {
-                    editors.RemoveAt(removeIndex);
                     behaviorGroupList.DeleteArrayElementAtIndex(removeIndex);
+                    needReLoad = true;
                 }
                 if (changeIndex1 != -1 && changeIndex2 != -1)
                 {
-
+                    behaviorGroupList.MoveArrayElement(changeIndex1, changeIndex2);
+                    needReLoad = true;
                 }
-                
+
                 if (GUILayout.Button(Lang.Add))
                 {
-                    int index = behaviorGroupList.arraySize++;
-                    SerializedProperty behaviorGroup = behaviorGroupList.GetArrayElementAtIndex(index);
-                    behaviorGroups.Add(behaviorGroup);
-                    editors.Add(new EasyBehaviorsEditor(behaviorGroup));
+                    behaviorGroupList.arraySize++;
+                    //默认情况新的元素会填充上一个元素的值，这里进行清除
+                    SerializedProperty behaviorGroup = behaviorGroupList.GetArrayElementAtIndex(behaviorGroupList.arraySize - 1);
+                    behaviorGroup.FindPropertyRelative("list").ClearArray();
+                    behaviorGroup.FindPropertyRelative("position").vector2Value = new Vector2();
+                    needReLoad = true;
                 }
             }
             else
             {
                 for (int i = 0; i < editors.Count; i++)
                 {
-                    EasyBehaviorsEditor editor = editors[i];
-                    editor.avatar = avatar;
+                    EasyBehaviorGroupEditor editor = editors[i];
                     GUILayout.BeginVertical(GUI.skin.box);
                     GUILayout.Label(labels[i], EditorStyles.boldLabel);
-                    editor.DoLayout();
+                    editor.DoLayout(avatar);
                     GUILayout.EndVertical();
                 }
             }

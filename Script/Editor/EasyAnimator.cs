@@ -99,8 +99,8 @@ namespace EasyAvatar
         /// <param name="threshold">参数值</param>
         public void AddState(string name, AnimationClip offAnim, AnimationClip onAnim, EasyTrackingControl offTracking, EasyTrackingControl onTracking, bool autoRestore, string parameterName, int threshold = -999)
         {
-            SeparateAnimation(offAnim, out AnimationClip off_action, out AnimationClip off_fx);
-            SeparateAnimation(onAnim, out AnimationClip on_action, out AnimationClip on_fx);
+            Utility.SeparateAnimation(offAnim, out AnimationClip off_action, out AnimationClip off_fx);
+            Utility.SeparateAnimation(onAnim, out AnimationClip on_action, out AnimationClip on_fx);
             //对于人体动画，关闭的动画只能是待机动画
             off_action = VRCAssets.proxy_stand_still;
             if (autoRestore)
@@ -119,7 +119,7 @@ namespace EasyAvatar
             fxBuilder.AddDrivedState(driverId, name + "_on", on_fx);
             fxBuilder.AddDrivedState(driverId + 1, name + "_off", off_fx);
             fxBuilder.AddToInitState(off_fx);
-            if (!Utility.AnimationIsEmpty(on_action))
+            if (!Utility.MotionIsEmpty(on_action))
             {
                 actionBuilder.AddDrivedState(driverId, name + "_on", on_action);
                 actionBuilder.AddDrivedState(driverId + 1, name + "_off", off_action);
@@ -148,9 +148,9 @@ namespace EasyAvatar
         /// <param name="autoRestore">是否自动恢复</param>
         /// <param name="parameterName">控制开关的参数名</param>
         /// <param name="threshold">参数值</param>
-        public void AddState(string name, AnimationClip offAnim, AnimationClip blendTree0, AnimationClip blendTree1, bool autoRestore, string parameterName, int threshold = -999)
+        public void AddState(string name, AnimationClip offAnim, BlendTree blendTree, bool autoRestore, string parameterName, int threshold = -999)
         {
-            AddState(name, offAnim, blendTree0, blendTree1, null, null, autoRestore, parameterName, threshold);
+            AddState(name, offAnim, blendTree, null, null, autoRestore, parameterName, threshold);
         }
 
         /// <summary>
@@ -158,22 +158,20 @@ namespace EasyAvatar
         /// </summary>
         /// <param name="name">名字</param>
         /// <param name="offAnim">关闭的动画</param>
-        /// <param name="blendTree0">打开时混合树左端的动画</param>
-        /// <param name="blendTree1">打开时混合树右端的动画</param>
+        /// <param name="blendTree">打开时的混合树</param>
         /// <param name="offTracking">关闭时设置的追踪状态，null时自动生成</param>
         /// <param name="onTracking">打开时设置的追踪状态，null时自动生成</param>
         /// <param name="autoRestore">是否自动恢复</param>
         /// <param name="parameterName">控制开关的参数名</param>
         /// <param name="threshold">参数值</param>
-        public void AddState(string name, AnimationClip offAnim, AnimationClip blendTree0, AnimationClip blendTree1, EasyTrackingControl offTracking, EasyTrackingControl onTracking, bool autoRestore, string parameterName, int threshold = -999)
+        public void AddState(string name, AnimationClip offAnim, BlendTree blendTree, EasyTrackingControl offTracking, EasyTrackingControl onTracking, bool autoRestore, string parameterName, int threshold = -999)
         {
-            SeparateAnimation(offAnim, out AnimationClip off_action, out AnimationClip off_fx);
-            SeparateAnimation(blendTree0, out AnimationClip blend0_action, out AnimationClip blend0_fx);
-            SeparateAnimation(blendTree1, out AnimationClip blend1_action, out AnimationClip blend1_fx);
+            Utility.SeparateAnimation(offAnim, out AnimationClip off_action, out AnimationClip off_fx);
+            Utility.SeparateBlendTree(blendTree, out BlendTree blendTree_action, out BlendTree blendTree_fx);
             off_action = VRCAssets.proxy_stand_still;
             if (autoRestore)
             {
-                off_fx = Utility.MergeAnimClip(Utility.GenerateRestoreAnimClip(avatar, Utility.MergeAnimClip(blend0_fx, blend1_fx)), off_fx);
+                off_fx = Utility.MergeAnimClip(Utility.GenerateRestoreAnimClip(avatar, blendTree_fx), off_fx);
             }
 
             int driverId;
@@ -181,16 +179,13 @@ namespace EasyAvatar
                 driverId = driver.GetDriverId(parameterName, threshold);
             else
                 driverId = driver.GetDriverId(parameterName);
-
-            BlendTree blendTree_fx, blendTree_action;
-            blendTree_fx = Utility.Generate1DBlendTree(name + "_on", "float1", blend0_fx, blend1_fx);
+            
             fxBuilder.AddDrivedState(driverId, name + "_on", blendTree_fx);
             fxBuilder.AddDrivedState(driverId + 1, name + "_off", off_fx);
             fxBuilder.AddToInitState(off_fx);
 
-            if(!Utility.AnimationIsEmpty(blend0_action) || !Utility.AnimationIsEmpty(blend1_action))
+            if(!Utility.MotionIsEmpty(blendTree_action))
             {
-                blendTree_action = Utility.Generate1DBlendTree(name + "_on", "float1", blend0_action, blend1_action);
                 actionBuilder.AddDrivedState(driverId, name + "_on", blendTree_action);
                 actionBuilder.AddDrivedState(driverId + 1, name + "_off", off_action);
                 if (offTracking != null && onTracking != null)
@@ -225,29 +220,6 @@ namespace EasyAvatar
             gestureBuilder.Build();
         }
         
-        /// <summary>
-        /// 分离人体动画和非人体动画
-        /// </summary>
-        /// <param name="clip"></param>
-        /// <param name="action"></param>
-        /// <param name="fx"></param>
-        public static void SeparateAnimation(AnimationClip clip, out AnimationClip action, out AnimationClip fx)
-        {
-            action = new AnimationClip();
-            fx = new AnimationClip();
-            action.frameRate = 60;
-            fx.frameRate = 60;
-            foreach (EditorCurveBinding binding in AnimationUtility.GetCurveBindings(clip))
-            {
-                if (binding.type == typeof(Animator) && binding.path == "")
-                    AnimationUtility.SetEditorCurve(action, binding, AnimationUtility.GetEditorCurve(clip, binding));
-                else
-                    AnimationUtility.SetEditorCurve(fx, binding, AnimationUtility.GetEditorCurve(clip, binding));
-
-            }
-            foreach (EditorCurveBinding binding in AnimationUtility.GetObjectReferenceCurveBindings(clip))
-                AnimationUtility.SetObjectReferenceCurve(fx, binding, AnimationUtility.GetObjectReferenceCurve(clip, binding));
-        }
     }
 
     
@@ -501,7 +473,7 @@ namespace EasyAvatar
             if (animationClip)
             {
                 //如果animationClip为空，就舍弃这个animationClip
-                if (Utility.AnimationIsEmpty(animationClip))
+                if (Utility.MotionIsEmpty(animationClip))
                     motion = null;
                 else if (!AssetDatabase.Contains(animationClip))
                     AssetDatabase.CreateAsset(animationClip, saveDir + name + ".anim");
