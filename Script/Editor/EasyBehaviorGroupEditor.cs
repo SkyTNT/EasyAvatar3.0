@@ -105,9 +105,9 @@ namespace EasyAvatar
             //没有Controller会崩溃
             if (!animator.runtimeAnimatorController)
             {
-                if (!Directory.Exists(EasyAvatarTool.workingDirectory + "Build/"))
-                    Directory.CreateDirectory(EasyAvatarTool.workingDirectory + "Build/");
-                AnimatorController controller = AnimatorController.CreateAnimatorControllerAtPath(EasyAvatarTool.workingDirectory + "Build/preview.controller");
+                if (!Directory.Exists(EasyAvatarBuilder.workingDirectory + "Build/"))
+                    Directory.CreateDirectory(EasyAvatarBuilder.workingDirectory + "Build/");
+                AnimatorController controller = AnimatorController.CreateAnimatorControllerAtPath(EasyAvatarBuilder.workingDirectory + "Build/preview.controller");
                 animator.runtimeAnimatorController = controller;
             }
             previewing = this;
@@ -226,9 +226,9 @@ namespace EasyAvatar
             };
             Rect valueFieldRect = new Rect(position)
             {
-                x = propertyLabelRect.x + propertyLabelRect.width,
+                x = valueLabelRect.x + valueLabelRect.width,
                 y = position.y + (position.height + 6) * 2,
-                width = position.width - propertyLabelRect.width
+                width = position.width - valueLabelRect.width
             };
 
             //目标物体
@@ -272,6 +272,7 @@ namespace EasyAvatar
         {
             SerializedProperty anim = behavior.FindPropertyRelative("anim");
             SerializedProperty mask = behavior.FindPropertyRelative("mask");
+            SerializedProperty mirror = behavior.FindPropertyRelative("mirror");
 
             position.y += 3;
             position.height = EditorGUIUtility.singleLineHeight;
@@ -298,6 +299,17 @@ namespace EasyAvatar
                 y = position.y + position.height + 6,
                 width = position.width - maskLabelRect.width
             };
+            Rect mirrorLabelRect = new Rect(position)
+            {
+                y = position.y + (position.height + 6) * 2,
+                width = Mathf.Max(position.width / 4, 50)
+            };
+            Rect mirrorFieldRect = new Rect(position)
+            {
+                x = mirrorLabelRect.x + mirrorLabelRect.width,
+                y = position.y + (position.height + 6) * 2,
+                width = position.width - mirrorLabelRect.width
+            };
             GUI.Label(animLabelRect, Lang.AnimClip);
             EditorGUI.BeginChangeCheck();
             EditorGUI.PropertyField(animFieldRect, anim, GUIContent.none);
@@ -306,6 +318,9 @@ namespace EasyAvatar
 
             GUI.Label(maskLabelRect, Lang.AnimMask);
             EasyAnimationMaskWindow.AnimationMaskField(maskFieldRect, mask);
+            //暂未完善
+            //GUI.Label(mirrorLabelRect, Lang.Mirror);
+            //EditorGUI.PropertyField(mirrorFieldRect, mirror, GUIContent.none);
         }
 
         /// <summary>

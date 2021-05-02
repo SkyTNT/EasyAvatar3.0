@@ -77,13 +77,14 @@ namespace EasyAvatar
         /// </summary>
         /// <param name="name">名字</param>
         /// <param name="offAnim">关闭的动画</param>
-        /// <param name="onAnim">打开的动画</param>
+        /// <param name="blendTree0">打开时混合树左端的动画</param>
+        /// <param name="blendTree1">打开时混合树右端的动画</param>
         /// <param name="autoRestore">是否自动恢复</param>
         /// <param name="parameterName">控制开关的参数名</param>
         /// <param name="threshold">参数值</param>
-        public void AddState(string name, AnimationClip offAnim, AnimationClip onAnim, bool autoRestore, string parameterName, int threshold = -999)
+        public void AddState(string name, AnimationClip offAnim, Motion onMotion, bool autoRestore, string parameterName, int threshold = -999)
         {
-            AddState(name, offAnim, onAnim, null, null, autoRestore, parameterName, threshold);
+            AddState(name, offAnim, onMotion, null, null, autoRestore, parameterName, threshold);
         }
 
         /// <summary>
@@ -91,17 +92,16 @@ namespace EasyAvatar
         /// </summary>
         /// <param name="name">名字</param>
         /// <param name="offAnim">关闭的动画</param>
-        /// <param name="onAnim">打开的动画</param>
+        /// <param name="onMotion">打开时的混合树</param>
         /// <param name="offTracking">关闭时设置的追踪状态，null时自动生成</param>
         /// <param name="onTracking">打开时设置的追踪状态，null时自动生成</param>
         /// <param name="autoRestore">是否自动恢复</param>
         /// <param name="parameterName">控制开关的参数名</param>
         /// <param name="threshold">参数值</param>
-        public void AddState(string name, AnimationClip offAnim, AnimationClip onAnim, EasyTrackingControl offTracking, EasyTrackingControl onTracking, bool autoRestore, string parameterName, int threshold = -999)
+        public void AddState(string name, AnimationClip offAnim, Motion onMotion, EasyTrackingControl offTracking, EasyTrackingControl onTracking, bool autoRestore, string parameterName, int threshold = -999)
         {
             Utility.SeparateAnimation(offAnim, out AnimationClip off_action, out AnimationClip off_fx);
-            Utility.SeparateAnimation(onAnim, out AnimationClip on_action, out AnimationClip on_fx);
-            //对于人体动画，关闭的动画只能是待机动画
+            Utility.SeparateMotion(onMotion, out Motion on_action, out Motion on_fx);
             off_action = VRCAssets.proxy_stand_still;
             if (autoRestore)
             {
@@ -109,17 +109,16 @@ namespace EasyAvatar
             }
 
             int driverId;
-
-            //设-999为bool类型的参数
             if (threshold != -999)
                 driverId = driver.GetDriverId(parameterName, threshold);
             else
                 driverId = driver.GetDriverId(parameterName);
-
+            
             fxBuilder.AddDrivedState(driverId, name + "_on", on_fx);
             fxBuilder.AddDrivedState(driverId + 1, name + "_off", off_fx);
             fxBuilder.AddToInitState(off_fx);
-            if (!Utility.MotionIsEmpty(on_action))
+
+            if(!Utility.MotionIsEmpty(on_action))
             {
                 actionBuilder.AddDrivedState(driverId, name + "_on", on_action);
                 actionBuilder.AddDrivedState(driverId + 1, name + "_off", off_action);
@@ -132,71 +131,6 @@ namespace EasyAvatar
                 else
                 {
                     var trackingControl = VRCStateMachineBehaviourUtility.CalculateTrackingControl(on_action);
-                    actionBuilder.AddDrivedStateBehaviour(driverId, trackingControl, VRCStateMachineBehaviourUtility.ActionLayerControl(1, 0));
-                    actionBuilder.AddDrivedStateBehaviour(driverId + 1, VRCStateMachineBehaviourUtility.ReverseTrackingControl(trackingControl), VRCStateMachineBehaviourUtility.ActionLayerControl(0, 0));
-                }
-            }
-        }
-
-        /// <summary>
-        /// 添加状态
-        /// </summary>
-        /// <param name="name">名字</param>
-        /// <param name="offAnim">关闭的动画</param>
-        /// <param name="blendTree0">打开时混合树左端的动画</param>
-        /// <param name="blendTree1">打开时混合树右端的动画</param>
-        /// <param name="autoRestore">是否自动恢复</param>
-        /// <param name="parameterName">控制开关的参数名</param>
-        /// <param name="threshold">参数值</param>
-        public void AddState(string name, AnimationClip offAnim, BlendTree blendTree, bool autoRestore, string parameterName, int threshold = -999)
-        {
-            AddState(name, offAnim, blendTree, null, null, autoRestore, parameterName, threshold);
-        }
-
-        /// <summary>
-        /// 添加状态
-        /// </summary>
-        /// <param name="name">名字</param>
-        /// <param name="offAnim">关闭的动画</param>
-        /// <param name="blendTree">打开时的混合树</param>
-        /// <param name="offTracking">关闭时设置的追踪状态，null时自动生成</param>
-        /// <param name="onTracking">打开时设置的追踪状态，null时自动生成</param>
-        /// <param name="autoRestore">是否自动恢复</param>
-        /// <param name="parameterName">控制开关的参数名</param>
-        /// <param name="threshold">参数值</param>
-        public void AddState(string name, AnimationClip offAnim, BlendTree blendTree, EasyTrackingControl offTracking, EasyTrackingControl onTracking, bool autoRestore, string parameterName, int threshold = -999)
-        {
-            Utility.SeparateAnimation(offAnim, out AnimationClip off_action, out AnimationClip off_fx);
-            Utility.SeparateBlendTree(blendTree, out BlendTree blendTree_action, out BlendTree blendTree_fx);
-            off_action = VRCAssets.proxy_stand_still;
-            if (autoRestore)
-            {
-                off_fx = Utility.MergeAnimClip(Utility.GenerateRestoreAnimClip(avatar, blendTree_fx), off_fx);
-            }
-
-            int driverId;
-            if (threshold != -999)
-                driverId = driver.GetDriverId(parameterName, threshold);
-            else
-                driverId = driver.GetDriverId(parameterName);
-            
-            fxBuilder.AddDrivedState(driverId, name + "_on", blendTree_fx);
-            fxBuilder.AddDrivedState(driverId + 1, name + "_off", off_fx);
-            fxBuilder.AddToInitState(off_fx);
-
-            if(!Utility.MotionIsEmpty(blendTree_action))
-            {
-                actionBuilder.AddDrivedState(driverId, name + "_on", blendTree_action);
-                actionBuilder.AddDrivedState(driverId + 1, name + "_off", off_action);
-                if (offTracking != null && onTracking != null)
-                {
-                    actionBuilder.AddDrivedStateBehaviour(driverId, VRCStateMachineBehaviourUtility.GetTrackingControl(onTracking), VRCStateMachineBehaviourUtility.ActionLayerControl(1, 0));
-                    actionBuilder.AddDrivedStateBehaviour(driverId + 1, VRCStateMachineBehaviourUtility.GetTrackingControl(offTracking), VRCStateMachineBehaviourUtility.ActionLayerControl(0, 0));
-
-                }
-                else
-                {
-                    var trackingControl = VRCStateMachineBehaviourUtility.CalculateTrackingControl(blendTree_action);
                     actionBuilder.AddDrivedStateBehaviour(driverId, trackingControl, VRCStateMachineBehaviourUtility.ActionLayerControl(1, 0));
                     actionBuilder.AddDrivedStateBehaviour(driverId + 1, VRCStateMachineBehaviourUtility.ReverseTrackingControl(trackingControl), VRCStateMachineBehaviourUtility.ActionLayerControl(0, 0));
                 }
@@ -473,7 +407,7 @@ namespace EasyAvatar
             if (animationClip)
             {
                 //如果animationClip为空，就舍弃这个animationClip
-                if (Utility.MotionIsEmpty(animationClip))
+                if (animationClip.empty)
                     motion = null;
                 else if (!AssetDatabase.Contains(animationClip))
                     AssetDatabase.CreateAsset(animationClip, saveDir + name + ".anim");

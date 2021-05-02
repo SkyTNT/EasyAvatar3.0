@@ -42,7 +42,7 @@ namespace EasyAvatar
                 {
                     if (GUILayout.Button(Lang.AvatarApply))
                     {
-                        new EasyAvatarTool.Builder((EasyAvatarHelper)target).Build();
+                        new EasyAvatarBuilder((EasyAvatarHelper)target).Build();
                     }
                 }
             }

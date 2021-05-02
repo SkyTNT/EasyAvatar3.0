@@ -25,6 +25,7 @@ namespace EasyAvatar
         public EasyPropertyGroup propertyGroup;
         public AnimationClip anim;
         public EasyAnimationMask mask;
+        public bool mirror;
     }
 
     [Serializable]

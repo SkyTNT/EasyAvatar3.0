@@ -38,7 +38,7 @@ namespace EasyAvatar
         [SerializeField]
         public EasyTrackingControl offTrackingControl, onTrackingControl;
         [SerializeField]
-        public EasyBehaviorGroup behaviors1, behaviors2;
+        public EasyBehaviorGroup behaviors1 = new EasyBehaviorGroup(), behaviors2 = new EasyBehaviorGroup();
 
         // Start is called before the first frame update
         void Start()

@@ -69,6 +69,9 @@ namespace EasyAvatar
             AnimationClip clip = new AnimationClip();
             clip.frameRate = 60;
 
+            if (behaviors == null)
+                return clip;
+
             int behaviorsCount = behaviors.Count;
             for (int i = 0; i < behaviorsCount; i++)
             {
@@ -104,15 +107,33 @@ namespace EasyAvatar
                 {
                     if (behavior.anim)
                     {
-                        foreach (EditorCurveBinding binding in AnimationUtility.GetCurveBindings(behavior.anim))
+                        //不能用foreach，foreach不能修改变量成员
+                        EditorCurveBinding[] curveBindings = AnimationUtility.GetCurveBindings(behavior.anim);
+                        for (int j = 0; j < curveBindings.Length; j++)
+                        {
+                            EditorCurveBinding binding = curveBindings[j];
                             if (CheckCurveBinding(binding, behavior.mask))
+                            {
+                                /*暂时还为完善
+                                if (behavior.mirror)
+                                {
+                                    //有同时出现LeftRight的情况
+                                    binding.propertyName = binding.propertyName.Replace("Left", "R1i1g1h1t");
+                                    binding.propertyName = binding.propertyName.Replace("Right", "Left");
+                                    binding.propertyName = binding.propertyName.Replace("R1i1g1h1t", "Right");
+                                }*/
                                 AnimationUtility.SetEditorCurve(clip, binding, AnimationUtility.GetEditorCurve(behavior.anim, binding));
+                            }
+                        }
+                           
+                                
                         foreach (EditorCurveBinding binding in AnimationUtility.GetObjectReferenceCurveBindings(behavior.anim))
                             if (CheckCurveBinding(binding, behavior.mask))
                                 AnimationUtility.SetObjectReferenceCurve(clip, binding, AnimationUtility.GetObjectReferenceCurve(behavior.anim, binding));
                     }
                 }
             }
+
             return clip;
         }
 
@@ -157,7 +178,7 @@ namespace EasyAvatar
                 foreach (var child in blendTree.children)
                     result = MergeAnimClip(result, GenerateRestoreAnimClip(avatar, child.motion));
             }
-            
+
             return result;
         }
 
@@ -255,15 +276,44 @@ namespace EasyAvatar
             fx.blendParameterY = action.blendParameterY = blendTree.blendParameterY;
             action.name = blendTree.name + "_action";
             fx.name = blendTree.name + "fx";
-            foreach(var child in blendTree.children)
+            foreach (var child in blendTree.children)
             {
-                //暂不支持BlendTree嵌套
                 AnimationClip clip = child.motion as AnimationClip;
-                if (!clip) continue;
-                SeparateAnimation(clip, out AnimationClip actionAnim, out AnimationClip fxClip);
-                action.AddChild(actionAnim, child.position);
-                fx.AddChild(fxClip, child.position);
+                if (clip)
+                {
+                    SeparateAnimation(clip, out AnimationClip actionAnim, out AnimationClip fxClip);
+                    action.AddChild(actionAnim, child.position);
+                    fx.AddChild(fxClip, child.position);
+                }
+                BlendTree blendTree1 = child.motion as BlendTree;
+                if (blendTree1)
+                {
+                    SeparateBlendTree(blendTree1, out BlendTree actionBlend, out BlendTree fxBlend);
+                    action.AddChild(actionBlend, child.position);
+                    fx.AddChild(fxBlend, child.position);
+                }
             }
+        }
+
+        public static void SeparateMotion(Motion motion, out Motion action, out Motion fx)
+        {
+            action = null;
+            fx = null;
+            AnimationClip clip = motion as AnimationClip;
+            if (clip)
+            {
+                SeparateAnimation(clip, out AnimationClip actionClip, out AnimationClip fxClip);
+                action = actionClip;
+                fx = fxClip;
+            }
+            BlendTree blendTree = motion as BlendTree;
+            if(blendTree)
+            {
+                SeparateBlendTree(blendTree, out BlendTree actionBlend, out BlendTree fxBlend);
+                action = actionBlend;
+                fx = fxBlend;
+            }
+                
         }
 
         /// <summary>
@@ -273,10 +323,10 @@ namespace EasyAvatar
         /// <returns></returns>
         public static bool MotionIsEmpty(Motion motion)
         {
-            
+
             AnimationClip clip = motion as AnimationClip;
             if (clip)
-                return (AnimationUtility.GetCurveBindings(clip).Length == 0 && AnimationUtility.GetObjectReferenceCurveBindings(clip).Length == 0);
+                return clip.empty;
 
             BlendTree blendTree = motion as BlendTree;
             if (blendTree)
@@ -288,7 +338,7 @@ namespace EasyAvatar
 
             return true;
         }
-        
+
         /// <summary>
         /// 获取binding
         /// </summary>

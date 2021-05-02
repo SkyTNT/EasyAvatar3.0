@@ -55,6 +55,7 @@ namespace EasyAvatar
             BehaviorTypeProperty,
             BehaviorTypeAnim,
             AnimClip,
+            Mirror,
             AnimMask,
             AnimMaskHead,
             AnimMaskBody,
@@ -183,6 +184,7 @@ namespace EasyAvatar
             BehaviorTypeProperty = "修改物体属性";
             BehaviorTypeAnim = "播放动画";
             AnimClip = "动画文件";
+            Mirror = "镜像";
             AnimMask = "动画有效部分";
             AnimMaskHead = "头";
             AnimMaskBody = "主体";
@@ -292,6 +294,7 @@ namespace EasyAvatar
             BehaviorTypeProperty = "Change Property";
             BehaviorTypeAnim = "Play Animation";
             AnimClip = "Animation Clip";
+            Mirror = "Mirror";
             AnimMask = "Animation Mask";
             AnimMaskHead = "Head";
             AnimMaskBody = "Body";

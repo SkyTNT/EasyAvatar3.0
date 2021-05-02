@@ -26,7 +26,7 @@ namespace EasyAvatar
         [SerializeField]
         public EasyTrackingControl offTrackingControl, onTrackingControl;
         [SerializeField]
-        public List<EasyBehaviorGroup> behaviors;//Toggle型的为2个，RadialPuppet型的为3个
+        public List<EasyBehaviorGroup> behaviors = new List<EasyBehaviorGroup>();//Toggle型的为2个，RadialPuppet型的为3个
 
 
         // Start is called before the first frame update
