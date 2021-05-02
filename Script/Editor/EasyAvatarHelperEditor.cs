@@ -44,6 +44,7 @@ namespace EasyAvatar
                     {
                         new EasyAvatarBuilder((EasyAvatarHelper)target).Build();
                     }
+                    EditorGUILayout.HelpBox(Lang.AvatarApplyHelpBox, MessageType.Warning);
                 }
             }
 

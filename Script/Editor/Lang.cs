@@ -13,6 +13,7 @@ namespace EasyAvatar
             Avatar,
             AvatarHelper,
             AvatarApply,
+            AvatarApplyHelpBox,
             AvataNoDescriptor,
             Name,
             Add,
@@ -141,7 +142,8 @@ namespace EasyAvatar
         {
             Avatar = "模型";
             AvatarHelper = "[模型]";
-            AvatarApply = "生成菜单并应用到模型";
+            AvatarApply = "生成并应用到模型";
+            AvatarApplyHelpBox = "每次完成修改后，你都必须点击此按钮，修改的内容才会生效";
             AvataNoDescriptor = "模型没有检测到VRCAvatarDescriptor，点击添加";
             Name = "名称";
             Add = "添加";
@@ -251,7 +253,8 @@ namespace EasyAvatar
         {
             Avatar = "Avatar";
             AvatarHelper = "[Easy Avatar]";
-            AvatarApply = "Build expression menu and apply to avatar";
+            AvatarApply = "Build and apply to avatar";
+            AvatarApplyHelpBox = "After finished modifications, you must click this button for the modified contents to take effect";
             AvataNoDescriptor = "VRCAvatarDescriptor is not detected in the avatar. Click to add";
             Add = "Add";
             Name = "Name";
