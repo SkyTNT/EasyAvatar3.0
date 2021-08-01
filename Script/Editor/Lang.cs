@@ -102,7 +102,8 @@ namespace EasyAvatar
             LeftHand,
             RightHand,
             AnyHand,
-            DefaultValue,
+            Default,
+            AllDefault,
             BuildSucceed,
             AutoRestore,
             AutoTrackingControl,
@@ -112,6 +113,10 @@ namespace EasyAvatar
             LocomotionCrouch,
             LocomotionJump,
             LocomotionOther,
+            UseController,
+            UseBlendTree,
+            AnimatorController,
+            BlendTree,
             StandStill,
             WalkForward,
             WalkBackward,
@@ -280,7 +285,8 @@ namespace EasyAvatar
             LeftHand = "左手";
             RightHand = "右手";
             AnyHand = "任何手";
-            DefaultValue = "默认值";
+            Default = "默认值";
+            AllDefault = "全部默认";
             BuildSucceed = "成功";
             AutoRestore = "关闭时自动恢复修改的内容到默认状态";
             AutoTrackingControl = "自动设置追踪状态";
@@ -290,6 +296,10 @@ namespace EasyAvatar
             LocomotionCrouch = "趴下姿势";
             LocomotionJump = "跳姿势";
             LocomotionOther = "其他姿势";
+            UseController = "是否使用动画控制器";
+            UseBlendTree = "是否使用混合树";
+            AnimatorController = "动画控制器";
+            BlendTree = "混合树";
             StandStill = "站立静止";
             WalkForward = "走向前";
             WalkBackward = "走向后";
@@ -439,7 +449,8 @@ namespace EasyAvatar
             LeftHand = "Left Hand";
             RightHand = "Right Hand";
             AnyHand = "Any Hand";
-            DefaultValue = "Default";
+            Default = "Default";
+            AllDefault = "All Default";
             BuildSucceed = "Succeed";
             AutoRestore = "Auto restore to default state when off";
             AutoTrackingControl = "Auto set tracking state";
@@ -449,6 +460,10 @@ namespace EasyAvatar
             LocomotionCrouch = "Crouch";
             LocomotionJump = "Jump";
             LocomotionOther = "Other";
+            UseController = "Use AnimatorController";
+            UseBlendTree = "Use BlendTree";
+            AnimatorController = "AnimatorController";
+            BlendTree = "BlendTree";
             StandStill = "Stand Still";
             WalkForward = "Walk Forward";
             WalkBackward = "Walk Backward";

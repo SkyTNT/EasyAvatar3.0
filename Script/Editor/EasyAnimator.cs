@@ -151,74 +151,118 @@ namespace EasyAvatar
         {
             afk = locomotionManager.afk.animClip;
 
-            BlendTree standBlendTree = new BlendTree();
-            List<ChildMotion> standBlendTreeMotions = new List<ChildMotion>();
-            standBlendTree.blendType = BlendTreeType.FreeformDirectional2D;
-            standBlendTree.blendParameter = "VelocityX";
-            standBlendTree.blendParameterY = "VelocityY";
-            standBlendTree.name = "LocomotionStand";
-            AddChild(standBlendTreeMotions, locomotionManager.standStill, 0, 0);
-            AddChild(standBlendTreeMotions, locomotionManager.walkForward, 0, 1.56f);
-            AddChild(standBlendTreeMotions, locomotionManager.walkBackward, 0, -1.61f);
-            AddChild(standBlendTreeMotions, locomotionManager.walkLeft, -1.56f, 0);
-            AddChild(standBlendTreeMotions, locomotionManager.walkRight, 1.56f, 0);
-            AddChild(standBlendTreeMotions, locomotionManager.walkForwardLeft, -1.1f, 1.1f);
-            AddChild(standBlendTreeMotions, locomotionManager.walkForwardRight, 1.1f, 1.1f);
-            AddChild(standBlendTreeMotions, locomotionManager.walkBackwardLeft, -1.1f, -1.1f);
-            AddChild(standBlendTreeMotions, locomotionManager.walkBackwardRight, 1.1f, -1.1f);
-            AddChild(standBlendTreeMotions, locomotionManager.runForward, 0, 3.4f);
-            AddChild(standBlendTreeMotions, locomotionManager.runBackward, 0, -2.1f);
-            AddChild(standBlendTreeMotions, locomotionManager.runLeft, -3, 0);
-            AddChild(standBlendTreeMotions, locomotionManager.runRight, 3, 0);
-            AddChild(standBlendTreeMotions, locomotionManager.runForwardLeft, -2.44f, 2.44f);
-            AddChild(standBlendTreeMotions, locomotionManager.runForwardRight, 2.44f, 2.44f);
-            AddChild(standBlendTreeMotions, locomotionManager.runBackwardLeft, -1.5f, -1.5f);
-            AddChild(standBlendTreeMotions, locomotionManager.runBackwardRight, 1.5f, -1.5f);
-            AddChild(standBlendTreeMotions, locomotionManager.runForward, 0, 5.96f);
-            standBlendTree.children = standBlendTreeMotions.ToArray();
+            if (locomotionManager.useAnimatorController)
+            {
+                locomotionBuilder.controller = locomotionManager.controller;
+                return;
+            }
+            BlendTree standBlendTree, crouchBlendTree, proneBlendTree;
+            if (locomotionManager.useStandBlendTree)
+            {
+                standBlendTree = locomotionManager.standBlendTree;
+            }
+            else
+            {
+                standBlendTree = new BlendTree();
+                List<ChildMotion> standBlendTreeMotions = new List<ChildMotion>();
+                standBlendTree.blendType = BlendTreeType.FreeformDirectional2D;
+                standBlendTree.blendParameter = "VelocityX";
+                standBlendTree.blendParameterY = "VelocityY";
+                standBlendTree.name = "LocomotionStand";
+                AddChild(standBlendTreeMotions, locomotionManager.standStill, 0, 0);
+                AddChild(standBlendTreeMotions, locomotionManager.walkForward, 0, 1.56f);
+                AddChild(standBlendTreeMotions, locomotionManager.walkBackward, 0, -1.61f);
+                AddChild(standBlendTreeMotions, locomotionManager.walkLeft, -1.56f, 0);
+                AddChild(standBlendTreeMotions, locomotionManager.walkRight, 1.56f, 0);
+                AddChild(standBlendTreeMotions, locomotionManager.walkForwardLeft, -1.1f, 1.1f);
+                AddChild(standBlendTreeMotions, locomotionManager.walkForwardRight, 1.1f, 1.1f);
+                AddChild(standBlendTreeMotions, locomotionManager.walkBackwardLeft, -1.1f, -1.1f);
+                AddChild(standBlendTreeMotions, locomotionManager.walkBackwardRight, 1.1f, -1.1f);
+                AddChild(standBlendTreeMotions, locomotionManager.runForward, 0, 3.4f);
+                AddChild(standBlendTreeMotions, locomotionManager.runBackward, 0, -2.1f);
+                AddChild(standBlendTreeMotions, locomotionManager.runLeft, -3, 0);
+                AddChild(standBlendTreeMotions, locomotionManager.runRight, 3, 0);
+                AddChild(standBlendTreeMotions, locomotionManager.runForwardLeft, -2.44f, 2.44f);
+                AddChild(standBlendTreeMotions, locomotionManager.runForwardRight, 2.44f, 2.44f);
+                AddChild(standBlendTreeMotions, locomotionManager.runBackwardLeft, -1.5f, -1.5f);
+                AddChild(standBlendTreeMotions, locomotionManager.runBackwardRight, 1.5f, -1.5f);
+                AddChild(standBlendTreeMotions, locomotionManager.runForward, 0, 5.96f);
+                standBlendTree.children = standBlendTreeMotions.ToArray();
+                AssetDatabase.AddObjectToAsset(standBlendTree, locomotionBuilder.controller);
+            }
 
-            BlendTree crouchBlendTree = new BlendTree();
-            List<ChildMotion> crouchBlendTreeMotions = new List<ChildMotion>();
-            crouchBlendTree.blendType = BlendTreeType.FreeformDirectional2D;
-            crouchBlendTree.blendParameter = "VelocityX";
-            crouchBlendTree.blendParameterY = "VelocityY";
-            crouchBlendTree.name = "LocomotionCrouch";
-            AddChild(crouchBlendTreeMotions, locomotionManager.crouchStill, 0, 0);
-            AddChild(crouchBlendTreeMotions, locomotionManager.crouchForward, 0, 1.25f);
-            AddChild(crouchBlendTreeMotions, locomotionManager.crouchBackward, 0, -1.25f);
-            AddChild(crouchBlendTreeMotions, locomotionManager.crouchLeft, -1.25f, 0);
-            AddChild(crouchBlendTreeMotions, locomotionManager.crouchRight, 1.25f, 0);
-            AddChild(crouchBlendTreeMotions, locomotionManager.crouchForwardLeft, -1.25f, 1.25f);
-            AddChild(crouchBlendTreeMotions, locomotionManager.crouchForwardRight, 1.25f, 1.25f);
-            AddChild(crouchBlendTreeMotions, locomotionManager.crouchBackwardLeft, -1.25f, -1.25f);
-            AddChild(crouchBlendTreeMotions, locomotionManager.crouchBackwardRight, 1.25f, -1.25f);
-            AddChild(crouchBlendTreeMotions, locomotionManager.crouchForward, 0, 1.78f);
-            crouchBlendTree.children = crouchBlendTreeMotions.ToArray();
+            if (locomotionManager.useCrouchBlendTree)
+            {
+                crouchBlendTree = locomotionManager.crouchBlendTree;
+            }
+            else
+            {
+                crouchBlendTree = new BlendTree();
+                List<ChildMotion> crouchBlendTreeMotions = new List<ChildMotion>();
+                crouchBlendTree.blendType = BlendTreeType.FreeformDirectional2D;
+                crouchBlendTree.blendParameter = "VelocityX";
+                crouchBlendTree.blendParameterY = "VelocityY";
+                crouchBlendTree.name = "LocomotionCrouch";
+                AddChild(crouchBlendTreeMotions, locomotionManager.crouchStill, 0, 0);
+                AddChild(crouchBlendTreeMotions, locomotionManager.crouchForward, 0, 1.25f);
+                AddChild(crouchBlendTreeMotions, locomotionManager.crouchBackward, 0, -1.25f);
+                AddChild(crouchBlendTreeMotions, locomotionManager.crouchLeft, -1.25f, 0);
+                AddChild(crouchBlendTreeMotions, locomotionManager.crouchRight, 1.25f, 0);
+                AddChild(crouchBlendTreeMotions, locomotionManager.crouchForwardLeft, -1.25f, 1.25f);
+                AddChild(crouchBlendTreeMotions, locomotionManager.crouchForwardRight, 1.25f, 1.25f);
+                AddChild(crouchBlendTreeMotions, locomotionManager.crouchBackwardLeft, -1.25f, -1.25f);
+                AddChild(crouchBlendTreeMotions, locomotionManager.crouchBackwardRight, 1.25f, -1.25f);
+                AddChild(crouchBlendTreeMotions, locomotionManager.crouchForward, 0, 1.78f);
+                crouchBlendTree.children = crouchBlendTreeMotions.ToArray();
+                AssetDatabase.AddObjectToAsset(crouchBlendTree, locomotionBuilder.controller);
+            }
 
-            BlendTree proneBlendTree = new BlendTree();
-            List<ChildMotion> proneBlendTreeMotions = new List<ChildMotion>();
-            proneBlendTree.blendType = BlendTreeType.FreeformDirectional2D;
-            proneBlendTree.blendParameter = "VelocityX";
-            proneBlendTree.blendParameterY = "VelocityY";
-            proneBlendTree.name = "LocomotionProne";
-            AddChild(proneBlendTreeMotions, locomotionManager.proneStill, 0, 0);
-            AddChild(proneBlendTreeMotions, locomotionManager.proneForward, 0, 0.1f);
-            AddChild(proneBlendTreeMotions, locomotionManager.proneBackward, 0, -0.1f);
-            AddChild(proneBlendTreeMotions, locomotionManager.proneLeft, -0.1f, 0);
-            AddChild(proneBlendTreeMotions, locomotionManager.proneRight, 0.1f, 0);
-            AddChild(proneBlendTreeMotions, locomotionManager.proneForward, 0, 1f);
-            AddChild(proneBlendTreeMotions, locomotionManager.proneBackward, 0, -1f);
-            AddChild(proneBlendTreeMotions, locomotionManager.proneLeft, -1f, 0);
-            AddChild(proneBlendTreeMotions, locomotionManager.proneRight, 1f, 0);
-            proneBlendTree.children = proneBlendTreeMotions.ToArray();
-
-            AssetDatabase.AddObjectToAsset(standBlendTree, locomotionBuilder.controller);
-            AssetDatabase.AddObjectToAsset(crouchBlendTree, locomotionBuilder.controller);
-            AssetDatabase.AddObjectToAsset(proneBlendTree, locomotionBuilder.controller);
+            if (locomotionManager.useProneBlendTree)
+            {
+                proneBlendTree = locomotionManager.proneBlendTree;
+            }
+            else
+            {
+                proneBlendTree = new BlendTree();
+                List<ChildMotion> proneBlendTreeMotions = new List<ChildMotion>();
+                proneBlendTree.blendType = BlendTreeType.FreeformDirectional2D;
+                proneBlendTree.blendParameter = "VelocityX";
+                proneBlendTree.blendParameterY = "VelocityY";
+                proneBlendTree.name = "LocomotionProne";
+                AddChild(proneBlendTreeMotions, locomotionManager.proneStill, 0, 0);
+                AddChild(proneBlendTreeMotions, locomotionManager.proneForward, 0, 0.1f);
+                AddChild(proneBlendTreeMotions, locomotionManager.proneBackward, 0, -0.1f);
+                AddChild(proneBlendTreeMotions, locomotionManager.proneLeft, -0.1f, 0);
+                AddChild(proneBlendTreeMotions, locomotionManager.proneRight, 0.1f, 0);
+                AddChild(proneBlendTreeMotions, locomotionManager.proneForward, 0, 1f);
+                AddChild(proneBlendTreeMotions, locomotionManager.proneBackward, 0, -1f);
+                AddChild(proneBlendTreeMotions, locomotionManager.proneLeft, -1f, 0);
+                AddChild(proneBlendTreeMotions, locomotionManager.proneRight, 1f, 0);
+                proneBlendTree.children = proneBlendTreeMotions.ToArray();
+                AssetDatabase.AddObjectToAsset(proneBlendTree, locomotionBuilder.controller);
+            }
             
             locomotionBuilder.FindState(locomotionBuilder.baseLayer.stateMachine, "Standing").motion = standBlendTree;
             locomotionBuilder.FindState(locomotionBuilder.baseLayer.stateMachine, "Crouching").motion = crouchBlendTree;
             locomotionBuilder.FindState(locomotionBuilder.baseLayer.stateMachine, "Prone").motion = proneBlendTree;
+
+            EasyLocomotion standStill = new EasyLocomotion { animClip = null, speed = 1, mirror = false };
+            //查找stand_still
+            {
+                float minDistance = 1000;
+                foreach (var child in standBlendTree.children)
+                {
+                    Vector2 pos = child.position;
+                    float distance = Mathf.Sqrt(pos.x * pos.x + pos.y * pos.y);
+                    if (distance<0.2f&& distance<minDistance)
+                    {
+                        minDistance = distance;
+                        standStill = new EasyLocomotion { animClip = child.motion as AnimationClip, speed = 1, mirror = false };
+                    }
+
+                }
+            }
+            
 
             AnimatorStateMachine jumpStateMachine = locomotionBuilder.FindStateMachine(locomotionBuilder.baseLayer.stateMachine, "JumpAndFall");
             ReplaceJumpMotion("SmallHop",locomotionManager.shortFall);
@@ -227,10 +271,12 @@ namespace EasyAvatar
             ReplaceJumpMotion("LongFall", locomotionManager.longFall);
             ReplaceJumpMotion("QuickLand", locomotionManager.quickLand);
             ReplaceJumpMotion("HardLand", locomotionManager.land);
-            ReplaceJumpMotion("RestoreTracking", locomotionManager.standStill);
+            ReplaceJumpMotion("RestoreTracking", standStill);
 
             void AddChild(List<ChildMotion> motions, EasyLocomotion locomotion,float x,float y)
             {
+                if (!locomotion.animClip)
+                    return;
                 motions.Add(new ChildMotion { motion = locomotion.animClip, timeScale = locomotion.speed, mirror = locomotion.mirror, position = new Vector2(x, y) });
             }
 

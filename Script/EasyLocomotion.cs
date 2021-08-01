@@ -9,7 +9,7 @@ namespace EasyAvatar
     public class EasyLocomotion
     {
         public AnimationClip animClip;
-        public float speed;
+        public float speed = 1;
         public bool mirror;
     }
 }

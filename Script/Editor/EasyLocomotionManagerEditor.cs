@@ -14,7 +14,7 @@ namespace EasyAvatar
         {
             serializedObject.Update();
             SerializedProperty useController = serializedObject.FindProperty("useAnimatorController");
-            EditorGUILayout.PropertyField(useController, new GUIContent("使用动画控制器"));
+            EditorGUILayout.PropertyField(useController, new GUIContent(Lang.UseController));
 
             if (!useController.boolValue)
             {
@@ -22,13 +22,19 @@ namespace EasyAvatar
                 if (standFold)
                 {
                     SerializedProperty useBlendTree = serializedObject.FindProperty("useStandBlendTree");
-                    EditorGUILayout.PropertyField(useBlendTree, new GUIContent("使用混合树"));
+                    EditorGUILayout.PropertyField(useBlendTree, new GUIContent(Lang.UseBlendTree));
                     if (!useBlendTree.boolValue)
                     {
-                        if (GUILayout.Button("默认值"))
+                        GUILayout.BeginHorizontal();
+                        if (GUILayout.Button(Lang.Default))
                         {
                             SetDefaultStandLocomotion(serializedObject);
                         }
+                        if (GUILayout.Button(Lang.Clear))
+                        {
+                            ClearStandLocomotion(serializedObject);
+                        }
+                        GUILayout.EndHorizontal();
                         GUILayout.BeginVertical(GUI.skin.box);
                         LocomotionFieldHeader();
                         LocomotionField(serializedObject.FindProperty("standStill"), Lang.StandStill);
@@ -53,11 +59,11 @@ namespace EasyAvatar
                     }
                     else
                     {
-                        if (GUILayout.Button("默认值"))
+                        if (GUILayout.Button(Lang.Default))
                         {
                             serializedObject.FindProperty("standBlendTree").objectReferenceValue = VRCAssets.standBlendTree;
                         }
-                        EditorGUILayout.PropertyField(serializedObject.FindProperty("standBlendTree"), new GUIContent("混合树"));
+                        EditorGUILayout.PropertyField(serializedObject.FindProperty("standBlendTree"), new GUIContent(Lang.BlendTree));
                     }
                 }
 
@@ -65,13 +71,19 @@ namespace EasyAvatar
                 if (crouchFold)
                 {
                     SerializedProperty useBlendTree = serializedObject.FindProperty("useCrouchBlendTree");
-                    EditorGUILayout.PropertyField(useBlendTree, new GUIContent("使用混合树"));
+                    EditorGUILayout.PropertyField(useBlendTree, new GUIContent(Lang.UseBlendTree));
                     if (!useBlendTree.boolValue)
                     {
-                        if (GUILayout.Button("默认值"))
+                        GUILayout.BeginHorizontal();
+                        if (GUILayout.Button(Lang.Default))
                         {
                             SetDefaultCrouchLocomotion(serializedObject);
                         }
+                        if (GUILayout.Button(Lang.Clear))
+                        {
+                            ClearCrouchLocomotion(serializedObject);
+                        }
+                        GUILayout.EndHorizontal();
                         GUILayout.BeginVertical(GUI.skin.box);
                         LocomotionFieldHeader();
                         LocomotionField(serializedObject.FindProperty("crouchStill"), Lang.CrouchStill);
@@ -87,11 +99,11 @@ namespace EasyAvatar
                     }
                     else
                     {
-                        if (GUILayout.Button("默认值"))
+                        if (GUILayout.Button(Lang.Default))
                         {
                             serializedObject.FindProperty("crouchBlendTree").objectReferenceValue = VRCAssets.crouchBlendTree;
                         }
-                        EditorGUILayout.PropertyField(serializedObject.FindProperty("crouchBlendTree"), new GUIContent("混合树"));
+                        EditorGUILayout.PropertyField(serializedObject.FindProperty("crouchBlendTree"), new GUIContent(Lang.BlendTree));
                     }
                     
                 }
@@ -100,13 +112,20 @@ namespace EasyAvatar
                 if (proneFold)
                 {
                     SerializedProperty useBlendTree = serializedObject.FindProperty("useProneBlendTree");
-                    EditorGUILayout.PropertyField(useBlendTree, new GUIContent("使用混合树"));
+                    EditorGUILayout.PropertyField(useBlendTree, new GUIContent(Lang.UseBlendTree));
                     if (!useBlendTree.boolValue)
                     {
-                        if (GUILayout.Button("默认值"))
+                        
+                        GUILayout.BeginHorizontal();
+                        if (GUILayout.Button(Lang.Default))
                         {
                             SetDefaultProneLocomotion(serializedObject);
                         }
+                        if (GUILayout.Button(Lang.Clear))
+                        {
+                            ClearProneLocomotion(serializedObject);
+                        }
+                        GUILayout.EndHorizontal();
                         GUILayout.BeginVertical(GUI.skin.box);
                         LocomotionFieldHeader();
                         LocomotionField(serializedObject.FindProperty("proneStill"), Lang.ProneStill);
@@ -118,21 +137,27 @@ namespace EasyAvatar
                     }
                     else
                     {
-                        if (GUILayout.Button("默认值"))
+                        if (GUILayout.Button(Lang.Default))
                         {
                             serializedObject.FindProperty("proneBlendTree").objectReferenceValue = VRCAssets.proneBlendTree;
                         }
-                        EditorGUILayout.PropertyField(serializedObject.FindProperty("proneBlendTree"), new GUIContent("混合树"));
+                        EditorGUILayout.PropertyField(serializedObject.FindProperty("proneBlendTree"), new GUIContent(Lang.BlendTree));
                     }
                 }
 
                 jumpFold = EditorGUILayout.Foldout(jumpFold, Lang.LocomotionJump);
                 if (jumpFold)
                 {
-                    if (GUILayout.Button("默认值"))
+                    GUILayout.BeginHorizontal();
+                    if (GUILayout.Button(Lang.Default))
                     {
                         SetDefaultJumpLocomotion(serializedObject);
                     }
+                    if (GUILayout.Button(Lang.Clear))
+                    {
+                        ClearJumpLocomotion(serializedObject);
+                    }
+                    GUILayout.EndHorizontal();
                     GUILayout.BeginVertical(GUI.skin.box);
                     LocomotionFieldHeader();
                     LocomotionField(serializedObject.FindProperty("shortFall"), Lang.ShortFall);
@@ -145,8 +170,8 @@ namespace EasyAvatar
             else
             {
                 GUILayout.BeginHorizontal();
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("controller"), new GUIContent("动画控制器"));
-                if (GUILayout.Button("默认值"))
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("controller"), new GUIContent(Lang.AnimatorController));
+                if (GUILayout.Button(Lang.Default))
                 {
                     serializedObject.FindProperty("controller").objectReferenceValue = VRCAssets.locomotionController;
                 }
@@ -157,17 +182,24 @@ namespace EasyAvatar
             otherFold = EditorGUILayout.Foldout(otherFold, Lang.LocomotionOther);
             if (otherFold)
             {
-                if (GUILayout.Button("默认值"))
+                
+                GUILayout.BeginHorizontal();
+                if (GUILayout.Button(Lang.Default))
                 {
                     SetDefaultOtherLocomotion(serializedObject);
                 }
+                if (GUILayout.Button(Lang.Clear))
+                {
+                    ClearOtherLocomotion(serializedObject);
+                }
+                GUILayout.EndHorizontal();
                 GUILayout.BeginVertical(GUI.skin.box);
                 LocomotionFieldHeader();
                 LocomotionField(serializedObject.FindProperty("afk"), Lang.AFK);
                 GUILayout.EndVertical();
             }
 
-            if (GUILayout.Button(Lang.DefaultValue))
+            if (GUILayout.Button(Lang.Default))
             {
                 SetAllDefaultLocomotion(serializedObject);
             }
@@ -211,6 +243,14 @@ namespace EasyAvatar
             serializedProperty.FindPropertyRelative("animClip").objectReferenceValue = animationClip;
             serializedProperty.FindPropertyRelative("speed").floatValue = speed;
             serializedProperty.FindPropertyRelative("mirror").boolValue = mirror;
+        }
+
+        static void ClearLocomotions(SerializedObject serializedObject , params string[] names)
+        {
+            foreach(var name in names)
+            {
+                SetSingleLocomotion(serializedObject, name, null, 1, false);
+            }
         }
 
         public static void SetDefaultStandLocomotion(SerializedObject serializedObject)
@@ -268,6 +308,76 @@ namespace EasyAvatar
         public static void SetDefaultOtherLocomotion(SerializedObject serializedObject)
         {
             SetSingleLocomotion(serializedObject, "afk", VRCAssets.proxy_afk, 1, false);
+        }
+
+        public static void ClearStandLocomotion(SerializedObject serializedObject)
+        {
+            ClearLocomotions(serializedObject,
+                "standStill",
+                "walkForward",
+                "walkBackward",
+                "walkLeft",
+                "walkRight",
+                "walkForwardLeft",
+                "walkForwardRight",
+                "walkBackwardLeft",
+                "walkBackwardRight",
+                "runForward",
+                "runBackward",
+                "runLeft",
+                "runRight",
+                "runForwardLeft",
+                "runForwardRight",
+                "runBackwardLeft",
+                "runBackwardRight",
+                "sprintForward"
+                );
+        }
+
+        public static void ClearCrouchLocomotion(SerializedObject serializedObject)
+        {
+            ClearLocomotions(serializedObject,
+                "crouchStill",
+                "crouchForward",
+                "crouchBackward",
+                "crouchLeft",
+                "crouchRight",
+                "crouchForwardLeft",
+                "crouchForwardRight",
+                "crouchBackwardLeft",
+                "crouchBackwardRight"
+                );
+
+        }
+
+        public static void ClearProneLocomotion(SerializedObject serializedObject)
+        {
+            ClearLocomotions(serializedObject,
+                "proneStill",
+                "proneForward",
+                "proneBackward",
+                "proneLeft",
+                "proneRight"
+                );
+            
+        }
+
+        public static void ClearJumpLocomotion(SerializedObject serializedObject)
+        {
+            ClearLocomotions(serializedObject,
+                "shortFall",
+                "longFall",
+                "quickLand",
+                "land"
+               );
+            
+        }
+
+        public static void ClearOtherLocomotion(SerializedObject serializedObject)
+        {
+            ClearLocomotions(serializedObject,
+                "afk"
+               );
         }
 
 

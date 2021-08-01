@@ -43,7 +43,7 @@ namespace EasyAvatar
                 GUILayout.EndVertical();
             }
 
-            if (GUILayout.Button(Lang.DefaultValue))
+            if (GUILayout.Button(Lang.Default))
             {
                 SetDefaultGesture(serializedObject);
             }
