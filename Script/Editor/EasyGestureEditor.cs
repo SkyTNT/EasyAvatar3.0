@@ -43,7 +43,7 @@ namespace EasyAvatar
             handType.enumValueIndex = EditorGUILayout.IntPopup(Lang.HandType, handType.enumValueIndex, new string[] { Lang.LeftHand, Lang.RightHand, Lang.AnyHand }, handTypeIndex);
             gestureType.enumValueIndex = EditorGUILayout.IntPopup(Lang.GestureType, gestureType.enumValueIndex, new string[] { Lang.GestureNeutral, Lang.GestureFist, Lang.GestureHandOpen, Lang.GestureFingerPoint, Lang.GestureVictory, Lang.GestureRockNRoll, Lang.GestureHandGun, Lang.GestureThumbsUp }, gestureTypeIndex);
             autoRestore.boolValue = EditorGUILayout.ToggleLeft(Lang.AutoRestore, autoRestore.boolValue);
-            autoTrackingControl.boolValue = EditorGUILayout.ToggleLeft(Lang.autoTrackingControl, autoTrackingControl.boolValue);
+            autoTrackingControl.boolValue = EditorGUILayout.ToggleLeft(Lang.AutoTrackingControl, autoTrackingControl.boolValue);
             if (!autoTrackingControl.boolValue)
             {
                 EditorGUILayout.LabelField(Lang.OnGestureOut, EditorStyles.boldLabel);

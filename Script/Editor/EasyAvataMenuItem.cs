@@ -150,6 +150,29 @@ namespace EasyAvatar
         }
 
         /// <summary>
+        /// 创建姿态管理
+        /// </summary>
+        /// <returns></returns>
+        [MenuItem("GameObject/EasyAvatar3.0/Locomotion Manager(姿态管理)", priority = 0)]
+        public static bool CreateLocomotionManager()
+        {
+            if (Selection.activeGameObject && Selection.activeGameObject.transform.GetComponent<EasyAvatarHelper>())
+            {
+                //LocomotionManager已经添加了
+                if (Selection.activeGameObject.transform.GetComponentInChildren<EasyLocomotionManager>())
+                {
+                    EditorUtility.DisplayDialog("Error", Lang.ErrAvatarLocomotionManagerLen1, "ok");
+                    return false;
+                }
+                GameObject gameObject = CreateObject<EasyLocomotionManager>(Lang.LocomotionManager);
+                EasyLocomotionManagerEditor.SetAllDefaultLocomotion(new SerializedObject(gameObject.GetComponent<EasyLocomotionManager>()));
+                return true;
+            }
+            EditorUtility.DisplayDialog("Error", Lang.ErrLocomotionManagerPath, "ok");
+            return false;
+        }
+
+        /// <summary>
         /// 显示关于对话框
         /// </summary>
         [MenuItem("EasyAvatar3.0/About", priority = 0)]

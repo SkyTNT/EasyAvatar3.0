@@ -339,6 +339,17 @@ namespace EasyAvatar
             return true;
         }
 
+        public static T CopyAsset<T>(string path , T asset) where T : UnityEngine.Object
+        {
+            if (!AssetDatabase.CopyAsset(AssetDatabase.GetAssetPath(asset), path))
+            {
+                Debug.Log("复制失败" + path+"从"+AssetDatabase.GetAssetPath(asset));
+                return null;
+            }
+                
+            return AssetDatabase.LoadAssetAtPath<T>(path);
+        }
+
         /// <summary>
         /// 获取binding
         /// </summary>

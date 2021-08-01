@@ -13,9 +13,10 @@ namespace EasyAvatar
     {
         string directoryPath;
         GameObject avatar;
-        AnimatorControllerBuilder fxBuilder,actionBuilder,gestureBuilder;
+        AnimatorControllerBuilder fxBuilder,actionBuilder,gestureBuilder,locomotionBuilder;
         AnimatorControllerLayer gestureLeftLayer, gestureRightLayer;
         AnimatorDriver driver;
+        AnimationClip afk;
 
         public AnimatorController fxController
         {
@@ -41,13 +42,22 @@ namespace EasyAvatar
             }
         }
 
-        public EasyAnimator(string directoryPath, GameObject avatar)
+        public AnimatorController locomotionController
+        {
+            get
+            {
+                return locomotionBuilder.controller;
+            }
+        }
+
+        public EasyAnimator(string directoryPath, GameObject avatar, AnimatorController locomotionTemplate)
         {
             this.directoryPath = directoryPath;
             this.avatar = avatar;
             fxBuilder = new AnimatorControllerBuilder(directoryPath + "FXLayer.controller");
             actionBuilder = new AnimatorControllerBuilder(directoryPath + "ActionLayer.controller");
             gestureBuilder = new AnimatorControllerBuilder(directoryPath + "GestureLayer.controller");
+            locomotionBuilder = new AnimatorControllerBuilder(directoryPath + "LocomotionLayer.controller",locomotionTemplate);
             gestureLeftLayer = gestureBuilder.AddLayer("gesture Left");
             gestureRightLayer = gestureBuilder.AddLayer("gesture Right");
             gestureBuilder.baseLayer.avatarMask = VRCAssets.hands_only;
@@ -136,6 +146,102 @@ namespace EasyAvatar
                 }
             }
         }
+
+        public void SetLocomotion(EasyLocomotionManager locomotionManager)
+        {
+            afk = locomotionManager.afk.animClip;
+
+            BlendTree standBlendTree = new BlendTree();
+            List<ChildMotion> standBlendTreeMotions = new List<ChildMotion>();
+            standBlendTree.blendType = BlendTreeType.FreeformDirectional2D;
+            standBlendTree.blendParameter = "VelocityX";
+            standBlendTree.blendParameterY = "VelocityY";
+            standBlendTree.name = "LocomotionStand";
+            AddChild(standBlendTreeMotions, locomotionManager.standStill, 0, 0);
+            AddChild(standBlendTreeMotions, locomotionManager.walkForward, 0, 1.56f);
+            AddChild(standBlendTreeMotions, locomotionManager.walkBackward, 0, -1.61f);
+            AddChild(standBlendTreeMotions, locomotionManager.walkLeft, -1.56f, 0);
+            AddChild(standBlendTreeMotions, locomotionManager.walkRight, 1.56f, 0);
+            AddChild(standBlendTreeMotions, locomotionManager.walkForwardLeft, -1.1f, 1.1f);
+            AddChild(standBlendTreeMotions, locomotionManager.walkForwardRight, 1.1f, 1.1f);
+            AddChild(standBlendTreeMotions, locomotionManager.walkBackwardLeft, -1.1f, -1.1f);
+            AddChild(standBlendTreeMotions, locomotionManager.walkBackwardRight, 1.1f, -1.1f);
+            AddChild(standBlendTreeMotions, locomotionManager.runForward, 0, 3.4f);
+            AddChild(standBlendTreeMotions, locomotionManager.runBackward, 0, -2.1f);
+            AddChild(standBlendTreeMotions, locomotionManager.runLeft, -3, 0);
+            AddChild(standBlendTreeMotions, locomotionManager.runRight, 3, 0);
+            AddChild(standBlendTreeMotions, locomotionManager.runForwardLeft, -2.44f, 2.44f);
+            AddChild(standBlendTreeMotions, locomotionManager.runForwardRight, 2.44f, 2.44f);
+            AddChild(standBlendTreeMotions, locomotionManager.runBackwardLeft, -1.5f, -1.5f);
+            AddChild(standBlendTreeMotions, locomotionManager.runBackwardRight, 1.5f, -1.5f);
+            AddChild(standBlendTreeMotions, locomotionManager.runForward, 0, 5.96f);
+            standBlendTree.children = standBlendTreeMotions.ToArray();
+
+            BlendTree crouchBlendTree = new BlendTree();
+            List<ChildMotion> crouchBlendTreeMotions = new List<ChildMotion>();
+            crouchBlendTree.blendType = BlendTreeType.FreeformDirectional2D;
+            crouchBlendTree.blendParameter = "VelocityX";
+            crouchBlendTree.blendParameterY = "VelocityY";
+            crouchBlendTree.name = "LocomotionCrouch";
+            AddChild(crouchBlendTreeMotions, locomotionManager.crouchStill, 0, 0);
+            AddChild(crouchBlendTreeMotions, locomotionManager.crouchForward, 0, 1.25f);
+            AddChild(crouchBlendTreeMotions, locomotionManager.crouchBackward, 0, -1.25f);
+            AddChild(crouchBlendTreeMotions, locomotionManager.crouchLeft, -1.25f, 0);
+            AddChild(crouchBlendTreeMotions, locomotionManager.crouchRight, 1.25f, 0);
+            AddChild(crouchBlendTreeMotions, locomotionManager.crouchForwardLeft, -1.25f, 1.25f);
+            AddChild(crouchBlendTreeMotions, locomotionManager.crouchForwardRight, 1.25f, 1.25f);
+            AddChild(crouchBlendTreeMotions, locomotionManager.crouchBackwardLeft, -1.25f, -1.25f);
+            AddChild(crouchBlendTreeMotions, locomotionManager.crouchBackwardRight, 1.25f, -1.25f);
+            AddChild(crouchBlendTreeMotions, locomotionManager.crouchForward, 0, 1.78f);
+            crouchBlendTree.children = crouchBlendTreeMotions.ToArray();
+
+            BlendTree proneBlendTree = new BlendTree();
+            List<ChildMotion> proneBlendTreeMotions = new List<ChildMotion>();
+            proneBlendTree.blendType = BlendTreeType.FreeformDirectional2D;
+            proneBlendTree.blendParameter = "VelocityX";
+            proneBlendTree.blendParameterY = "VelocityY";
+            proneBlendTree.name = "LocomotionProne";
+            AddChild(proneBlendTreeMotions, locomotionManager.proneStill, 0, 0);
+            AddChild(proneBlendTreeMotions, locomotionManager.proneForward, 0, 0.1f);
+            AddChild(proneBlendTreeMotions, locomotionManager.proneBackward, 0, -0.1f);
+            AddChild(proneBlendTreeMotions, locomotionManager.proneLeft, -0.1f, 0);
+            AddChild(proneBlendTreeMotions, locomotionManager.proneRight, 0.1f, 0);
+            AddChild(proneBlendTreeMotions, locomotionManager.proneForward, 0, 1f);
+            AddChild(proneBlendTreeMotions, locomotionManager.proneBackward, 0, -1f);
+            AddChild(proneBlendTreeMotions, locomotionManager.proneLeft, -1f, 0);
+            AddChild(proneBlendTreeMotions, locomotionManager.proneRight, 1f, 0);
+            proneBlendTree.children = proneBlendTreeMotions.ToArray();
+
+            AssetDatabase.AddObjectToAsset(standBlendTree, locomotionBuilder.controller);
+            AssetDatabase.AddObjectToAsset(crouchBlendTree, locomotionBuilder.controller);
+            AssetDatabase.AddObjectToAsset(proneBlendTree, locomotionBuilder.controller);
+            
+            locomotionBuilder.FindState(locomotionBuilder.baseLayer.stateMachine, "Standing").motion = standBlendTree;
+            locomotionBuilder.FindState(locomotionBuilder.baseLayer.stateMachine, "Crouching").motion = crouchBlendTree;
+            locomotionBuilder.FindState(locomotionBuilder.baseLayer.stateMachine, "Prone").motion = proneBlendTree;
+
+            AnimatorStateMachine jumpStateMachine = locomotionBuilder.FindStateMachine(locomotionBuilder.baseLayer.stateMachine, "JumpAndFall");
+            ReplaceJumpMotion("SmallHop",locomotionManager.shortFall);
+            ReplaceJumpMotion("Short Fall", locomotionManager.shortFall);
+            ReplaceJumpMotion("RestoreToHop", locomotionManager.shortFall);
+            ReplaceJumpMotion("LongFall", locomotionManager.longFall);
+            ReplaceJumpMotion("QuickLand", locomotionManager.quickLand);
+            ReplaceJumpMotion("HardLand", locomotionManager.land);
+            ReplaceJumpMotion("RestoreTracking", locomotionManager.standStill);
+
+            void AddChild(List<ChildMotion> motions, EasyLocomotion locomotion,float x,float y)
+            {
+                motions.Add(new ChildMotion { motion = locomotion.animClip, timeScale = locomotion.speed, mirror = locomotion.mirror, position = new Vector2(x, y) });
+            }
+
+            void ReplaceJumpMotion(string name, EasyLocomotion locomotion)
+            {
+                var state = locomotionBuilder.FindState(jumpStateMachine, name);
+                state.motion = locomotion.animClip;
+                state.speed = locomotion.speed;
+                state.mirror = locomotion.mirror;
+            }
+        }
         
         /// <summary>
         /// 生成所有动画控制器
@@ -144,7 +250,7 @@ namespace EasyAvatar
         {
             {
                 int afkDriverId = driver.GetDriverId("AFK");
-                actionBuilder.AddDrivedState(afkDriverId, "afk", VRCAssets.proxy_afk);
+                actionBuilder.AddDrivedState(afkDriverId, "afk", afk ? afk : VRCAssets.proxy_afk);
                 actionBuilder.AddDrivedStateBehaviour(afkDriverId, VRCStateMachineBehaviourUtility.FullAnimation(), VRCStateMachineBehaviourUtility.ActionLayerControl(1));
                 actionBuilder.AddDrivedState(afkDriverId + 1, "afk_off", VRCAssets.proxy_stand_still);
                 actionBuilder.AddDrivedStateBehaviour(afkDriverId + 1, VRCStateMachineBehaviourUtility.FullTracking(), VRCStateMachineBehaviourUtility.ActionLayerControl(0));
@@ -170,9 +276,19 @@ namespace EasyAvatar
         Dictionary<string, AnimatorControllerLayer> layers;
         AnimationClip initAnimation;
 
-        public AnimatorControllerBuilder(string path)
+        public AnimatorControllerBuilder(string path) : this(AnimatorController.CreateAnimatorControllerAtPath(path))
         {
-            controller = AnimatorController.CreateAnimatorControllerAtPath(path);
+            
+        }
+
+        public AnimatorControllerBuilder(string path, AnimatorController template) : this(Utility.CopyAsset(path,template))
+        {
+            
+        }
+
+        public AnimatorControllerBuilder(AnimatorController controller)
+        {
+            this.controller = controller;
             //controller.layers是复制的
             baseLayer = controller.layers[0];
             drivedMotions = new Dictionary<int, Motion>();
@@ -182,12 +298,13 @@ namespace EasyAvatar
             drivedStateLayer = new Dictionary<int, AnimatorControllerLayer>();
             layers = new Dictionary<string, AnimatorControllerLayer>();
 
-            layers.Add("Base Layer",baseLayer);
+            layers.Add("Base Layer", baseLayer);
 
             AddParameterInt("driver");
             AddParameterFloat("float1");
             AddParameterFloat("float2");
 
+            string path = AssetDatabase.GetAssetPath(controller);
             saveDir = Path.GetDirectoryName(path) + "/" + Path.GetFileNameWithoutExtension(path) + "/";
             Directory.CreateDirectory(saveDir);
         }
@@ -391,6 +508,16 @@ namespace EasyAvatar
             {
                 if (name == childState.state.name)
                     return childState.state;
+            }
+            return null;
+        }
+
+        public AnimatorStateMachine FindStateMachine(AnimatorStateMachine stateMachine, string name)
+        {
+            foreach (var childState in stateMachine.stateMachines)
+            {
+                if (name == childState.stateMachine.name)
+                    return childState.stateMachine;
             }
             return null;
         }

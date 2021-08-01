@@ -56,6 +56,8 @@ namespace EasyAvatar
             BehaviorTypeProperty,
             BehaviorTypeAnim,
             AnimClip,
+            Motion,
+            Speed,
             Mirror,
             AnimMask,
             AnimMaskHead,
@@ -82,6 +84,7 @@ namespace EasyAvatar
             TrackingTypeTracking,
             TrackingTypeAnimation,
             GestureManager,
+            GestureManagerHelpBox,
             GestureBaseAnimation,
             Gesture,
             GestureType,
@@ -102,14 +105,59 @@ namespace EasyAvatar
             DefaultValue,
             BuildSucceed,
             AutoRestore,
-            autoTrackingControl,
+            AutoTrackingControl,
+            LocomotionManager,
+            LocomotionStand,
+            LocomotionProne,
+            LocomotionCrouch,
+            LocomotionJump,
+            LocomotionOther,
+            StandStill,
+            WalkForward,
+            WalkBackward,
+            WalkLeft,
+            WalkRight,
+            WalkForwardLeft,
+            WalkForwardRight,
+            WalkBackwardLeft,
+            WalkBackwardRight,
+            RunForward,
+            RunBackward,
+            RunLeft,
+            RunRight,
+            RunForwardLeft,
+            RunForwardRight,
+            RunBackwardLeft,
+            RunBackwardRight,
+            SprintForward,
+            CrouchStill,
+            CrouchForward,
+            CrouchBackward,
+            CrouchLeft,
+            CrouchRight,
+            CrouchForwardLeft,
+            CrouchForwardRight,
+            CrouchBackwardLeft,
+            CrouchBackwardRight,
+            ProneStill,
+            ProneForward,
+            ProneBackward,
+            ProneLeft,
+            ProneRight,
+            ShortFall,
+            LongFall,
+            QuickLand,
+            Land,
+            AFK,
             About,
             ErrAvatarMenuLen1,
             ErrAvatarGestureManagerLen1,
+            ErrAvatarLocomotionManagerLen1,
             ErrMenuItemLen8,
             ErrMenuPath,
             ErrControlPath,
             ErrGestureManagerPath,
+            ErrLocomotionManagerPath,
             ErrGesturePath,
             ErrAvatarNotSet,
             ErrAvatarHelperInAvatar;
@@ -186,6 +234,8 @@ namespace EasyAvatar
             BehaviorTypeProperty = "修改物体属性";
             BehaviorTypeAnim = "播放动画";
             AnimClip = "动画文件";
+            Motion = "动画";
+            Speed = "速度";
             Mirror = "镜像";
             AnimMask = "动画有效部分";
             AnimMaskHead = "头";
@@ -212,6 +262,7 @@ namespace EasyAvatar
             TrackingTypeTracking = "追踪中";
             TrackingTypeAnimation = "动画中";
             GestureManager = "手势管理";
+            GestureManagerHelpBox = "仅支持基本的手部动画，不支持其他部位动画以及表情。如果需要，请在手势管理下添加手势。";
             GestureBaseAnimation = "基本手势动画";
             Gesture = "手势";
             GestureType = "手势类型";
@@ -232,15 +283,60 @@ namespace EasyAvatar
             DefaultValue = "默认值";
             BuildSucceed = "成功";
             AutoRestore = "关闭时自动恢复修改的内容到默认状态";
-            autoTrackingControl = "自动设置追踪状态";
+            AutoTrackingControl = "自动设置追踪状态";
+            LocomotionManager = "姿态管理";
+            LocomotionStand = "站立姿势";
+            LocomotionProne = "蹲下姿势";
+            LocomotionCrouch = "趴下姿势";
+            LocomotionJump = "跳姿势";
+            LocomotionOther = "其他姿势";
+            StandStill = "站立静止";
+            WalkForward = "走向前";
+            WalkBackward = "走向后";
+            WalkLeft = "走向左";
+            WalkRight = "走向右";
+            WalkForwardLeft = "走向前左";
+            WalkForwardRight = "走向前右";
+            WalkBackwardLeft = "走向后左";
+            WalkBackwardRight = "走向后右";
+            RunForward = "跑向前";
+            RunBackward = "跑向后";
+            RunLeft = "跑向左";
+            RunRight = "跑向右";
+            RunForwardLeft = "跑向前左";
+            RunForwardRight = "跑向前右";
+            RunBackwardLeft = "跑向后左";
+            RunBackwardRight = "跑向后右";
+            SprintForward = "疾跑向前";
+            CrouchStill = "蹲下静止";
+            CrouchForward = "蹲下前进";
+            CrouchBackward = "蹲下后退";
+            CrouchLeft = "蹲下向左";
+            CrouchRight = "蹲下向右";
+            CrouchForwardLeft = "蹲下向前左";
+            CrouchForwardRight = "蹲下向前右";
+            CrouchBackwardLeft = "蹲下向后左";
+            CrouchBackwardRight = "蹲下向后右";
+            ProneStill = "趴下静止";
+            ProneForward = "趴下向前";
+            ProneBackward = "趴下向后";
+            ProneLeft = "趴下向左";
+            ProneRight = "趴下向右";
+            ShortFall = "短时间下落";
+            LongFall = "长时间下落";
+            QuickLand = "快速着陆";
+            Land = "着陆";
+            AFK = "挂机(AFK)";
             About = "由SkyTNT制作\n项目地址：https://github.com/SkyTNT/EasyAvatar3.0/";
             ErrAvatarMenuLen1 = "一个模型中只能有一个主菜单，请考虑创建子菜单";
             ErrAvatarGestureManagerLen1 = "一个模型中只能有一个手势管理";
+            ErrAvatarLocomotionManagerLen1 = "一个模型中只能有一个姿态管理";
             ErrMenuItemLen8 = "菜单中的项目数量不能超过8，请考虑创建子菜单";
             ErrMenuPath = "菜单只能放在模型助手或菜单中";
             ErrControlPath = "控件只能放在菜单中";
             ErrGestureManagerPath = "手势管理只能添加在模型助手下";
             ErrGesturePath = "手势只能添加在手势管理中";
+            ErrLocomotionManagerPath = "姿态管理只能添加在模型助手下";
             ErrAvatarNotSet = "请确保模型助手绑定了模型";
             ErrAvatarHelperInAvatar = "模型助手不能包含在模型里，请放在模型的外边";
         }
@@ -297,6 +393,8 @@ namespace EasyAvatar
             BehaviorTypeProperty = "Change Property";
             BehaviorTypeAnim = "Play Animation";
             AnimClip = "Animation Clip";
+            Motion = "Motion";
+            Speed = "Speed";
             Mirror = "Mirror";
             AnimMask = "Animation Mask";
             AnimMaskHead = "Head";
@@ -323,6 +421,7 @@ namespace EasyAvatar
             TrackingTypeTracking = "Tracking";
             TrackingTypeAnimation = "Animation";
             GestureManager = "Gesture Manager";
+            GestureManagerHelpBox = "Only basic hand animations are supported. Animations of other body parts and facial expressions are not supported. If necessary, please add gestures under the GestureManager.";
             GestureBaseAnimation = "Basic Gesture Animations";
             Gesture = "Gesture";
             GestureType = "Gesture Type";
@@ -340,18 +439,63 @@ namespace EasyAvatar
             LeftHand = "Left Hand";
             RightHand = "Right Hand";
             AnyHand = "Any Hand";
-            DefaultValue = "Default Value";
+            DefaultValue = "Default";
             BuildSucceed = "Succeed";
             AutoRestore = "Auto restore to default state when off";
-            autoTrackingControl = "Auto set tracking state";
+            AutoTrackingControl = "Auto set tracking state";
+            LocomotionManager = "Locomotion Manager";
+            LocomotionStand = "Stand";
+            LocomotionProne = "Crawl";
+            LocomotionCrouch = "Crouch";
+            LocomotionJump = "Jump";
+            LocomotionOther = "Other";
+            StandStill = "Stand Still";
+            WalkForward = "Walk Forward";
+            WalkBackward = "Walk Backward";
+            WalkLeft = "Walk Left";
+            WalkRight = "Walk Right";
+            WalkForwardLeft = "Walk Forward Left";
+            WalkForwardRight = "Walk Forward Right";
+            WalkBackwardLeft = "Walk Backward Left";
+            WalkBackwardRight = "Walk Backward Right";
+            RunForward = "Run Forward";
+            RunBackward = "Run Backward";
+            RunLeft = "Run Left";
+            RunRight = "Run Right";
+            RunForwardLeft = "Run Forward Left";
+            RunForwardRight = "Run Forward Right";
+            RunBackwardLeft = "Run Backward Left";
+            RunBackwardRight = "Run Backward Right";
+            SprintForward = "Sprint Forward";
+            CrouchStill = "Crouch Still";
+            CrouchForward = "Crouch Forward";
+            CrouchBackward = "Crouch Backward";
+            CrouchLeft = "Crouch Left";
+            CrouchRight = "Crouch Right";
+            CrouchForwardLeft = "Crouch Forward Left";
+            CrouchForwardRight = "Crouch Forward Right";
+            CrouchBackwardLeft = "Crouch Backward Left";
+            CrouchBackwardRight = "Crouch Backward Right";
+            ProneStill = "Crawl Still";
+            ProneForward = "Crawl Forward";
+            ProneBackward = "Crawl Backward";
+            ProneLeft = "Crawl Left";
+            ProneRight = "Crawl Right";
+            ShortFall = "Short Fall";
+            LongFall = "Long Fall";
+            QuickLand = "Quick Land";
+            Land = "Land";
+            AFK = "AFK";
             About = " Made by SkyTNT\nProject:https://github.com/SkyTNT/EasyAvatar3.0/";
             ErrAvatarMenuLen1 = "There should only be one main menu in a avatar. Consider creating a submenu.";
             ErrAvatarGestureManagerLen1 = "There should only be one gesture manager in a avatar.";
+            ErrAvatarLocomotionManagerLen1 = "There should only be one locomotion manager in a avatar.";
             ErrMenuItemLen8 = "The number of items in the menu can not exceed 8. Consider creating a submenu.";
             ErrMenuPath = "Menu can only be added to the Avatar Helper or a parent menu";
             ErrControlPath = "Control can only be added to a menu";
             ErrGestureManagerPath = "Gesture Manager can only be added to the Avatar Helper";
             ErrGesturePath = "Gesture can only be added to the Gesture Manager";
+            ErrLocomotionManagerPath = "Locomotion Manager can only be added to the Avatar Helper";
             ErrAvatarNotSet = "Avatar is not set in the Avatar Helper";
             ErrAvatarHelperInAvatar = "Avatar Helper cannot be included in a avatar, Please put it outside the avatar.";
         }

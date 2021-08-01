@@ -14,7 +14,7 @@ namespace EasyAvatar
     public class EasyAvatarBuilder
     {
         public static string workingDirectory = "Assets/EasyAvatar3.0/";
-        string rootBuildDir, menuBuildDir, animBuildDir;
+        string rootBuildDir, menuBuildDir, animBuildDir, templateDir;
         EasyAvatarHelper helper;
         EasyAnimator easyAnimator;
         int controlCount;
@@ -23,6 +23,7 @@ namespace EasyAvatar
         {
             this.helper = helper;
             rootBuildDir = workingDirectory + "Build/" + Utility.GetGoodFileName(helper.avatar.name);
+            templateDir = workingDirectory + "Template/";
             menuBuildDir = rootBuildDir + "/Menu/";
             animBuildDir = rootBuildDir + "/Anim/";
             controlCount = 0;
@@ -37,11 +38,13 @@ namespace EasyAvatar
             VRCAvatarDescriptor avatarDescriptor = helper.avatar.GetComponent<VRCAvatarDescriptor>();
             EasyMenu mainMenu = null;
             EasyGestureManager gestureManager = null;
+            EasyLocomotionManager locomotionManager = null;
 
             foreach (Transform child in helper.gameObject.transform)
             {
                 EasyMenu tempMenu = child.GetComponent<EasyMenu>();
                 EasyGestureManager tempGestureManager = child.GetComponent<EasyGestureManager>();
+                EasyLocomotionManager tempLocomotionManager = child.GetComponent<EasyLocomotionManager>();
                 if (tempMenu)
                 {
                     if (mainMenu)//检测是否有多个主菜单
@@ -54,12 +57,22 @@ namespace EasyAvatar
 
                 if (tempGestureManager)
                 {
-                    if (gestureManager)//检测是否有多个手势菜单
+                    if (gestureManager)//检测是否有多个手势管理
                     {
                         EditorUtility.DisplayDialog("Error", Lang.ErrAvatarGestureManagerLen1, "ok");
                         return;
                     }
                     gestureManager = tempGestureManager;
+                }
+
+                if (tempLocomotionManager)
+                {
+                    if (locomotionManager)//检测是否有多个姿态管理
+                    {
+                        EditorUtility.DisplayDialog("Error", Lang.ErrAvatarLocomotionManagerLen1, "ok");
+                        return;
+                    }
+                    locomotionManager = tempLocomotionManager;
                 }
             }
 
@@ -73,12 +86,16 @@ namespace EasyAvatar
             Directory.CreateDirectory(animBuildDir);
 
             //初始化EasyAnimator
-            easyAnimator = new EasyAnimator(animBuildDir, helper.avatar);
+            easyAnimator = new EasyAnimator(animBuildDir, helper.avatar ,AssetDatabase.LoadAssetAtPath<AnimatorController>(templateDir+ "LocomotionLayer.controller"));
 
 
             //构建手势
             if (gestureManager)
                 BuildGestures(gestureManager);
+
+            //设置姿态
+            if (locomotionManager)
+                easyAnimator.SetLocomotion(locomotionManager);
 
             if (mainMenu)
             {
@@ -114,7 +131,7 @@ namespace EasyAvatar
             //设置CustomizeAnimationLayers
             avatarDescriptor.customizeAnimationLayers = true;
             avatarDescriptor.baseAnimationLayers = new CustomAnimLayer[]{
-                    new CustomAnimLayer(){type = AnimLayerType.Base ,isDefault = true},
+                    new CustomAnimLayer(){type = AnimLayerType.Base ,isDefault = false, animatorController = easyAnimator.locomotionController},
                     new CustomAnimLayer(){type = AnimLayerType.Additive ,isDefault = true},
                     new CustomAnimLayer(){type = AnimLayerType.Gesture ,isDefault = false,animatorController = easyAnimator.gestureController},
                     new CustomAnimLayer(){type = AnimLayerType.Action ,isDefault = false , animatorController = easyAnimator.actionController},

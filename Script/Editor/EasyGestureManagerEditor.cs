@@ -47,7 +47,9 @@ namespace EasyAvatar
             {
                 SetDefaultGesture(serializedObject);
             }
-            
+            EditorGUILayout.HelpBox(Lang.GestureManagerHelpBox, MessageType.Warning);
+
+
             serializedObject.ApplyModifiedProperties();
         }
 

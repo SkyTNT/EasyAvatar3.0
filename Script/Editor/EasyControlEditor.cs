@@ -143,7 +143,7 @@ namespace EasyAvatar
             //是否自动恢复
             autoRestore.boolValue = EditorGUILayout.ToggleLeft(Lang.AutoRestore, autoRestore.boolValue);
             //是否自动设置追踪
-            autoTrackingControl.boolValue = EditorGUILayout.ToggleLeft(Lang.autoTrackingControl, autoTrackingControl.boolValue);
+            autoTrackingControl.boolValue = EditorGUILayout.ToggleLeft(Lang.AutoTrackingControl, autoTrackingControl.boolValue);
 
             if (!autoTrackingControl.boolValue)
             {
