@@ -15,18 +15,20 @@ namespace EasyAvatar
         {
             serializedObject.Update();
             avatar = serializedObject.FindProperty("avatar");
+            EditorGUI.BeginChangeCheck();
+            avatar.objectReferenceValue = EditorGUILayout.ObjectField(Lang.Avatar, avatar.objectReferenceValue, typeof(GameObject), true);
             GameObject avatarObj = (GameObject)avatar.objectReferenceValue;
-            GameObject temp = (GameObject)EditorGUILayout.ObjectField(Lang.Avatar, avatarObj, typeof(GameObject), true);
-
-            if(temp!= avatarObj)
+            if (EditorGUI.EndChangeCheck())
             {
+                //防止设置为自己
+                if(avatarObj.transform == ((EasyAvatarHelper)target).transform)
+                {
+                    avatar.objectReferenceValue = avatarObj = null;
+                }
                 //检测Avatar Helper是否包含在Avatar中，vrchat是不允许avatar包含非白名单内的脚本的。
-                if (temp && ((EasyAvatarHelper)target).transform.IsChildOf(temp.transform))
+                if (avatar.objectReferenceValue&&((EasyAvatarHelper)target).transform.IsChildOf(avatarObj.transform))
                     EditorUtility.DisplayDialog("Error", Lang.ErrAvatarHelperInAvatar, "ok");
-                else
-                    avatar.objectReferenceValue = avatarObj = temp;
             }
-            
             
             if (avatarObj)
             {
@@ -45,7 +47,11 @@ namespace EasyAvatar
                         new EasyAvatarBuilder((EasyAvatarHelper)target).Build();
                     }
                     EditorGUILayout.HelpBox(Lang.AvatarApplyHelpBox, MessageType.Warning);
+
                 }
+                //检测Avatar Helper是否包含在Avatar中，vrchat是不允许avatar包含非白名单内的脚本的。
+                if (((EasyAvatarHelper)target).transform.IsChildOf(avatarObj.transform))
+                    EditorGUILayout.HelpBox(Lang.ErrAvatarHelperInAvatar, MessageType.Error);
             }
 
             serializedObject.ApplyModifiedProperties();

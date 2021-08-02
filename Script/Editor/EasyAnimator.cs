@@ -149,17 +149,31 @@ namespace EasyAvatar
 
         public void SetLocomotion(EasyLocomotionManager locomotionManager)
         {
-            afk = locomotionManager.afk.animClip;
+            EasyLocomotionGroup locomotionGroup = null;
+
+            foreach (Transform child in locomotionManager.gameObject.transform)
+            {
+                EasyLocomotionGroup childLocomotionGroup = child.GetComponent<EasyLocomotionGroup>();
+                if(childLocomotionGroup)
+                {
+                    locomotionGroup = childLocomotionGroup;
+                    break;
+                }
+            }
+            if (!locomotionGroup)
+                return;
+
+            afk = locomotionGroup.afk.animClip;
 
             if (locomotionManager.useAnimatorController)
             {
-                locomotionBuilder.controller = locomotionManager.controller;
+                locomotionBuilder.controller = locomotionManager.controller as AnimatorController;
                 return;
             }
             BlendTree standBlendTree, crouchBlendTree, proneBlendTree;
-            if (locomotionManager.useStandBlendTree)
+            if (locomotionGroup.useStandBlendTree)
             {
-                standBlendTree = locomotionManager.standBlendTree;
+                standBlendTree = locomotionGroup.standBlendTree as BlendTree;
             }
             else
             {
@@ -167,33 +181,33 @@ namespace EasyAvatar
                 List<ChildMotion> standBlendTreeMotions = new List<ChildMotion>();
                 standBlendTree.blendType = BlendTreeType.FreeformDirectional2D;
                 standBlendTree.blendParameter = "VelocityX";
-                standBlendTree.blendParameterY = "VelocityY";
+                standBlendTree.blendParameterY = "VelocityZ";
                 standBlendTree.name = "LocomotionStand";
-                AddChild(standBlendTreeMotions, locomotionManager.standStill, 0, 0);
-                AddChild(standBlendTreeMotions, locomotionManager.walkForward, 0, 1.56f);
-                AddChild(standBlendTreeMotions, locomotionManager.walkBackward, 0, -1.61f);
-                AddChild(standBlendTreeMotions, locomotionManager.walkLeft, -1.56f, 0);
-                AddChild(standBlendTreeMotions, locomotionManager.walkRight, 1.56f, 0);
-                AddChild(standBlendTreeMotions, locomotionManager.walkForwardLeft, -1.1f, 1.1f);
-                AddChild(standBlendTreeMotions, locomotionManager.walkForwardRight, 1.1f, 1.1f);
-                AddChild(standBlendTreeMotions, locomotionManager.walkBackwardLeft, -1.1f, -1.1f);
-                AddChild(standBlendTreeMotions, locomotionManager.walkBackwardRight, 1.1f, -1.1f);
-                AddChild(standBlendTreeMotions, locomotionManager.runForward, 0, 3.4f);
-                AddChild(standBlendTreeMotions, locomotionManager.runBackward, 0, -2.1f);
-                AddChild(standBlendTreeMotions, locomotionManager.runLeft, -3, 0);
-                AddChild(standBlendTreeMotions, locomotionManager.runRight, 3, 0);
-                AddChild(standBlendTreeMotions, locomotionManager.runForwardLeft, -2.44f, 2.44f);
-                AddChild(standBlendTreeMotions, locomotionManager.runForwardRight, 2.44f, 2.44f);
-                AddChild(standBlendTreeMotions, locomotionManager.runBackwardLeft, -1.5f, -1.5f);
-                AddChild(standBlendTreeMotions, locomotionManager.runBackwardRight, 1.5f, -1.5f);
-                AddChild(standBlendTreeMotions, locomotionManager.runForward, 0, 5.96f);
+                AddChild(standBlendTreeMotions, locomotionGroup.standStill, 0, 0);
+                AddChild(standBlendTreeMotions, locomotionGroup.walkForward, 0, 1.56f);
+                AddChild(standBlendTreeMotions, locomotionGroup.walkBackward, 0, -1.61f);
+                AddChild(standBlendTreeMotions, locomotionGroup.walkLeft, -1.56f, 0);
+                AddChild(standBlendTreeMotions, locomotionGroup.walkRight, 1.56f, 0);
+                AddChild(standBlendTreeMotions, locomotionGroup.walkForwardLeft, -1.1f, 1.1f);
+                AddChild(standBlendTreeMotions, locomotionGroup.walkForwardRight, 1.1f, 1.1f);
+                AddChild(standBlendTreeMotions, locomotionGroup.walkBackwardLeft, -1.1f, -1.1f);
+                AddChild(standBlendTreeMotions, locomotionGroup.walkBackwardRight, 1.1f, -1.1f);
+                AddChild(standBlendTreeMotions, locomotionGroup.runForward, 0, 3.4f);
+                AddChild(standBlendTreeMotions, locomotionGroup.runBackward, 0, -2.1f);
+                AddChild(standBlendTreeMotions, locomotionGroup.runLeft, -3, 0);
+                AddChild(standBlendTreeMotions, locomotionGroup.runRight, 3, 0);
+                AddChild(standBlendTreeMotions, locomotionGroup.runForwardLeft, -2.44f, 2.44f);
+                AddChild(standBlendTreeMotions, locomotionGroup.runForwardRight, 2.44f, 2.44f);
+                AddChild(standBlendTreeMotions, locomotionGroup.runBackwardLeft, -1.5f, -1.5f);
+                AddChild(standBlendTreeMotions, locomotionGroup.runBackwardRight, 1.5f, -1.5f);
+                AddChild(standBlendTreeMotions, locomotionGroup.runForward, 0, 5.96f);
                 standBlendTree.children = standBlendTreeMotions.ToArray();
                 AssetDatabase.AddObjectToAsset(standBlendTree, locomotionBuilder.controller);
             }
 
-            if (locomotionManager.useCrouchBlendTree)
+            if (locomotionGroup.useCrouchBlendTree)
             {
-                crouchBlendTree = locomotionManager.crouchBlendTree;
+                crouchBlendTree = locomotionGroup.crouchBlendTree as BlendTree;
             }
             else
             {
@@ -201,25 +215,25 @@ namespace EasyAvatar
                 List<ChildMotion> crouchBlendTreeMotions = new List<ChildMotion>();
                 crouchBlendTree.blendType = BlendTreeType.FreeformDirectional2D;
                 crouchBlendTree.blendParameter = "VelocityX";
-                crouchBlendTree.blendParameterY = "VelocityY";
+                crouchBlendTree.blendParameterY = "VelocityZ";
                 crouchBlendTree.name = "LocomotionCrouch";
-                AddChild(crouchBlendTreeMotions, locomotionManager.crouchStill, 0, 0);
-                AddChild(crouchBlendTreeMotions, locomotionManager.crouchForward, 0, 1.25f);
-                AddChild(crouchBlendTreeMotions, locomotionManager.crouchBackward, 0, -1.25f);
-                AddChild(crouchBlendTreeMotions, locomotionManager.crouchLeft, -1.25f, 0);
-                AddChild(crouchBlendTreeMotions, locomotionManager.crouchRight, 1.25f, 0);
-                AddChild(crouchBlendTreeMotions, locomotionManager.crouchForwardLeft, -1.25f, 1.25f);
-                AddChild(crouchBlendTreeMotions, locomotionManager.crouchForwardRight, 1.25f, 1.25f);
-                AddChild(crouchBlendTreeMotions, locomotionManager.crouchBackwardLeft, -1.25f, -1.25f);
-                AddChild(crouchBlendTreeMotions, locomotionManager.crouchBackwardRight, 1.25f, -1.25f);
-                AddChild(crouchBlendTreeMotions, locomotionManager.crouchForward, 0, 1.78f);
+                AddChild(crouchBlendTreeMotions, locomotionGroup.crouchStill, 0, 0);
+                AddChild(crouchBlendTreeMotions, locomotionGroup.crouchForward, 0, 1.25f);
+                AddChild(crouchBlendTreeMotions, locomotionGroup.crouchBackward, 0, -1.25f);
+                AddChild(crouchBlendTreeMotions, locomotionGroup.crouchLeft, -1.25f, 0);
+                AddChild(crouchBlendTreeMotions, locomotionGroup.crouchRight, 1.25f, 0);
+                AddChild(crouchBlendTreeMotions, locomotionGroup.crouchForwardLeft, -1.25f, 1.25f);
+                AddChild(crouchBlendTreeMotions, locomotionGroup.crouchForwardRight, 1.25f, 1.25f);
+                AddChild(crouchBlendTreeMotions, locomotionGroup.crouchBackwardLeft, -1.25f, -1.25f);
+                AddChild(crouchBlendTreeMotions, locomotionGroup.crouchBackwardRight, 1.25f, -1.25f);
+                AddChild(crouchBlendTreeMotions, locomotionGroup.crouchForward, 0, 1.78f);
                 crouchBlendTree.children = crouchBlendTreeMotions.ToArray();
                 AssetDatabase.AddObjectToAsset(crouchBlendTree, locomotionBuilder.controller);
             }
 
-            if (locomotionManager.useProneBlendTree)
+            if (locomotionGroup.useProneBlendTree)
             {
-                proneBlendTree = locomotionManager.proneBlendTree;
+                proneBlendTree = locomotionGroup.proneBlendTree as BlendTree;
             }
             else
             {
@@ -227,27 +241,46 @@ namespace EasyAvatar
                 List<ChildMotion> proneBlendTreeMotions = new List<ChildMotion>();
                 proneBlendTree.blendType = BlendTreeType.FreeformDirectional2D;
                 proneBlendTree.blendParameter = "VelocityX";
-                proneBlendTree.blendParameterY = "VelocityY";
+                proneBlendTree.blendParameterY = "VelocityZ";
                 proneBlendTree.name = "LocomotionProne";
-                AddChild(proneBlendTreeMotions, locomotionManager.proneStill, 0, 0);
-                AddChild(proneBlendTreeMotions, locomotionManager.proneForward, 0, 0.1f);
-                AddChild(proneBlendTreeMotions, locomotionManager.proneBackward, 0, -0.1f);
-                AddChild(proneBlendTreeMotions, locomotionManager.proneLeft, -0.1f, 0);
-                AddChild(proneBlendTreeMotions, locomotionManager.proneRight, 0.1f, 0);
-                AddChild(proneBlendTreeMotions, locomotionManager.proneForward, 0, 1f);
-                AddChild(proneBlendTreeMotions, locomotionManager.proneBackward, 0, -1f);
-                AddChild(proneBlendTreeMotions, locomotionManager.proneLeft, -1f, 0);
-                AddChild(proneBlendTreeMotions, locomotionManager.proneRight, 1f, 0);
+                AddChild(proneBlendTreeMotions, locomotionGroup.proneStill, 0, 0);
+                AddChild(proneBlendTreeMotions, locomotionGroup.proneForward, 0, 0.1f);
+                AddChild(proneBlendTreeMotions, locomotionGroup.proneBackward, 0, -0.1f);
+                AddChild(proneBlendTreeMotions, locomotionGroup.proneLeft, -0.1f, 0);
+                AddChild(proneBlendTreeMotions, locomotionGroup.proneRight, 0.1f, 0);
+                AddChild(proneBlendTreeMotions, locomotionGroup.proneForward, 0, 1f);
+                AddChild(proneBlendTreeMotions, locomotionGroup.proneBackward, 0, -1f);
+                AddChild(proneBlendTreeMotions, locomotionGroup.proneLeft, -1f, 0);
+                AddChild(proneBlendTreeMotions, locomotionGroup.proneRight, 1f, 0);
                 proneBlendTree.children = proneBlendTreeMotions.ToArray();
                 AssetDatabase.AddObjectToAsset(proneBlendTree, locomotionBuilder.controller);
             }
-            
-            locomotionBuilder.FindState(locomotionBuilder.baseLayer.stateMachine, "Standing").motion = standBlendTree;
-            locomotionBuilder.FindState(locomotionBuilder.baseLayer.stateMachine, "Crouching").motion = crouchBlendTree;
-            locomotionBuilder.FindState(locomotionBuilder.baseLayer.stateMachine, "Prone").motion = proneBlendTree;
+
+            string locomotinControllerPath = AssetDatabase.GetAssetPath(locomotionBuilder.controller);
+
+            AnimatorState standState = locomotionBuilder.FindState(locomotionBuilder.baseLayer.stateMachine, "Standing");
+            VRCAnimatorTrackingControl standTracking = VRCStateMachineBehaviourUtility.GetTrackingControl(locomotionGroup.standTracking);
+            standTracking.hideFlags = HideFlags.HideInHierarchy;
+            AssetDatabase.AddObjectToAsset(standTracking, locomotinControllerPath);
+            standState.motion = standBlendTree;
+            standState.behaviours = new StateMachineBehaviour[] { standTracking };
+
+            AnimatorState crouchState = locomotionBuilder.FindState(locomotionBuilder.baseLayer.stateMachine, "Crouching");
+            VRCAnimatorTrackingControl crouchTracking = VRCStateMachineBehaviourUtility.GetTrackingControl(locomotionGroup.crouchTracking);
+            crouchTracking.hideFlags = HideFlags.HideInHierarchy;
+            AssetDatabase.AddObjectToAsset(crouchTracking, locomotinControllerPath);
+            crouchState.motion = crouchBlendTree;
+            crouchState.behaviours = new StateMachineBehaviour[] { crouchTracking };
+
+            AnimatorState proneState = locomotionBuilder.FindState(locomotionBuilder.baseLayer.stateMachine, "Prone");
+            VRCAnimatorTrackingControl proneTracking = VRCStateMachineBehaviourUtility.GetTrackingControl(locomotionGroup.proneTracking);
+            proneTracking.hideFlags = HideFlags.HideInHierarchy;
+            AssetDatabase.AddObjectToAsset(proneTracking, locomotinControllerPath);
+            proneState.motion = proneBlendTree;
+            proneState.behaviours = new StateMachineBehaviour[] { proneTracking };
 
             EasyLocomotion standStill = new EasyLocomotion { animClip = null, speed = 1, mirror = false };
-            //查找stand_still
+            //查找stand_still,因为勾选使用blendTree时不能获取standStill
             {
                 float minDistance = 1000;
                 foreach (var child in standBlendTree.children)
@@ -262,15 +295,13 @@ namespace EasyAvatar
 
                 }
             }
-            
-
             AnimatorStateMachine jumpStateMachine = locomotionBuilder.FindStateMachine(locomotionBuilder.baseLayer.stateMachine, "JumpAndFall");
-            ReplaceJumpMotion("SmallHop",locomotionManager.shortFall);
-            ReplaceJumpMotion("Short Fall", locomotionManager.shortFall);
-            ReplaceJumpMotion("RestoreToHop", locomotionManager.shortFall);
-            ReplaceJumpMotion("LongFall", locomotionManager.longFall);
-            ReplaceJumpMotion("QuickLand", locomotionManager.quickLand);
-            ReplaceJumpMotion("HardLand", locomotionManager.land);
+            ReplaceJumpMotion("SmallHop",locomotionGroup.shortFall);
+            ReplaceJumpMotion("Short Fall", locomotionGroup.shortFall);
+            ReplaceJumpMotion("RestoreToHop", locomotionGroup.shortFall);
+            ReplaceJumpMotion("LongFall", locomotionGroup.longFall);
+            ReplaceJumpMotion("QuickLand", locomotionGroup.quickLand);
+            ReplaceJumpMotion("HardLand", locomotionGroup.land);
             ReplaceJumpMotion("RestoreTracking", standStill);
 
             void AddChild(List<ChildMotion> motions, EasyLocomotion locomotion,float x,float y)

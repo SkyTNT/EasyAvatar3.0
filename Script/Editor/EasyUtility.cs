@@ -11,6 +11,8 @@ namespace EasyAvatar
 
     public class Utility
     {
+
+
         /// <summary>
         /// 去除文件名的非法字符
         /// </summary>
@@ -64,7 +66,7 @@ namespace EasyAvatar
         /// </summary>
         /// <param name="behaviors">behaviors</param>
         /// <returns>动画</returns>
-        public static AnimationClip GenerateAnimClip(List<EasyBehavior> behaviors)
+        public static AnimationClip GenerateAnimClip(List<EasyBehavior> behaviors, bool preview = false)
         {
             AnimationClip clip = new AnimationClip();
             clip.frameRate = 60;
@@ -137,10 +139,29 @@ namespace EasyAvatar
                 {
                     if (propertyGroup.targetPath == "")
                         continue;
-                    EditorCurveBinding binding = EditorCurveBinding.FloatCurve(propertyGroup.targetPath,true.GetType(), "m_IsActive");
+
+                    EditorCurveBinding binding = EditorCurveBinding.FloatCurve(propertyGroup.targetPath, typeof(GameObject), "m_IsActive");
                     float value = behavior.isActive ? 1 : 0;
                     AnimationUtility.SetEditorCurve(clip, binding, AnimationCurve.Linear(0, value, 1.0f / 60, value));
                 }
+                else if (behavior.type == EasyBehavior.Type.ToggleMusic)
+                {
+                    if (!behavior.audio||preview)
+                        continue;
+                    string path = EasyAvatarAsset.GetPathRelateToAvatar(behavior.audio);
+                    EditorCurveBinding binding = EditorCurveBinding.FloatCurve(path, typeof(GameObject), "m_IsActive");
+                    float value = behavior.isActive ? 1 : 0;
+                    AnimationUtility.SetEditorCurve(clip, binding, AnimationCurve.Linear(0, value, 1.0f / 60, value));
+                }
+                else if (behavior.type == EasyBehavior.Type.MusicVolume)
+                {
+                    if (!behavior.audio || preview)
+                        continue;
+                    string path = EasyAvatarAsset.GetPathRelateToAvatar(behavior.audio);
+                    EditorCurveBinding binding = EditorCurveBinding.FloatCurve(path, typeof(AudioSource), "m_Volume");
+                    AnimationUtility.SetEditorCurve(clip, binding, AnimationCurve.Linear(0, behavior.volume, 1.0f / 60, behavior.volume));
+                }
+
             }
 
             return clip;

@@ -69,6 +69,7 @@ namespace EasyAvatar
             AnimMaskRightLeg,
             AnimMaskLeftLeg,
             AnimMaskFx,
+            TrackingControl,
             TrackingAll,
             TrackingHead,
             TrackingMouth,
@@ -113,11 +114,15 @@ namespace EasyAvatar
             AutoRestore,
             AutoTrackingControl,
             LocomotionManager,
+            LocomotionGroup,
             LocomotionStand,
             LocomotionProne,
             LocomotionCrouch,
             LocomotionJump,
             LocomotionOther,
+            LocomotionTrackingNote,
+            LocomotionVersionNote,
+            LocomotionControllerNote,
             UseController,
             UseBlendTree,
             AnimatorController,
@@ -168,6 +173,7 @@ namespace EasyAvatar
             ErrControlPath,
             ErrGestureManagerPath,
             ErrLocomotionManagerPath,
+            ErrLocomotionGroupPath,
             ErrGesturePath,
             ErrAvatarNotSet,
             ErrAvatarHelperInAvatar;
@@ -257,6 +263,7 @@ namespace EasyAvatar
             AnimMaskRightLeg  = "右脚";
             AnimMaskLeftLeg  = "左脚";
             AnimMaskFx = "非人体";
+            TrackingControl = "追踪设置";
             TrackingAll = "全部";
             TrackingHead = "头";
             TrackingMouth = "嘴";
@@ -301,11 +308,15 @@ namespace EasyAvatar
             AutoRestore = "关闭时自动恢复修改的内容到默认状态";
             AutoTrackingControl = "自动设置追踪状态";
             LocomotionManager = "姿态管理";
+            LocomotionGroup = "姿态组";
             LocomotionStand = "站立姿势";
-            LocomotionProne = "蹲下姿势";
-            LocomotionCrouch = "趴下姿势";
+            LocomotionCrouch = "蹲下姿势";
+            LocomotionProne = "趴下姿势";
             LocomotionJump = "跳姿势";
             LocomotionOther = "其他姿势";
+            LocomotionTrackingNote = "如果出现模型陷入地下等高度位置不正常的情况，需要在对应‘追踪设置’中把头部和臀部追踪设置为‘动画中’";
+            LocomotionVersionNote = "当前版本只支持一套姿势";
+            LocomotionControllerNote = "如果使用动画状态机，姿态管理下的姿势都不会起作用";
             UseController = "是否使用动画控制器";
             UseBlendTree = "是否使用混合树";
             AnimatorController = "动画控制器";
@@ -357,6 +368,7 @@ namespace EasyAvatar
             ErrGestureManagerPath = "手势管理只能添加在模型助手下";
             ErrGesturePath = "手势只能添加在手势管理中";
             ErrLocomotionManagerPath = "姿态管理只能添加在模型助手下";
+            ErrLocomotionGroupPath = "姿态组只能放在姿态管理中";
             ErrAvatarNotSet = "请确保模型助手绑定了模型";
             ErrAvatarHelperInAvatar = "模型助手不能包含在模型里，请放在模型的外边";
         }
@@ -426,6 +438,7 @@ namespace EasyAvatar
             AnimMaskRightLeg = "Right Leg";
             AnimMaskLeftLeg = "Left Leg";
             AnimMaskFx = "FX";
+            TrackingControl = "Tracking Control";
             TrackingAll = "All";
             TrackingHead = "Head";
             TrackingMouth = "Mouth";
@@ -470,11 +483,15 @@ namespace EasyAvatar
             AutoRestore = "Auto restore to default state when off";
             AutoTrackingControl = "Auto set tracking state";
             LocomotionManager = "Locomotion Manager";
+            LocomotionGroup = "Locomotion Group";
             LocomotionStand = "Stand";
-            LocomotionProne = "Crawl";
             LocomotionCrouch = "Crouch";
+            LocomotionProne = "Crawl";
             LocomotionJump = "Jump";
             LocomotionOther = "Other";
+            LocomotionTrackingNote = "If the model falls into the ground , it is necessary to set the hip tracking and head tracking to \"animation\" in the corresponding \"tracking control\"";
+            LocomotionVersionNote = "The current version only supports one set of locomotions.";
+            LocomotionControllerNote = "If you use the animatior controller, the locomotions under Locomotion Manager will not work.";
             UseController = "Use AnimatorController";
             UseBlendTree = "Use BlendTree";
             AnimatorController = "AnimatorController";
@@ -526,6 +543,7 @@ namespace EasyAvatar
             ErrGestureManagerPath = "Gesture Manager can only be added to the Avatar Helper";
             ErrGesturePath = "Gesture can only be added to the Gesture Manager";
             ErrLocomotionManagerPath = "Locomotion Manager can only be added to the Avatar Helper";
+            ErrLocomotionGroupPath = "Locomotion Group can only be added to the Locomotion Manager";
             ErrAvatarNotSet = "Avatar is not set in the Avatar Helper";
             ErrAvatarHelperInAvatar = "Avatar Helper cannot be included in a avatar, Please put it outside the avatar.";
         }

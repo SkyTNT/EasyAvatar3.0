@@ -88,6 +88,37 @@ namespace EasyAvatar
             //初始化EasyAnimator
             easyAnimator = new EasyAnimator(animBuildDir, helper.avatar ,AssetDatabase.LoadAssetAtPath<AnimatorController>(templateDir+ "LocomotionLayer.controller"));
 
+            //初始化EasyAvatarAsset
+            EasyAvatarAsset.Init();
+            {
+                //清除之前Avatar上的EasyAvatarAsset
+                Transform d = helper.avatar.transform.Find(EasyAvatarAsset.AssetRootName);
+                if (d)
+                    Object.DestroyImmediate(d.gameObject);
+            }
+            GameObject assetRoot = new GameObject(EasyAvatarAsset.AssetRootName);
+            assetRoot.transform.parent = helper.avatar.transform;
+
+            EasyAvatarAsset.AddAssetToAvatar = (Object asset) =>
+            {
+                if (asset is AudioClip)
+                {
+                    GameObject audioObject = new GameObject(EasyAvatarAsset.GetNameInAvatar(asset));
+                    audioObject.transform.parent = assetRoot.transform;
+                    audioObject.AddComponent<AudioSource>();
+                    AudioClip audioClip = asset as AudioClip;
+                    AudioSource audioSource = audioObject.GetComponent<AudioSource>();
+                    audioSource.clip = audioClip;
+                    audioSource.volume = 0.836f;
+                    audioSource.spatialBlend = 1;
+                    audioSource.rolloffMode = AudioRolloffMode.Linear;
+                    audioSource.minDistance = 4.95f;
+                    audioSource.maxDistance = 5;
+                    audioObject.SetActive(false);
+
+
+                }
+            };
 
             //构建手势
             if (gestureManager)

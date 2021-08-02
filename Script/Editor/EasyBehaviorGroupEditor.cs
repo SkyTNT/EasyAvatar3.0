@@ -133,7 +133,7 @@ namespace EasyAvatar
             if (previewing != this || !AnimationMode.InAnimationMode() || !avatar)
                 return;
             AnimationMode.BeginSampling();
-            AnimationClip previewClip = Utility.GenerateAnimClip(behaviors.GetObject<List<EasyBehavior>>());
+            AnimationClip previewClip = Utility.GenerateAnimClip(behaviors.GetObject<List<EasyBehavior>>(), true);
             //if (useAnimClip)
             //   previewClip = Utility.MergeAnimClip(Utility.MergeAnimClip(animClips), previewClip);
             AnimationMode.SampleAnimationClip(avatar, previewClip, 0);

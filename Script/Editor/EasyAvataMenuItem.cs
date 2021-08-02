@@ -20,12 +20,16 @@ namespace EasyAvatar
         public static bool CerateTemplate()
         {
             GameObject helper = CreateObject<EasyAvatarHelper>(Lang.AvatarHelper);
-            GameObject menu = CreateObject<EasyMenu>(Lang.MainMenu);
+            CreateObject<EasyMenu>(Lang.MainMenu);
             CreateObject<EasyControl>(Lang.Control);
             Selection.activeGameObject = helper;
             GameObject gestureManager = CreateObject<EasyGestureManager>(Lang.GestureManager);
             EasyGestureManagerEditor.SetDefaultGesture(new SerializedObject(gestureManager.GetComponent<EasyGestureManager>()));
             CreateObject<EasyGesture>(Lang.Gesture);
+            Selection.activeGameObject = helper;
+            CreateObject<EasyLocomotionManager>(Lang.LocomotionManager);
+            GameObject locomotionGroup = CreateObject<EasyLocomotionGroup>(Lang.LocomotionGroup);
+            EasyLocomotionGroupEditor.SetAllDefaultLocomotion(new SerializedObject(locomotionGroup.GetComponent<EasyLocomotionGroup>()));
             Selection.activeGameObject = helper;
             return true;
         }
@@ -165,10 +169,34 @@ namespace EasyAvatar
                     return false;
                 }
                 GameObject gameObject = CreateObject<EasyLocomotionManager>(Lang.LocomotionManager);
-                EasyLocomotionManagerEditor.SetAllDefaultLocomotion(new SerializedObject(gameObject.GetComponent<EasyLocomotionManager>()));
+                EasyLocomotionGroupEditor.SetAllDefaultLocomotion(new SerializedObject(gameObject.GetComponent<EasyLocomotionManager>()));
                 return true;
             }
             EditorUtility.DisplayDialog("Error", Lang.ErrLocomotionManagerPath, "ok");
+            return false;
+        }
+
+        /// <summary>
+        /// 创建姿态组
+        /// </summary>
+        /// <returns></returns>
+        [MenuItem("GameObject/EasyAvatar3.0/Locomotion Group(姿态组)", priority = 0)]
+        public static bool CreateLocomotionGroup()
+        {
+            
+            if (Selection.activeGameObject)
+            {
+                
+                //检查是否在菜单控件
+                if (!Selection.activeGameObject.transform.GetComponent<EasyLocomotionManager>())
+                {
+                    EditorUtility.DisplayDialog("Error", Lang.ErrLocomotionGroupPath, "ok");
+                    return false;
+                }
+                CreateObject<EasyControl>(Lang.Control);
+                return true;
+            }
+            EditorUtility.DisplayDialog("Error", Lang.ErrLocomotionGroupPath, "ok");
             return false;
         }
 
