@@ -76,9 +76,10 @@ namespace EasyAvatar
             for (int i = 0; i < behaviorsCount; i++)
             {
                 EasyBehavior behavior = behaviors[i];
+                EasyPropertyGroup propertyGroup = behavior.propertyGroup;
                 if (behavior.type == EasyBehavior.Type.Property)
                 {
-                    EasyPropertyGroup propertyGroup = behavior.propertyGroup;
+                    
                     List<EasyProperty> properties = propertyGroup.properties;
                     for (int j = 0; j < properties.Count; j++)
                     {
@@ -131,6 +132,14 @@ namespace EasyAvatar
                             if (CheckCurveBinding(binding, behavior.mask))
                                 AnimationUtility.SetObjectReferenceCurve(clip, binding, AnimationUtility.GetObjectReferenceCurve(behavior.anim, binding));
                     }
+                }
+                else if (behavior.type == EasyBehavior.Type.ToggleObject)
+                {
+                    if (propertyGroup.targetPath == "")
+                        continue;
+                    EditorCurveBinding binding = EditorCurveBinding.FloatCurve(propertyGroup.targetPath,true.GetType(), "m_IsActive");
+                    float value = behavior.isActive ? 1 : 0;
+                    AnimationUtility.SetEditorCurve(clip, binding, AnimationCurve.Linear(0, value, 1.0f / 60, value));
                 }
             }
 

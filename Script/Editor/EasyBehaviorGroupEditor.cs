@@ -19,7 +19,7 @@ namespace EasyAvatar
         SerializedProperty behaviors;
         ReorderableList behaviorsList;
 
-        int[] typeIndex = { 0, 1 };
+        int[] typeIndex = { 0, 1, 2, 3, 4 };
 
         public EasyBehaviorGroupEditor(SerializedProperty behaviors)
         {
@@ -169,12 +169,27 @@ namespace EasyAvatar
             };
 
             GUI.Label(typeLabelRect, Lang.BehaviorType);
-            type.enumValueIndex = EditorGUI.IntPopup(typeFieldRect, "", type.enumValueIndex, new string[] { Lang.BehaviorTypeProperty, Lang.BehaviorTypeAnim }, typeIndex);
+            type.enumValueIndex = EditorGUI.IntPopup(typeFieldRect, "", type.enumValueIndex, new string[] { Lang.BehaviorTypeProperty, Lang.BehaviorTypeAnim ,Lang.ToggleMusic,Lang.MusicVolume,Lang.ToggleObject}, typeIndex);
+            
 
-            if (type.enumValueIndex == (int)EasyBehavior.Type.Property)
-                PropertyTypeBehaviorLayout(layoutRect, behavior);
-            else if (type.enumValueIndex == (int)EasyBehavior.Type.AnimationClip)
-                AnimTypeBehaviorLayout(layoutRect, behavior);
+            switch ((EasyBehavior.Type)type.enumValueIndex)
+            {
+                case EasyBehavior.Type.Property:
+                    PropertyTypeBehaviorLayout(layoutRect, behavior);
+                    break;
+                case EasyBehavior.Type.AnimationClip:
+                    AnimTypeBehaviorLayout(layoutRect, behavior);
+                    break;
+                case EasyBehavior.Type.ToggleMusic:
+                    ToggleMusicTypeBehaviorLayout(layoutRect, behavior);
+                    break;
+                case EasyBehavior.Type.MusicVolume:
+                    MusicVolumeTypeBehaviorLayout(layoutRect, behavior);
+                    break;
+                case EasyBehavior.Type.ToggleObject:
+                    ToggleObjectTypeBehaviorLayout(layoutRect, behavior);
+                    break;
+            }
         }
 
         public void PropertyTypeBehaviorLayout(Rect position, SerializedProperty behavior)
@@ -183,16 +198,7 @@ namespace EasyAvatar
             SerializedProperty targetPath = propertyGroup.FindPropertyRelative("targetPath");
             SerializedProperty properties = propertyGroup.FindPropertyRelative("properties");
 
-            GameObject tempTarget = null, newTarget = null;
-            //获取目标物体
-            if (avatar && targetPath.stringValue != "")
-            {
-                Transform tempTransform = avatar.transform.Find(targetPath.stringValue);
-                if (tempTransform)
-                    tempTarget = tempTransform.gameObject;
-            }
-            //当前avatar是否缺失目标物体（因为是目标物体相对于avatar的）
-            bool isMissing = !tempTarget && targetPath.stringValue != "";
+            
             //计算布局
             position.y += 3;
             position.height = EditorGUIUtility.singleLineHeight;
@@ -231,24 +237,10 @@ namespace EasyAvatar
                 width = position.width - valueLabelRect.width
             };
 
-            //目标物体
-            EditorGUI.LabelField(targetLabelRect, Lang.Target);
-            newTarget = (GameObject)EditorGUI.ObjectField(targetFieldRect, tempTarget, typeof(GameObject), true);
-
-            //目标物体缺失
-            if (isMissing)
-            {
-                Rect missingRect = new Rect(targetFieldRect) { width = targetFieldRect.width - targetFieldRect.height - 2 };
-                GUI.Box(missingRect, GUIContent.none, "Tag MenuItem");
-                EditorGUI.LabelField(missingRect, Lang.Missing + ":" + targetPath.stringValue, MyGUIStyle.yellowLabel);
-            }
             //当修改目标时
-            if (newTarget != tempTarget)
+            if (TargetObjectField(targetLabelRect, targetFieldRect, targetPath, out GameObject tempTarget))
             {
-                if (!avatar)
-                    EditorUtility.DisplayDialog("Error", Lang.ErrAvatarNotSet, "ok");
-                else
-                    targetPath.stringValue = CalculateGameObjectPath(newTarget);
+
 
                 //当前属性不在新目标中存在则删除属性
                 if (properties.arraySize > 0 && !HasPropertyGroup(avatar, propertyGroup))
@@ -267,6 +259,42 @@ namespace EasyAvatar
             PropertyValueField(valueFieldRect, propertyGroup);
         }
 
+
+        public bool TargetObjectField(Rect targetLabelRect, Rect targetFieldRect, SerializedProperty targetPath, out GameObject tempTarget)
+        {
+            GameObject newTarget = null;
+            tempTarget = null;
+            //获取目标物体
+            if (avatar && targetPath.stringValue != "")
+            {
+                Transform tempTransform = avatar.transform.Find(targetPath.stringValue);
+                if (tempTransform)
+                    tempTarget = tempTransform.gameObject;
+            }
+            //当前avatar是否缺失目标物体（因为是目标物体相对于avatar的）
+            bool isMissing = !tempTarget && targetPath.stringValue != "";
+            //目标物体
+            EditorGUI.LabelField(targetLabelRect, Lang.Target);
+            newTarget = (GameObject)EditorGUI.ObjectField(targetFieldRect, tempTarget, typeof(GameObject), true);
+
+            //目标物体缺失
+            if (isMissing)
+            {
+                Rect missingRect = new Rect(targetFieldRect) { width = targetFieldRect.width - targetFieldRect.height - 2 };
+                GUI.Box(missingRect, GUIContent.none, "Tag MenuItem");
+                EditorGUI.LabelField(missingRect, Lang.Missing + ":" + targetPath.stringValue, MyGUIStyle.yellowLabel);
+            }
+
+            if (newTarget != tempTarget)
+            {
+                if (!avatar)
+                    EditorUtility.DisplayDialog("Error", Lang.ErrAvatarNotSet, "ok");
+                else
+                    targetPath.stringValue = CalculateGameObjectPath(newTarget);
+            }
+
+            return newTarget != tempTarget;
+        }
 
         public void AnimTypeBehaviorLayout(Rect position, SerializedProperty behavior)
         {
@@ -321,6 +349,117 @@ namespace EasyAvatar
             //暂未完善
             //GUI.Label(mirrorLabelRect, Lang.Mirror);
             //EditorGUI.PropertyField(mirrorFieldRect, mirror, GUIContent.none);
+        }
+
+        public void ToggleMusicTypeBehaviorLayout(Rect position, SerializedProperty behavior)
+        {
+            SerializedProperty audio = behavior.FindPropertyRelative("audio");
+            SerializedProperty isActive = behavior.FindPropertyRelative("isActive");
+
+            position.y += 3;
+            position.height = EditorGUIUtility.singleLineHeight;
+
+
+            Rect audioLabelRect = new Rect(position)
+            {
+                width = Mathf.Max(position.width / 4, 50)
+            };
+            Rect audioFieldRect = new Rect(position)
+            {
+                x = audioLabelRect.x + audioLabelRect.width,
+                width = position.width - audioLabelRect.width
+
+            };
+            Rect toggleLabel = new Rect(position)
+            {
+                y = position.y + position.height + 6,
+                width = Mathf.Max(position.width / 4, 50)
+            };
+            Rect toggleFieldRect = new Rect(position)
+            {
+                x = toggleLabel.x + toggleLabel.width,
+                y = position.y + position.height + 6,
+                width = position.width - toggleLabel.width
+            };
+            GUI.Label(audioLabelRect, Lang.Music);
+            EditorGUI.PropertyField(audioFieldRect, audio, GUIContent.none);
+            GUI.Label(toggleLabel, Lang.Toggle);
+            EditorGUI.PropertyField(toggleFieldRect, isActive, GUIContent.none);
+
+        }
+
+        public void MusicVolumeTypeBehaviorLayout(Rect position, SerializedProperty behavior)
+        {
+            SerializedProperty audio = behavior.FindPropertyRelative("audio");
+            SerializedProperty volume = behavior.FindPropertyRelative("volume");
+
+            position.y += 3;
+            position.height = EditorGUIUtility.singleLineHeight;
+
+
+            Rect audioLabelRect = new Rect(position)
+            {
+                width = Mathf.Max(position.width / 4, 50)
+            };
+            Rect audioFieldRect = new Rect(position)
+            {
+                x = audioLabelRect.x + audioLabelRect.width,
+                width = position.width - audioLabelRect.width
+
+            };
+            Rect volumeLabel = new Rect(position)
+            {
+                y = position.y + position.height + 6,
+                width = Mathf.Max(position.width / 4, 50)
+            };
+            Rect volumeFieldRect = new Rect(position)
+            {
+                x = volumeLabel.x + volumeLabel.width,
+                y = position.y + position.height + 6,
+                width = position.width - volumeLabel.width
+            };
+            GUI.Label(audioLabelRect, Lang.Music);
+            EditorGUI.PropertyField(audioFieldRect, audio, GUIContent.none);
+            GUI.Label(volumeLabel, Lang.Volume);
+            volume.floatValue = EditorGUI.Slider(volumeFieldRect, volume.floatValue, 0, 1);
+
+        }
+
+        public void ToggleObjectTypeBehaviorLayout(Rect position, SerializedProperty behavior)
+        {
+            SerializedProperty targetPath = behavior.FindPropertyRelative("propertyGroup.targetPath");
+            SerializedProperty isActive = behavior.FindPropertyRelative("isActive");
+
+            position.y += 3;
+            position.height = EditorGUIUtility.singleLineHeight;
+
+
+            Rect targetLabelRect = new Rect(position)
+            {
+                width = Mathf.Max(position.width / 4, 50)
+            };
+            Rect targetFieldRect = new Rect(position)
+            {
+                x = targetLabelRect.x + targetLabelRect.width,
+                width = position.width - targetLabelRect.width
+
+            };
+            Rect toggleLabel = new Rect(position)
+            {
+                y = position.y + position.height + 6,
+                width = Mathf.Max(position.width / 4, 50)
+            };
+            Rect toggleFieldRect = new Rect(position)
+            {
+                x = toggleLabel.x + toggleLabel.width,
+                y = position.y + position.height + 6,
+                width = position.width - toggleLabel.width
+            };
+
+            TargetObjectField(targetLabelRect, targetFieldRect, targetPath, out GameObject tempTarget);
+            GUI.Label(toggleLabel, Lang.Toggle);
+            EditorGUI.PropertyField(toggleFieldRect, isActive, GUIContent.none);
+
         }
 
         /// <summary>

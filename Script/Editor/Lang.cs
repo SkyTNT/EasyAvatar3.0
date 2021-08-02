@@ -83,6 +83,11 @@ namespace EasyAvatar
             TrackingTypeNoChange,
             TrackingTypeTracking,
             TrackingTypeAnimation,
+            ToggleMusic,
+            MusicVolume,
+            Music,
+            Volume,
+            ToggleObject,
             GestureManager,
             GestureManagerHelpBox,
             GestureBaseAnimation,
@@ -266,6 +271,11 @@ namespace EasyAvatar
             TrackingTypeNoChange = "不变";
             TrackingTypeTracking = "追踪中";
             TrackingTypeAnimation = "动画中";
+            ToggleMusic = "播放音乐开关";
+            MusicVolume = "音乐音量调整";
+            Music = "音乐";
+            Volume = "音量";
+            ToggleObject = "物体开关";
             GestureManager = "手势管理";
             GestureManagerHelpBox = "仅支持基本的手部动画，不支持其他部位动画以及表情。如果需要，请在手势管理下添加手势。";
             GestureBaseAnimation = "基本手势动画";
@@ -430,6 +440,11 @@ namespace EasyAvatar
             TrackingTypeNoChange = "No Change";
             TrackingTypeTracking = "Tracking";
             TrackingTypeAnimation = "Animation";
+            ToggleMusic = "Toggle Music";
+            MusicVolume = "Set Music Volume";
+            Music = "Music";
+            Volume = "Volume";
+            ToggleObject = "Toggle Object";
             GestureManager = "Gesture Manager";
             GestureManagerHelpBox = "Only basic hand animations are supported. Animations of other body parts and facial expressions are not supported. If necessary, please add gestures under the GestureManager.";
             GestureBaseAnimation = "Basic Gesture Animations";

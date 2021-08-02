@@ -18,7 +18,10 @@ namespace EasyAvatar
         public enum Type
         {
             Property,
-            AnimationClip
+            AnimationClip,
+            ToggleMusic,
+            MusicVolume,
+            ToggleObject,
         }
 
         public Type type;
@@ -26,6 +29,9 @@ namespace EasyAvatar
         public AnimationClip anim;
         public EasyAnimationMask mask;
         public bool mirror;
+        public bool isActive;
+        public float volume;
+        public AudioClip audio;
     }
 
     [Serializable]

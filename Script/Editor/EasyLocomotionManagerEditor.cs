@@ -199,7 +199,7 @@ namespace EasyAvatar
                 GUILayout.EndVertical();
             }
 
-            if (GUILayout.Button(Lang.Default))
+            if (GUILayout.Button(Lang.AllDefault))
             {
                 SetAllDefaultLocomotion(serializedObject);
             }
