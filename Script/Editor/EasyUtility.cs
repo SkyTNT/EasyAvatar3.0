@@ -212,22 +212,25 @@ namespace EasyAvatar
             return result;
         }
 
-        /// <summary>
-        /// 生成1维混合树
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="paramaName"></param>
-        /// <param name="motion1"></param>
-        /// <param name="motion2"></param>
-        /// <returns></returns>
-        public static BlendTree Generate1DBlendTree(string name, string paramaName, Motion motion1, Motion motion2)
+        public static BlendTree Generate1DBlendTree(string name, string xParamaName, List<float> positions, List<Motion> motions)
         {
             BlendTree blendTree = new BlendTree();
             blendTree.blendType = BlendTreeType.Simple1D;
-            blendTree.blendParameter = paramaName;
+            blendTree.blendParameter = xParamaName;
             blendTree.name = name;
-            blendTree.AddChild(motion1);
-            blendTree.AddChild(motion2);
+            blendTree.useAutomaticThresholds = false;
+            
+            if (positions.Count != motions.Count)
+            {
+                Debug.LogError("count of positions is not equal to count of motions");
+                return blendTree;
+            }
+            int count = positions.Count;
+            for (int i = 0; i < count; i++)
+            {
+                blendTree.AddChild(motions[i], positions[i]);
+            }
+            
             return blendTree;
         }
 
@@ -304,25 +307,38 @@ namespace EasyAvatar
             fx.blendType = action.blendType = blendTree.blendType;
             fx.blendParameter = action.blendParameter = blendTree.blendParameter;
             fx.blendParameterY = action.blendParameterY = blendTree.blendParameterY;
+            fx.useAutomaticThresholds = action.useAutomaticThresholds = blendTree.useAutomaticThresholds;
+            fx.minThreshold = action.minThreshold = blendTree.minThreshold;
+            fx.maxThreshold = action.maxThreshold = blendTree.maxThreshold;
             action.name = blendTree.name + "_action";
             fx.name = blendTree.name + "fx";
+            List<ChildMotion> actionChildren = new List<ChildMotion>();
+            List<ChildMotion> fxChildren = new List<ChildMotion>();
             foreach (var child in blendTree.children)
             {
                 AnimationClip clip = child.motion as AnimationClip;
                 if (clip)
                 {
-                    SeparateAnimation(clip, out AnimationClip actionAnim, out AnimationClip fxClip);
-                    action.AddChild(actionAnim, child.position);
-                    fx.AddChild(fxClip, child.position);
+                    
+                    SeparateAnimation(clip, out AnimationClip actionAnim, out AnimationClip fxAnim);
+                    actionChildren.Add(CopyChild(actionAnim));
+                    fxChildren.Add(CopyChild(fxAnim));
                 }
                 BlendTree blendTree1 = child.motion as BlendTree;
                 if (blendTree1)
                 {
                     SeparateBlendTree(blendTree1, out BlendTree actionBlend, out BlendTree fxBlend);
-                    action.AddChild(actionBlend, child.position);
-                    fx.AddChild(fxBlend, child.position);
+                    actionChildren.Add(CopyChild(actionBlend));
+                    fxChildren.Add(CopyChild(fxBlend));
+                }
+
+                ChildMotion CopyChild(Motion motion)
+                {
+                    return new ChildMotion { motion = motion, cycleOffset = child.cycleOffset, directBlendParameter = child.directBlendParameter, mirror = child.mirror, position = child.position, threshold = child.threshold, timeScale = child.timeScale };
                 }
             }
+            action.children = actionChildren.ToArray();
+            fx.children = fxChildren.ToArray();
         }
 
         public static void SeparateMotion(Motion motion, out Motion action, out Motion fx)

@@ -16,14 +16,16 @@ namespace EasyAvatar
         static EasyBehaviorGroupEditor previewing;
         GameObject avatar;
 
-        SerializedProperty behaviors;
+        SerializedProperty behaviors, hide;
         ReorderableList behaviorsList;
 
         int[] typeIndex = { 0, 1, 2, 3, 4 };
 
         public EasyBehaviorGroupEditor(SerializedProperty behaviors)
         {
+            hide = behaviors.FindPropertyRelative("hide");
             behaviors = behaviors.FindPropertyRelative("list");
+
             this.behaviors = behaviors;
 
             behaviorsList = new ReorderableList(behaviors.serializedObject, behaviors, true, true, true, true);
@@ -62,8 +64,16 @@ namespace EasyAvatar
             {
                 behaviors.ClearArray();
             }
+            preBg = GUI.backgroundColor;
+            GUI.backgroundColor = hide.boolValue ? MyGUIStyle.activeButtonColor : preBg;
+            if (GUILayout.Button(Lang.Fold))
+            {
+                hide.boolValue = !hide.boolValue;
+            }
+            GUI.backgroundColor = preBg;
             EditorGUILayout.EndHorizontal();
-            behaviorsList.DoLayoutList();
+            if (!hide.boolValue)
+                behaviorsList.DoLayoutList();
             Preview();
         }
 
@@ -121,6 +131,12 @@ namespace EasyAvatar
         public void StopPreview()
         {
             previewing = null;
+            Animator animator = avatar.GetComponent<Animator>();
+            if (animator)
+            {
+                animator.runtimeAnimatorController = null;
+            }
+            
             if (AnimationMode.InAnimationMode())
                 AnimationMode.StopAnimationMode();
         }
@@ -245,7 +261,6 @@ namespace EasyAvatar
                 //当前属性不在新目标中存在则删除属性
                 if (properties.arraySize > 0 && !HasPropertyGroup(avatar, propertyGroup))
                 {
-                    Debug.Log("clear");
                     properties.ClearArray();
                 }
 
@@ -489,6 +504,7 @@ namespace EasyAvatar
             {
                 bool isVec4 = false;
                 SerializedProperty valueR, valueG, valueB, valueA;
+                
                 Dictionary<string, SerializedProperty> colorMap = new Dictionary<string, SerializedProperty>();
                 for (int i = 0; i < groupSize; i++)
                 {
@@ -515,7 +531,8 @@ namespace EasyAvatar
                 }
 
                 Color tempColor = new Color(valueR.floatValue, valueG.floatValue, valueB.floatValue, valueA.floatValue);
-                Color newColor = EditorGUI.ColorField(rect, tempColor);
+                Color newColor = EditorGUI.ColorField(rect, GUIContent.none, tempColor, true, true, true);//允许HDR
+                
                 if (tempColor != newColor)
                 {
                     valueR.floatValue = newColor.r;

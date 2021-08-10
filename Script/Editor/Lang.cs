@@ -38,14 +38,15 @@ namespace EasyAvatar
             Preview,
             Copy,
             Paste,
+            Fold,
             OnOpen,
             OnClose,
             OnSwitchOff,
             OnSwitchOn,
             OnPress,
             OnRelease,
-            OnRadialPuppet0,
-            OnRadialPuppet1,
+            OnRadialPuppet,
+            OnRadialPuppetX,
             OnRadialPuppetOff,
             OnTwoAxisPuppetPosition,
             OnTwoAxisPuppetOff,
@@ -232,14 +233,15 @@ namespace EasyAvatar
             Preview = "预览";
             Copy = "复制";
             Paste = "粘贴";
+            Fold = "折叠";
             OnOpen = "打开时";
             OnClose = "关闭时";
             OnSwitchOff = "开关关闭时";
             OnSwitchOn = "开关打开时";
             OnPress = "按钮按下时";
             OnRelease = "按钮松开时";
-            OnRadialPuppet0 = "旋钮值为零时";
-            OnRadialPuppet1 = "旋钮旋满时";
+            OnRadialPuppet = "旋钮值为{0}时";
+            OnRadialPuppetX = "值";
             OnRadialPuppetOff = "旋钮关闭时";
             OnTwoAxisPuppetPosition = "操纵杆在({0},{1})处时";
             OnTwoAxisPuppetOff = "操纵杆关闭时";
@@ -407,14 +409,15 @@ namespace EasyAvatar
             Preview = "Preview";
             Copy = "Copy";
             Paste = "Paste";
+            Fold = "Fold";
             OnOpen = "On Open";
             OnClose = "On Close";
             OnSwitchOff = "On Switch Off";
             OnSwitchOn = "On Switch On";
             OnPress = "On Press Button";
             OnRelease = "On Release Button";
-            OnRadialPuppet0 = "On Value Is 0%";
-            OnRadialPuppet1 = "On Value Is 100%";
+            OnRadialPuppet = "On Value Is {0}";
+            OnRadialPuppetX = "Value";
             OnRadialPuppetOff = "On Close";
             OnTwoAxisPuppetPosition = "On Position ({0},{1})";
             OnTwoAxisPuppetOff = "On Close";

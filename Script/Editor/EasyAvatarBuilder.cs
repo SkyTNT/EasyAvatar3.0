@@ -91,10 +91,28 @@ namespace EasyAvatar
             //初始化EasyAvatarAsset
             EasyAvatarAsset.Init();
             {
-                //清除之前Avatar上的EasyAvatarAsset
-                Transform d = helper.avatar.transform.Find(EasyAvatarAsset.AssetRootName);
-                if (d)
-                    Object.DestroyImmediate(d.gameObject);
+                try
+                {
+                    //清除之前Avatar上的EasyAvatarAsset
+                    Transform d = helper.avatar.transform.Find(EasyAvatarAsset.AssetRootName);
+                    if (d)
+                        Object.DestroyImmediate(d.gameObject);
+                }
+                catch (System.Exception)
+                {
+                    if (PrefabUtility.IsPartOfPrefabInstance(helper.avatar) && PrefabUtility.GetPrefabAssetType(helper.avatar) != PrefabAssetType.Model)
+                    {
+                        string prefabPath = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(helper.avatar);
+                        var rootGO = PrefabUtility.LoadPrefabContents(prefabPath);
+
+                        Transform des = rootGO.transform.Find(EasyAvatarAsset.AssetRootName);
+                        if (des)
+                            Object.DestroyImmediate(des.gameObject);
+                        PrefabUtility.SaveAsPrefabAsset(rootGO, prefabPath);
+                        PrefabUtility.UnloadPrefabContents(rootGO);
+                    }
+                }
+                    
             }
             GameObject assetRoot = new GameObject(EasyAvatarAsset.AssetRootName);
             assetRoot.transform.parent = helper.avatar.transform;
@@ -168,6 +186,8 @@ namespace EasyAvatar
                     new CustomAnimLayer(){type = AnimLayerType.Action ,isDefault = false , animatorController = easyAnimator.actionController},
                     new CustomAnimLayer(){type = AnimLayerType.FX ,isDefault = false,animatorController = easyAnimator.fxController}
                 };
+
+            helper.avatar.GetComponent<Animator>().runtimeAnimatorController = null;
 
             //保存
             AssetDatabase.SaveAssets();
@@ -332,13 +352,24 @@ namespace EasyAvatar
         /// <param name="control">控件</param>
         private void BuildRadialPuppet(string name, EasyControl control)
         {
-            if (control.behaviors.Count < 3)
+            if (control.behaviors.Count < 1)
                 return;
-            //EasyBehaviors生成动画
-            AnimationClip offClip = Utility.GenerateAnimClip(control.behaviors[0].list);
-            AnimationClip blend0 = Utility.GenerateAnimClip(control.behaviors[1].list);
-            AnimationClip blend1 = Utility.GenerateAnimClip(control.behaviors[2].list);
-            BlendTree blendTree = Utility.Generate1DBlendTree(name, "float1", blend0, blend1);
+            List<EasyBehaviorGroup> behaviorGroups = control.behaviors;
+            AnimationClip offClip = Utility.GenerateAnimClip(behaviorGroups[0].list);
+            List<float> positions = new List<float>();
+            List<Motion> motions = new List<Motion>();
+            for (int i = 1; i < behaviorGroups.Count; i++)
+            {
+                EasyBehaviorGroup behaviorGroup = behaviorGroups[i];
+                positions.Add(behaviorGroup.position.x);
+                motions.Add(Utility.GenerateAnimClip(behaviorGroup.list));
+            }
+            if(positions.Count == 2&& positions[0] == 0 && positions[1] == 0)//版本升级，之前RadialPuppet没有位置信息
+            {
+                control.behaviors[2].position.x = 1;
+                positions[1] = 1;
+            }
+            BlendTree blendTree = Utility.Generate1DBlendTree(name, "float1", positions, motions);
             if (control.autoTrackingControl)
                 easyAnimator.AddState(name, offClip, blendTree, control.autoRestore, "control" + controlCount);
             else

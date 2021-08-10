@@ -204,9 +204,6 @@ namespace EasyAvatar
             if(item.bindingGroup != null)
             {
                 ApplyBinding(item.bindingGroup);
-                Debug.Log(item.bindingGroup[0].path);
-                Debug.Log(item.bindingGroup[0].propertyName);
-                Debug.Log(item.bindingGroup[0].type);
                 EditorWindow.GetWindow<EasyPropertySelector>().Close();
             }
         }

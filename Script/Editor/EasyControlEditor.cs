@@ -23,8 +23,8 @@ namespace EasyAvatar
             //初始behaviorGroupList为空，设置大小
             if (behaviorGroupList.arraySize == 0)
             {
-                
-                ChangeType((EasyControl.Type)controlType.enumValueIndex);
+
+                ChangeType((EasyControl.Type)controlType.enumValueIndex, (EasyControl.Type)(-1));
                 serializedObject.ApplyModifiedProperties();
             }
                 
@@ -67,7 +67,7 @@ namespace EasyAvatar
             }
         }
 
-        private void ChangeType(EasyControl.Type type)
+        private void ChangeType(EasyControl.Type type, EasyControl.Type pre)
         {
             switch (type)
             {
@@ -76,9 +76,32 @@ namespace EasyAvatar
                     ResizeBehaviorGroupList(2);
                     break;
                 case EasyControl.Type.RadialPuppet:
+                    if (pre == EasyControl.Type.TwoAxisPuppet)//不进行修改
+                        break;
                     ResizeBehaviorGroupList(3);
+                    for (int i = 1; i < 3; i++)
+                    {
+                        SerializedProperty behaviourGroup = behaviorGroupList.GetArrayElementAtIndex(i);
+                        SerializedProperty position = behaviourGroup.FindPropertyRelative("position");
+                        //设置初始位置
+                        switch (i)
+                        {
+                            case 1:
+                                position.vector2Value = new Vector2(0, 0);//0
+                                break;
+                            case 2:
+                                position.vector2Value = new Vector2(1, 0);//1
+                                break;
+                            default:
+                                break;
+                        }
+                        //清除,不清除的话会设置为上一个behaviourGroup的值
+                        //behaviourGroup.FindPropertyRelative("list").ClearArray();
+                    }
                     break;
                 case EasyControl.Type.TwoAxisPuppet:
+                    if (pre == EasyControl.Type.RadialPuppet)//不进行修改
+                        break;
                     ResizeBehaviorGroupList(6);
                     
                     for (int i = 1; i < 6; i++)
@@ -107,7 +130,7 @@ namespace EasyAvatar
                                 break;
                         }
                         //清除,不清除的话会设置为上一个behaviourGroup的值
-                        behaviourGroup.FindPropertyRelative("list").ClearArray();
+                        //behaviourGroup.FindPropertyRelative("list").ClearArray();
                     }
                         
                     break;
@@ -135,10 +158,11 @@ namespace EasyAvatar
             //图标设置
             EditorGUILayout.PropertyField(icon, new GUIContent(Lang.Icon));
             //控件类型
+            EasyControl.Type tempType = (EasyControl.Type)controlType.enumValueIndex;
             EditorGUI.BeginChangeCheck();
-            controlType.enumValueIndex = EditorGUILayout.IntPopup(Lang.ControlType, controlType.enumValueIndex, new string[] { Lang.Toggle, Lang.Button, Lang.RadialPuppet, Lang.TwoAxisPuppet }, typeIndex);
+            controlType.enumValueIndex = EditorGUILayout.IntPopup(Lang.ControlType,(int) tempType, new string[] { Lang.Toggle, Lang.Button, Lang.RadialPuppet, Lang.TwoAxisPuppet }, typeIndex);
             if (EditorGUI.EndChangeCheck())
-                ChangeType((EasyControl.Type)controlType.enumValueIndex);
+                ChangeType((EasyControl.Type)controlType.enumValueIndex, tempType);
 
             //是否自动恢复
             autoRestore.boolValue = EditorGUILayout.ToggleLeft(Lang.AutoRestore, autoRestore.boolValue);
@@ -163,7 +187,7 @@ namespace EasyAvatar
                     labels = new string[] { Lang.OnRelease, Lang.OnPress };
                     break;
                 case EasyControl.Type.RadialPuppet:
-                    labels = new string[] { Lang.OnRadialPuppetOff, Lang.OnRadialPuppet0, Lang.OnRadialPuppet1 };
+                    labels = new string[] { Lang.OnRadialPuppetOff, Lang.OnRadialPuppet };
                     break;
                 case EasyControl.Type.TwoAxisPuppet:
                     labels = new string[] { Lang.OnTwoAxisPuppetOff, Lang.OnTwoAxisPuppetPosition };
@@ -175,7 +199,7 @@ namespace EasyAvatar
 
 
             //TwoAxisPuppet是可以自己添加多个BehaviorGroup的
-            if ((EasyControl.Type)controlType.enumValueIndex == EasyControl.Type.TwoAxisPuppet)
+            if ((EasyControl.Type)controlType.enumValueIndex == EasyControl.Type.TwoAxisPuppet || (EasyControl.Type)controlType.enumValueIndex == EasyControl.Type.RadialPuppet)
             {
                 int editorCount = editors.Count;
                 int removeIndex, changeIndex1, changeIndex2;
@@ -188,7 +212,11 @@ namespace EasyAvatar
                     EasyBehaviorGroupEditor editor = editors[i];
                     GUILayout.BeginVertical(GUI.skin.box);
                     GUILayout.BeginHorizontal();
-                    GUILayout.Label(i == 0 ? labels[0] : string.Format(labels[1], positionVal.x, positionVal.y), EditorStyles.boldLabel);
+                    if((EasyControl.Type)controlType.enumValueIndex == EasyControl.Type.TwoAxisPuppet)//TwoAxisPuppet有Y
+                        GUILayout.Label(i == 0 ? labels[0] : string.Format(labels[1], positionVal.x, positionVal.y), EditorStyles.boldLabel);
+                    else
+                        GUILayout.Label(i == 0 ? labels[0] : string.Format(labels[1], positionVal.x), EditorStyles.boldLabel);
+
                     GUILayout.FlexibleSpace();
                     //0处为关闭，位置固定为0，不能删除
                     if (i > 0)
@@ -215,8 +243,18 @@ namespace EasyAvatar
                     GUILayout.EndHorizontal();
                     if (i > 0)
                     {
-                        positionVal.x = EditorGUILayout.Slider(Lang.OnTwoAxisPuppetH, positionVal.x, -1, 1);
-                        positionVal.y = EditorGUILayout.Slider(Lang.OnTwoAxisPuppetV, positionVal.y, -1, 1);
+                        
+                        if ((EasyControl.Type)controlType.enumValueIndex == EasyControl.Type.TwoAxisPuppet)//TwoAxisPuppet有Y
+                        {
+                            positionVal.x = EditorGUILayout.Slider(Lang.OnTwoAxisPuppetH, positionVal.x, -1, 1);
+                            positionVal.y = EditorGUILayout.Slider(Lang.OnTwoAxisPuppetV, positionVal.y, -1, 1);
+
+                        }
+                        else
+                        {
+                            positionVal.x = EditorGUILayout.Slider(Lang.OnRadialPuppetX, positionVal.x, 0, 1);
+                        }
+                            
                     }
                     editor.DoLayout(avatar);
                     GUILayout.EndVertical();

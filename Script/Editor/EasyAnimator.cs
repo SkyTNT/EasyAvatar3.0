@@ -258,6 +258,7 @@ namespace EasyAvatar
 
             string locomotinControllerPath = AssetDatabase.GetAssetPath(locomotionBuilder.controller);
 
+            
             AnimatorState standState = locomotionBuilder.FindState(locomotionBuilder.baseLayer.stateMachine, "Standing");
             VRCAnimatorTrackingControl standTracking = VRCStateMachineBehaviourUtility.GetTrackingControl(locomotionGroup.standTracking);
             standTracking.hideFlags = HideFlags.HideInHierarchy;
@@ -403,6 +404,7 @@ namespace EasyAvatar
                 }
                 else
                     drivedMotions[driverId] = motion;
+                   
             }
             else
                 drivedMotions.Add(driverId, motion);
