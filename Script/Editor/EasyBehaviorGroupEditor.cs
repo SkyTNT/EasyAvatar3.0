@@ -15,6 +15,7 @@ namespace EasyAvatar
         static string copiedBehaviorsPath;
         static EasyBehaviorGroupEditor previewing;
         GameObject avatar;
+        AnimationClip currentClip;
 
         SerializedProperty behaviors, hide;
         ReorderableList behaviorsList;
@@ -120,6 +121,7 @@ namespace EasyAvatar
                 AnimatorController controller = AnimatorController.CreateAnimatorControllerAtPath(EasyAvatarBuilder.workingDirectory + "Build/preview.controller");
                 animator.runtimeAnimatorController = controller;
             }
+            currentClip = Utility.GenerateCurrentAnimClip(avatar);
             previewing = this;
             if (!AnimationMode.InAnimationMode())
                 AnimationMode.StartAnimationMode();
@@ -141,17 +143,18 @@ namespace EasyAvatar
                 AnimationMode.StopAnimationMode();
         }
 
+
+        float lastPreviewTime = 0;
         /// <summary>
         /// 预览
         /// </summary>
         public void Preview()
         {
-            if (previewing != this || !AnimationMode.InAnimationMode() || !avatar)
+            if (previewing != this || !AnimationMode.InAnimationMode() || !avatar || Time.realtimeSinceStartup - lastPreviewTime < 0.1)
                 return;
+            lastPreviewTime = Time.realtimeSinceStartup;
             AnimationMode.BeginSampling();
-            AnimationClip previewClip = Utility.GenerateAnimClip(behaviors.GetObject<List<EasyBehavior>>(), true);
-            //if (useAnimClip)
-            //   previewClip = Utility.MergeAnimClip(Utility.MergeAnimClip(animClips), previewClip);
+            AnimationClip previewClip = Utility.MergeAnimClip(currentClip, Utility.GenerateAnimClip(behaviors.GetObject<List<EasyBehavior>>(), true));
             AnimationMode.SampleAnimationClip(avatar, previewClip, 0);
             AnimationMode.EndSampling();
         }

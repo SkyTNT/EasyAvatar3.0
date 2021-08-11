@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
@@ -179,6 +180,51 @@ namespace EasyAvatar
 
             }
 
+            return clip;
+        }
+
+        /// <summary>
+        /// 获取当前模型的动作动画
+        /// </summary>
+        /// <param name="avatar"></param>
+        /// <returns></returns>
+        public static AnimationClip GenerateCurrentAnimClip(GameObject avatar)
+        {
+            AnimationClip clip = new AnimationClip();
+            HumanPose humanPose = new HumanPose();
+            HumanPoseHandler humanPoseHandler = new HumanPoseHandler(avatar.GetComponent<Animator>().avatar, avatar.transform);
+            humanPoseHandler.GetHumanPose(ref humanPose);
+            string[] names = HumanTrait.MuscleName;
+            for (int i=0;i< HumanTrait.MuscleCount; i++)
+            {
+                string name = names[i];
+                if (Regex.IsMatch(name, "Index|Thumb|Little|Middle|Ring"))
+                {
+                    name = name.Replace("Left ", "LeftHand.");
+                    name = name.Replace("Right ", "RightHand.");
+                    name = name.Replace("Index ", "Index.");
+                    name = name.Replace("Thumb ", "Thumb.");
+                    name = name.Replace("Little ", "Little.");
+                    name = name.Replace("Middle ", "Middle.");
+                    name = name.Replace("Ring ", "Ring.");
+                }
+
+                addToClip(name, humanPose.muscles[i]);
+            }
+
+            addToClip("RootT.x",humanPose.bodyPosition.x);
+            addToClip("RootT.y", humanPose.bodyPosition.y);
+            addToClip("RootT.z", humanPose.bodyPosition.z);
+            addToClip("RootQ.x", humanPose.bodyRotation.x);
+            addToClip("RootQ.y", humanPose.bodyRotation.y);
+            addToClip("RootQ.z", humanPose.bodyRotation.z);
+            addToClip("RootQ.w", humanPose.bodyRotation.w);
+
+            void addToClip(string name , float value)
+            {
+                EditorCurveBinding binding = EditorCurveBinding.FloatCurve("", typeof(Animator), name);
+                AnimationUtility.SetEditorCurve(clip, binding, AnimationCurve.Linear(0, value, 1.0f / 60, value));
+            }
             return clip;
         }
 

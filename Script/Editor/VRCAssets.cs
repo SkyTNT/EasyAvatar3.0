@@ -46,7 +46,8 @@ namespace EasyAvatar
             proxy_fall_long,
             proxy_land_quick,
             proxy_landing,
-            proxy_afk;
+            proxy_afk,
+            proxy_tpose;
 
         public static AvatarMask hands_only, hand_left, hand_right;
 
@@ -88,6 +89,7 @@ namespace EasyAvatar
             proxy_land_quick = GetProxyAnim("proxy_land_quick");
             proxy_landing = GetProxyAnim("proxy_landing");
             proxy_afk = GetProxyAnim("proxy_afk");
+            proxy_tpose = GetProxyAnim("proxy_tpose");
 
             hands_only = GetAvatarMask("vrc_HandsOnly");
             hand_right = GetAvatarMask("vrc_Hand Right");
