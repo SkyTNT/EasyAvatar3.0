@@ -14,7 +14,8 @@ namespace EasyAvatar
     public class EasyAvatarBuilder
     {
         public static string workingDirectory = "Assets/EasyAvatar3.0/";
-        string rootBuildDir, menuBuildDir, animBuildDir, templateDir;
+        public static string templateDir = "Assets/EasyAvatar3.0/Template/";
+        string rootBuildDir, menuBuildDir, animBuildDir;
         EasyAvatarHelper helper;
         EasyAnimator easyAnimator;
         int controlCount;
@@ -23,7 +24,6 @@ namespace EasyAvatar
         {
             this.helper = helper;
             rootBuildDir = workingDirectory + "Build/" + Utility.GetGoodFileName(helper.avatar.name);
-            templateDir = workingDirectory + "Template/";
             menuBuildDir = rootBuildDir + "/Menu/";
             animBuildDir = rootBuildDir + "/Anim/";
             controlCount = 0;

@@ -1,0 +1,813 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &7158346143264185531
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7158346143264185530}
+  - component: {fileID: 7158346143264185529}
+  m_Layer: 0
+  m_Name: Clap
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7158346143264185530
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7158346143264185531}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 7158346144841554858}
+  m_RootOrder: 1
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7158346143264185529
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7158346143264185531}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 85f28fdd91aaf0743ae0e9f85c31fb30, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  type: 0
+  icon: {fileID: 0}
+  autoRestore: 1
+  autoTrackingControl: 1
+  offTrackingControl:
+    head: 0
+    mouth: 0
+    eyes: 0
+    hip: 0
+    rightHand: 0
+    leftHand: 0
+    rightFingers: 0
+    leftFingers: 0
+    rightFoot: 0
+    leftFoot: 0
+  onTrackingControl:
+    head: 0
+    mouth: 0
+    eyes: 0
+    hip: 0
+    rightHand: 0
+    leftHand: 0
+    rightFingers: 0
+    leftFingers: 0
+    rightFoot: 0
+    leftFoot: 0
+  behaviors:
+  - list: []
+    position: {x: 0, y: 0}
+    hide: 0
+  - list:
+    - type: 1
+      propertyGroup:
+        targetPath: 
+        properties: []
+      anim: {fileID: 7400000, guid: 44ce16481749f4c4baf0549d1bf3b3f3, type: 2}
+      mask:
+        head: 1
+        body: 1
+        rightArm: 1
+        leftArm: 1
+        rightFingers: 1
+        leftFingers: 1
+        rightLeg: 1
+        leftLeg: 1
+        fx: 0
+      mirror: 0
+      isActive: 0
+      volume: 0
+      audio: {fileID: 0}
+    position: {x: 0, y: 0}
+    hide: 0
+--- !u!1 &7158346143437966063
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7158346143437966062}
+  - component: {fileID: 7158346143437966061}
+  m_Layer: 0
+  m_Name: Sadness
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7158346143437966062
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7158346143437966063}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 7158346144841554858}
+  m_RootOrder: 7
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7158346143437966061
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7158346143437966063}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 85f28fdd91aaf0743ae0e9f85c31fb30, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  type: 0
+  icon: {fileID: 0}
+  autoRestore: 1
+  autoTrackingControl: 1
+  offTrackingControl:
+    head: 0
+    mouth: 0
+    eyes: 0
+    hip: 0
+    rightHand: 0
+    leftHand: 0
+    rightFingers: 0
+    leftFingers: 0
+    rightFoot: 0
+    leftFoot: 0
+  onTrackingControl:
+    head: 0
+    mouth: 0
+    eyes: 0
+    hip: 0
+    rightHand: 0
+    leftHand: 0
+    rightFingers: 0
+    leftFingers: 0
+    rightFoot: 0
+    leftFoot: 0
+  behaviors:
+  - list: []
+    position: {x: 0, y: 0}
+    hide: 0
+  - list:
+    - type: 1
+      propertyGroup:
+        targetPath: 
+        properties: []
+      anim: {fileID: 7400000, guid: 762c2cb22a9e6cc45803bd200a00c634, type: 2}
+      mask:
+        head: 1
+        body: 1
+        rightArm: 1
+        leftArm: 1
+        rightFingers: 1
+        leftFingers: 1
+        rightLeg: 1
+        leftLeg: 1
+        fx: 0
+      mirror: 0
+      isActive: 0
+      volume: 0
+      audio: {fileID: 0}
+    position: {x: 0, y: 0}
+    hide: 0
+--- !u!1 &7158346143591412343
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7158346143591412342}
+  - component: {fileID: 7158346143591412341}
+  m_Layer: 0
+  m_Name: Dance
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7158346143591412342
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7158346143591412343}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 7158346144841554858}
+  m_RootOrder: 4
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7158346143591412341
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7158346143591412343}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 85f28fdd91aaf0743ae0e9f85c31fb30, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  type: 0
+  icon: {fileID: 0}
+  autoRestore: 1
+  autoTrackingControl: 1
+  offTrackingControl:
+    head: 0
+    mouth: 0
+    eyes: 0
+    hip: 0
+    rightHand: 0
+    leftHand: 0
+    rightFingers: 0
+    leftFingers: 0
+    rightFoot: 0
+    leftFoot: 0
+  onTrackingControl:
+    head: 0
+    mouth: 0
+    eyes: 0
+    hip: 0
+    rightHand: 0
+    leftHand: 0
+    rightFingers: 0
+    leftFingers: 0
+    rightFoot: 0
+    leftFoot: 0
+  behaviors:
+  - list: []
+    position: {x: 0, y: 0}
+    hide: 0
+  - list:
+    - type: 1
+      propertyGroup:
+        targetPath: 
+        properties: []
+      anim: {fileID: 7400000, guid: 0d2e5f9cc00d88a48b7bbe6e2898a4b4, type: 2}
+      mask:
+        head: 1
+        body: 1
+        rightArm: 1
+        leftArm: 1
+        rightFingers: 1
+        leftFingers: 1
+        rightLeg: 1
+        leftLeg: 1
+        fx: 0
+      mirror: 0
+      isActive: 0
+      volume: 0
+      audio: {fileID: 0}
+    position: {x: 0, y: 0}
+    hide: 0
+--- !u!1 &7158346143616234342
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7158346143616234341}
+  - component: {fileID: 7158346143616234340}
+  m_Layer: 0
+  m_Name: Backflip
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7158346143616234341
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7158346143616234342}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 7158346144841554858}
+  m_RootOrder: 5
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7158346143616234340
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7158346143616234342}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 85f28fdd91aaf0743ae0e9f85c31fb30, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  type: 0
+  icon: {fileID: 0}
+  autoRestore: 1
+  autoTrackingControl: 1
+  offTrackingControl:
+    head: 0
+    mouth: 0
+    eyes: 0
+    hip: 0
+    rightHand: 0
+    leftHand: 0
+    rightFingers: 0
+    leftFingers: 0
+    rightFoot: 0
+    leftFoot: 0
+  onTrackingControl:
+    head: 0
+    mouth: 0
+    eyes: 0
+    hip: 0
+    rightHand: 0
+    leftHand: 0
+    rightFingers: 0
+    leftFingers: 0
+    rightFoot: 0
+    leftFoot: 0
+  behaviors:
+  - list: []
+    position: {x: 0, y: 0}
+    hide: 0
+  - list:
+    - type: 1
+      propertyGroup:
+        targetPath: 
+        properties: []
+      anim: {fileID: 7400000, guid: 2af7e07b1514ac14bafe50d6b79cd07e, type: 2}
+      mask:
+        head: 1
+        body: 1
+        rightArm: 1
+        leftArm: 1
+        rightFingers: 1
+        leftFingers: 1
+        rightLeg: 1
+        leftLeg: 1
+        fx: 0
+      mirror: 0
+      isActive: 0
+      volume: 0
+      audio: {fileID: 0}
+    position: {x: 0, y: 0}
+    hide: 0
+--- !u!1 &7158346143995345493
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7158346143995345492}
+  - component: {fileID: 7158346143995345483}
+  m_Layer: 0
+  m_Name: Die
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7158346143995345492
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7158346143995345493}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 7158346144841554858}
+  m_RootOrder: 6
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7158346143995345483
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7158346143995345493}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 85f28fdd91aaf0743ae0e9f85c31fb30, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  type: 0
+  icon: {fileID: 0}
+  autoRestore: 1
+  autoTrackingControl: 1
+  offTrackingControl:
+    head: 0
+    mouth: 0
+    eyes: 0
+    hip: 0
+    rightHand: 0
+    leftHand: 0
+    rightFingers: 0
+    leftFingers: 0
+    rightFoot: 0
+    leftFoot: 0
+  onTrackingControl:
+    head: 0
+    mouth: 0
+    eyes: 0
+    hip: 0
+    rightHand: 0
+    leftHand: 0
+    rightFingers: 0
+    leftFingers: 0
+    rightFoot: 0
+    leftFoot: 0
+  behaviors:
+  - list: []
+    position: {x: 0, y: 0}
+    hide: 0
+  - list:
+    - type: 1
+      propertyGroup:
+        targetPath: 
+        properties: []
+      anim: {fileID: 7400000, guid: 4cf06429686164a45adaedb6a6e520a5, type: 2}
+      mask:
+        head: 1
+        body: 1
+        rightArm: 1
+        leftArm: 1
+        rightFingers: 1
+        leftFingers: 1
+        rightLeg: 1
+        leftLeg: 1
+        fx: 0
+      mirror: 0
+      isActive: 0
+      volume: 0
+      audio: {fileID: 0}
+    position: {x: 0, y: 0}
+    hide: 0
+--- !u!1 &7158346144317744900
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7158346144317744955}
+  - component: {fileID: 7158346144317744954}
+  m_Layer: 0
+  m_Name: Wave
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7158346144317744955
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7158346144317744900}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 7158346144841554858}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7158346144317744954
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7158346144317744900}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 85f28fdd91aaf0743ae0e9f85c31fb30, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  type: 0
+  icon: {fileID: 0}
+  autoRestore: 1
+  autoTrackingControl: 1
+  offTrackingControl:
+    head: 0
+    mouth: 0
+    eyes: 0
+    hip: 0
+    rightHand: 0
+    leftHand: 0
+    rightFingers: 0
+    leftFingers: 0
+    rightFoot: 0
+    leftFoot: 0
+  onTrackingControl:
+    head: 0
+    mouth: 0
+    eyes: 0
+    hip: 0
+    rightHand: 0
+    leftHand: 0
+    rightFingers: 0
+    leftFingers: 0
+    rightFoot: 0
+    leftFoot: 0
+  behaviors:
+  - list: []
+    position: {x: 0, y: 0}
+    hide: 0
+  - list:
+    - type: 1
+      propertyGroup:
+        targetPath: 
+        properties: []
+      anim: {fileID: 7400000, guid: 60873c431a64a744d87a5ad1e20bf886, type: 2}
+      mask:
+        head: 1
+        body: 1
+        rightArm: 1
+        leftArm: 1
+        rightFingers: 1
+        leftFingers: 1
+        rightLeg: 1
+        leftLeg: 1
+        fx: 0
+      mirror: 0
+      isActive: 0
+      volume: 0
+      audio: {fileID: 0}
+    position: {x: 0, y: 0}
+    hide: 0
+--- !u!1 &7158346144841554859
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7158346144841554858}
+  - component: {fileID: 7158346144841554857}
+  m_Layer: 0
+  m_Name: Emote
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7158346144841554858
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7158346144841554859}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children:
+  - {fileID: 7158346144317744955}
+  - {fileID: 7158346143264185530}
+  - {fileID: 7158346145247430596}
+  - {fileID: 7158346145049599429}
+  - {fileID: 7158346143591412342}
+  - {fileID: 7158346143616234341}
+  - {fileID: 7158346143995345492}
+  - {fileID: 7158346143437966062}
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7158346144841554857
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7158346144841554859}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d74a995711805e44ab735bc0c557cba1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!1 &7158346145049599430
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7158346145049599429}
+  - component: {fileID: 7158346145049599428}
+  m_Layer: 0
+  m_Name: Cheer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7158346145049599429
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7158346145049599430}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 7158346144841554858}
+  m_RootOrder: 3
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7158346145049599428
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7158346145049599430}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 85f28fdd91aaf0743ae0e9f85c31fb30, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  type: 0
+  icon: {fileID: 0}
+  autoRestore: 1
+  autoTrackingControl: 1
+  offTrackingControl:
+    head: 0
+    mouth: 0
+    eyes: 0
+    hip: 0
+    rightHand: 0
+    leftHand: 0
+    rightFingers: 0
+    leftFingers: 0
+    rightFoot: 0
+    leftFoot: 0
+  onTrackingControl:
+    head: 0
+    mouth: 0
+    eyes: 0
+    hip: 0
+    rightHand: 0
+    leftHand: 0
+    rightFingers: 0
+    leftFingers: 0
+    rightFoot: 0
+    leftFoot: 0
+  behaviors:
+  - list: []
+    position: {x: 0, y: 0}
+    hide: 0
+  - list:
+    - type: 1
+      propertyGroup:
+        targetPath: 
+        properties: []
+      anim: {fileID: 7400000, guid: 7359fa5b13647ba4986416b105f0d6dd, type: 2}
+      mask:
+        head: 1
+        body: 1
+        rightArm: 1
+        leftArm: 1
+        rightFingers: 1
+        leftFingers: 1
+        rightLeg: 1
+        leftLeg: 1
+        fx: 0
+      mirror: 0
+      isActive: 0
+      volume: 0
+      audio: {fileID: 0}
+    position: {x: 0, y: 0}
+    hide: 0
+--- !u!1 &7158346145247430597
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7158346145247430596}
+  - component: {fileID: 7158346145247430651}
+  m_Layer: 0
+  m_Name: Point
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7158346145247430596
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7158346145247430597}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 7158346144841554858}
+  m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7158346145247430651
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7158346145247430597}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 85f28fdd91aaf0743ae0e9f85c31fb30, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  type: 0
+  icon: {fileID: 0}
+  autoRestore: 1
+  autoTrackingControl: 1
+  offTrackingControl:
+    head: 0
+    mouth: 0
+    eyes: 0
+    hip: 0
+    rightHand: 0
+    leftHand: 0
+    rightFingers: 0
+    leftFingers: 0
+    rightFoot: 0
+    leftFoot: 0
+  onTrackingControl:
+    head: 0
+    mouth: 0
+    eyes: 0
+    hip: 0
+    rightHand: 0
+    leftHand: 0
+    rightFingers: 0
+    leftFingers: 0
+    rightFoot: 0
+    leftFoot: 0
+  behaviors:
+  - list: []
+    position: {x: 0, y: 0}
+    hide: 0
+  - list:
+    - type: 1
+      propertyGroup:
+        targetPath: 
+        properties: []
+      anim: {fileID: 7400000, guid: 498e9dfd6d870064184180c5e4a3fc59, type: 2}
+      mask:
+        head: 1
+        body: 1
+        rightArm: 1
+        leftArm: 1
+        rightFingers: 1
+        leftFingers: 1
+        rightLeg: 1
+        leftLeg: 1
+        fx: 0
+      mirror: 0
+      isActive: 0
+      volume: 0
+      audio: {fileID: 0}
+    position: {x: 0, y: 0}
+    hide: 0

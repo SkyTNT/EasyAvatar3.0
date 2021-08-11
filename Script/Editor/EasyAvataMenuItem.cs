@@ -20,17 +20,38 @@ namespace EasyAvatar
         public static bool CerateTemplate()
         {
             GameObject helper = CreateObject<EasyAvatarHelper>(Lang.AvatarHelper);
-            CreateObject<EasyMenu>(Lang.MainMenu);
+            GameObject menu = CreateObject<EasyMenu>(Lang.MainMenu);
+            var emotePrefab = PrefabUtility.LoadPrefabContents(EasyAvatarBuilder.templateDir+"Emote.prefab");
+            GameObject emote = GameObject.Instantiate(emotePrefab , menu.transform);
+            emote.name = "Emote";
             CreateObject<EasyControl>(Lang.Control);
+            PrefabUtility.UnloadPrefabContents(emotePrefab);
             Selection.activeGameObject = helper;
             GameObject gestureManager = CreateObject<EasyGestureManager>(Lang.GestureManager);
             EasyGestureManagerEditor.SetDefaultGesture(new SerializedObject(gestureManager.GetComponent<EasyGestureManager>()));
-            CreateObject<EasyGesture>(Lang.Gesture);
+            CreateGesture(Lang.GestureNeutral, EasyGesture.GestureType.Neutral);
+            CreateGesture(Lang.GestureFist, EasyGesture.GestureType.Fist);
+            CreateGesture(Lang.GestureHandOpen, EasyGesture.GestureType.HandOpen);
+            CreateGesture(Lang.GestureFingerPoint , EasyGesture.GestureType.FingerPoint);
+            CreateGesture(Lang.GestureVictory, EasyGesture.GestureType.Victory);
+            CreateGesture(Lang.GestureRockNRoll, EasyGesture.GestureType.RockNRoll);
+            CreateGesture(Lang.GestureHandGun, EasyGesture.GestureType.HandGun);
+            CreateGesture(Lang.GestureThumbsUp, EasyGesture.GestureType.ThumbsUp);
             Selection.activeGameObject = helper;
             CreateObject<EasyLocomotionManager>(Lang.LocomotionManager);
             GameObject locomotionGroup = CreateObject<EasyLocomotionGroup>(Lang.LocomotionGroup);
             EasyLocomotionGroupEditor.SetAllDefaultLocomotion(new SerializedObject(locomotionGroup.GetComponent<EasyLocomotionGroup>()));
             Selection.activeGameObject = helper;
+
+            void CreateGesture(string name, EasyGesture.GestureType gestureType)
+            {
+                Selection.activeGameObject = gestureManager;
+                GameObject gameObject = CreateObject<EasyGesture>(name);
+                EasyGesture easyGesture = gameObject.GetComponent<EasyGesture>();
+                easyGesture.handType = EasyGesture.HandType.Any;
+                easyGesture.gestureType = gestureType;
+
+            }
             return true;
         }
         /// <summary>

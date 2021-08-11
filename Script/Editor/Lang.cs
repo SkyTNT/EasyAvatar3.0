@@ -165,6 +165,7 @@ namespace EasyAvatar
             QuickLand,
             Land,
             AFK,
+            OneClickReplaceMissingTarget,
             About,
             ErrAvatarMenuLen1,
             ErrAvatarGestureManagerLen1,
@@ -360,6 +361,7 @@ namespace EasyAvatar
             QuickLand = "快速着陆";
             Land = "着陆";
             AFK = "挂机(AFK)";
+            OneClickReplaceMissingTarget = "一键替换缺失目标";
             About = "由SkyTNT制作\n项目地址：https://github.com/SkyTNT/EasyAvatar3.0/";
             ErrAvatarMenuLen1 = "一个模型中只能有一个主菜单，请考虑创建子菜单";
             ErrAvatarGestureManagerLen1 = "一个模型中只能有一个手势管理";
@@ -536,6 +538,7 @@ namespace EasyAvatar
             QuickLand = "Quick Land";
             Land = "Land";
             AFK = "AFK";
+            OneClickReplaceMissingTarget = "One click replacement of missing targets";
             About = " Made by SkyTNT\nProject:https://github.com/SkyTNT/EasyAvatar3.0/";
             ErrAvatarMenuLen1 = "There should only be one main menu in a avatar. Consider creating a submenu.";
             ErrAvatarGestureManagerLen1 = "There should only be one gesture manager in a avatar.";

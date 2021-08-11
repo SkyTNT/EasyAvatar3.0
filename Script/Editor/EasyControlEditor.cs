@@ -13,6 +13,7 @@ namespace EasyAvatar
     public class EasyControlEditor : Editor
     {
         GameObject avatar;
+        static bool offTrackingFold=true, onTrackingFold = true;
         SerializedProperty controlType, icon, autoRestore, autoTrackingControl, offTrackingControl, onTrackingControl, behaviorGroupList;
         List<EasyBehaviorGroupEditor> editors;
         bool needReLoad;
@@ -171,10 +172,12 @@ namespace EasyAvatar
 
             if (!autoTrackingControl.boolValue)
             {
-                GUILayout.Label(Lang.OnClose, EditorStyles.boldLabel);
-                EditorGUILayout.PropertyField(offTrackingControl);
-                GUILayout.Label(Lang.OnOpen, EditorStyles.boldLabel);
-                EditorGUILayout.PropertyField(onTrackingControl);
+                offTrackingFold = EditorGUILayout.Foldout(offTrackingFold, Lang.OnClose);
+                if(offTrackingFold)
+                    EditorGUILayout.PropertyField(offTrackingControl);
+                onTrackingFold = EditorGUILayout.Foldout(onTrackingFold, Lang.OnOpen);
+                if (onTrackingFold)
+                    EditorGUILayout.PropertyField(onTrackingControl);
             }
 
             string[] labels;

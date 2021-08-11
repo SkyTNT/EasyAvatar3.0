@@ -70,6 +70,7 @@ namespace EasyAvatar
         {
             AnimationClip clip = new AnimationClip();
             clip.frameRate = 60;
+            bool isProxy = false;
 
             if (behaviors == null)
                 return clip;
@@ -79,6 +80,11 @@ namespace EasyAvatar
             {
                 EasyBehavior behavior = behaviors[i];
                 EasyPropertyGroup propertyGroup = behavior.propertyGroup;
+                if (isProxy)
+                {
+                    clip = MergeAnimClip(clip);//复制，防止修改proxy动画
+                    isProxy = false;
+                }
                 if (behavior.type == EasyBehavior.Type.Property)
                 {
                     
@@ -110,6 +116,15 @@ namespace EasyAvatar
                 {
                     if (behavior.anim)
                     {
+
+                        if (clip.empty&& Path.GetFileName(AssetDatabase.GetAssetPath(behavior.anim)).StartsWith("proxy"))//proxy动画
+                        {
+                            clip = behavior.anim;
+                            isProxy = true;
+                            continue;
+                        }
+                            
+
                         //不能用foreach，foreach不能修改变量成员
                         EditorCurveBinding[] curveBindings = AnimationUtility.GetCurveBindings(behavior.anim);
                         for (int j = 0; j < curveBindings.Length; j++)
@@ -288,6 +303,12 @@ namespace EasyAvatar
             fx = new AnimationClip();
             action.frameRate = 60;
             fx.frameRate = 60;
+
+            if (Path.GetFileName(AssetDatabase.GetAssetPath(clip)).StartsWith("proxy"))
+            {
+                action = clip;
+                return;
+            }
             foreach (EditorCurveBinding binding in AnimationUtility.GetCurveBindings(clip))
             {
                 if (binding.type == typeof(Animator) && binding.path == "")
