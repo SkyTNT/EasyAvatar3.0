@@ -25,6 +25,7 @@ namespace EasyAvatar
             SubMenu,
             Control,
             Save,
+            ToggleDefault,
             ControlType,
             Toggle,
             Button,
@@ -225,6 +226,7 @@ namespace EasyAvatar
             SubMenu = "子菜单";
             Control = "控件";
             Save = "保存开关状态";
+            ToggleDefault = "开关默认打开";
             ControlType = "控件类型";
             Toggle = "开关";
             Button = "按钮";
@@ -406,6 +408,7 @@ namespace EasyAvatar
             SubMenu = "Sub Menu";
             Control = "Control";
             Save = "Save";
+            ToggleDefault = "Open by default";
             ControlType = "Control Type";
             Toggle = "Toggle";
             Button = "Button";

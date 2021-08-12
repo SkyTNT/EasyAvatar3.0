@@ -219,18 +219,21 @@ namespace EasyAvatar
                 if (control)
                 {
                     controlCount++;
-                    parameters.Add(new VRCExpressionParameters.Parameter() { name = "control" + controlCount, valueType = VRCExpressionParameters.ValueType.Bool, saved = control.save });
 
                     VRCExpressionsMenu.Control vrcControl = new VRCExpressionsMenu.Control();
                     vrcControl.name = control.name;
                     vrcControl.icon = control.icon;
                     vrcControl.parameter = new VRCExpressionsMenu.Control.Parameter() { name = "control" + controlCount };
 
+                    bool saved = false;
+                    float defaultVal = 0;
                     switch (control.type)
                     {
                         case EasyControl.Type.Toggle:
+                            saved = control.save;
                             vrcControl.type = VRCExpressionsMenu.Control.ControlType.Toggle;
                             BuildToggle(prefix + "_" + count + "_" + control.name, control);
+                            defaultVal = control.toggleDefault ? 1 : 0;
                             break;
                         case EasyControl.Type.Button:
                             vrcControl.type = VRCExpressionsMenu.Control.ControlType.Button;
@@ -249,7 +252,7 @@ namespace EasyAvatar
                         default:
                             break;
                     }
-
+                    parameters.Add(new VRCExpressionParameters.Parameter() { name = "control" + controlCount, valueType = VRCExpressionParameters.ValueType.Bool, saved = control.save, defaultValue = defaultVal });
                     expressionsMenu.controls.Add(vrcControl);
                 }
                 else if (subMenu)

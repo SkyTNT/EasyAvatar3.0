@@ -14,7 +14,7 @@ namespace EasyAvatar
     {
         GameObject avatar;
         static bool offTrackingFold=true, onTrackingFold = true;
-        SerializedProperty controlType, icon, save, autoRestore, autoTrackingControl, offTrackingControl, onTrackingControl, behaviorGroupList;
+        SerializedProperty controlType, icon, save, toggleDefault, autoRestore, autoTrackingControl, offTrackingControl, onTrackingControl, behaviorGroupList;
         List<EasyBehaviorGroupEditor> editors;
         bool needReLoad;
         int[] typeIndex = { 0, 1, 2, 3 };
@@ -38,6 +38,7 @@ namespace EasyAvatar
             controlType = serializedObject.FindProperty("type");
             icon = serializedObject.FindProperty("icon");
             save = serializedObject.FindProperty("save");
+            toggleDefault = serializedObject.FindProperty("toggleDefault");
             autoRestore = serializedObject.FindProperty("autoRestore");
             autoTrackingControl = serializedObject.FindProperty("autoTrackingControl");
             offTrackingControl = serializedObject.FindProperty("offTrackingControl");
@@ -161,9 +162,13 @@ namespace EasyAvatar
             if (EditorGUI.EndChangeCheck())
                 ChangeType((EasyControl.Type)controlType.enumValueIndex, tempType);
 
-            //是否保存状态
             if (controlType.enumValueIndex == (int)EasyControl.Type.Toggle)
+            {
+                //是否保存状态
                 save.boolValue = EditorGUILayout.ToggleLeft(Lang.Save, save.boolValue);
+                //是否默认打开
+                toggleDefault.boolValue = EditorGUILayout.ToggleLeft(Lang.ToggleDefault, toggleDefault.boolValue);
+            }
             //是否自动恢复
             autoRestore.boolValue = EditorGUILayout.ToggleLeft(Lang.AutoRestore, autoRestore.boolValue);
             //是否自动设置追踪
