@@ -49,6 +49,7 @@ namespace EasyAvatar
                     EditorGUILayout.HelpBox(Lang.AvatarApplyHelpBox, MessageType.Warning);
 
                     EasyMissingTargetReplacer.Field((EasyAvatarHelper)target);
+                    EditorGUILayout.HelpBox(Lang.OneClickReplaceMissingTargetNote, MessageType.Info);
                 }
                 //检测Avatar Helper是否包含在Avatar中，vrchat是不允许avatar包含非白名单内的脚本的。
                 if (((EasyAvatarHelper)target).transform.IsChildOf(avatarObj.transform))

@@ -38,8 +38,9 @@ namespace EasyAvatar
     [Serializable]
     public class EasyPropertyGroup
     {
-        public string targetPath;
+        public string targetPath;//targetPath在替换avatar时找到对应GameObject，方便移植
         public List<EasyProperty> properties;
+        public GameObject tempTarget;//tempTarget在Build时转换为targetPath
     }
 
     [Serializable]

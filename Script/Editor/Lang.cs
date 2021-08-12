@@ -32,7 +32,9 @@ namespace EasyAvatar
             Icon,
             Target,
             Missing,
+            Replacement,
             MissingTarget,
+            NoMissingTarget,
             Property,
             SetTo,
             Preview,
@@ -166,6 +168,7 @@ namespace EasyAvatar
             Land,
             AFK,
             OneClickReplaceMissingTarget,
+            OneClickReplaceMissingTargetNote,
             About,
             ErrAvatarMenuLen1,
             ErrAvatarGestureManagerLen1,
@@ -229,6 +232,8 @@ namespace EasyAvatar
             Target = "目标";
             Missing = "缺失";
             MissingTarget = "缺失目标物体";
+            NoMissingTarget = "没有缺失目标物体";
+            Replacement = "替换";
             Property = "属性";
             SetTo = "设置为";
             Preview = "预览";
@@ -362,6 +367,7 @@ namespace EasyAvatar
             Land = "着陆";
             AFK = "挂机(AFK)";
             OneClickReplaceMissingTarget = "一键替换缺失目标";
+            OneClickReplaceMissingTargetNote = "当你替换模型后，可能会出现缺失目标的情况，用这个可以一键替换缺失的目标";
             About = "由SkyTNT制作\n项目地址：https://github.com/SkyTNT/EasyAvatar3.0/";
             ErrAvatarMenuLen1 = "一个模型中只能有一个主菜单，请考虑创建子菜单";
             ErrAvatarGestureManagerLen1 = "一个模型中只能有一个手势管理";
@@ -406,6 +412,8 @@ namespace EasyAvatar
             Target = "Target";
             Missing = "Missing";
             MissingTarget = "Missing Target";
+            NoMissingTarget = "No missing target objects";
+            Replacement = "Replacement";
             Property = "Property";
             SetTo = "Set Value";
             Preview = "Preview";
@@ -539,6 +547,7 @@ namespace EasyAvatar
             Land = "Land";
             AFK = "AFK";
             OneClickReplaceMissingTarget = "One click replacement of missing targets";
+            OneClickReplaceMissingTargetNote = "After you replace the avatar, there may be some missing targets. You can use this button to replace the missing targets";
             About = " Made by SkyTNT\nProject:https://github.com/SkyTNT/EasyAvatar3.0/";
             ErrAvatarMenuLen1 = "There should only be one main menu in a avatar. Consider creating a submenu.";
             ErrAvatarGestureManagerLen1 = "There should only be one gesture manager in a avatar.";
