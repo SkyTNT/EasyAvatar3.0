@@ -13,6 +13,7 @@ namespace EasyAvatar
         Dictionary<string, string> pathMap = new Dictionary<string, string>();
         Dictionary<string, List<EasyPropertyGroup>> groupMap = new Dictionary<string, List<EasyPropertyGroup>>();
         List<Object> undoObjects = new List<Object>();
+        Vector2 scrollPos = new Vector2();
 
         public static void Field(EasyAvatarHelper helper)
         {
@@ -145,6 +146,7 @@ namespace EasyAvatar
                 GUILayout.Label(Lang.NoMissingTarget);
                 return;
             }
+            scrollPos = GUILayout.BeginScrollView(scrollPos);
             GUILayout.BeginHorizontal();
             GUILayout.Label(Lang.Missing, GUILayout.MaxWidth(position.width / 2));
             GUILayout.Label(Lang.Replacement, GUILayout.MaxWidth(position.width / 2));
@@ -184,11 +186,15 @@ namespace EasyAvatar
                         foreach (var group in groupMap[missingPath.Key])
                         {
                             group.targetPath = missingPath.Value;
+                            group.tempTarget = tempTarget;
+
                         }
                     }
                 }
                 EditorUtility.DisplayDialog("Info", Lang.BuildSucceed, "ok");
             }
+            GUILayout.Space(100);
+            GUILayout.EndScrollView();
         }
 
 

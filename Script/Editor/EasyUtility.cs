@@ -67,7 +67,7 @@ namespace EasyAvatar
         /// </summary>
         /// <param name="behaviors">behaviors</param>
         /// <returns>动画</returns>
-        public static AnimationClip GenerateAnimClip(List<EasyBehavior> behaviors, bool preview = false)
+        public static AnimationClip GenerateAnimClip(GameObject avatar, List<EasyBehavior> behaviors, bool preview = false)
         {
             AnimationClip clip = new AnimationClip();
             clip.frameRate = 60;
@@ -81,6 +81,22 @@ namespace EasyAvatar
             {
                 EasyBehavior behavior = behaviors[i];
                 EasyPropertyGroup propertyGroup = behavior.propertyGroup;
+                if (propertyGroup.tempTarget)
+                {
+                    if (propertyGroup.tempTarget.transform.IsChildOf(avatar.transform))
+                    {
+                        propertyGroup.targetPath = propertyGroup.tempTarget.transform.GetHierarchyPath(avatar.transform);
+                    }
+                }
+                else if(propertyGroup.targetPath!="")
+                {
+                    Transform tempTransform = avatar.transform.Find(propertyGroup.targetPath);
+                    if (tempTransform)
+                    {
+                        propertyGroup.tempTarget = tempTransform.gameObject;
+                    }
+                }
+
                 if (isProxy)
                 {
                     clip = MergeAnimClip(clip);//复制，防止修改proxy动画

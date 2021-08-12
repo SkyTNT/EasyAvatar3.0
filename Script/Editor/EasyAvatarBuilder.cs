@@ -308,8 +308,8 @@ namespace EasyAvatar
         /// <param name="gesture">手势</param>
         private void BuildGesture(string name, EasyGesture gesture)
         {
-            AnimationClip outClip = Utility.GenerateAnimClip(gesture.behaviors1.list);
-            AnimationClip onClip = Utility.GenerateAnimClip(gesture.behaviors2.list);
+            AnimationClip outClip = Utility.GenerateAnimClip(helper.avatar, gesture.behaviors1.list);
+            AnimationClip onClip = Utility.GenerateAnimClip(helper.avatar, gesture.behaviors2.list);
             if (gesture.handType == EasyGesture.HandType.Left || gesture.handType == EasyGesture.HandType.Any)
             {
                 if (gesture.autoTrackingControl)
@@ -337,8 +337,8 @@ namespace EasyAvatar
             if (control.behaviors.Count < 2)
                 return;
             //EasyBehaviors生成动画
-            AnimationClip offClip = Utility.GenerateAnimClip(control.behaviors[0].list);
-            AnimationClip onClip = Utility.GenerateAnimClip(control.behaviors[1].list);
+            AnimationClip offClip = Utility.GenerateAnimClip(helper.avatar, control.behaviors[0].list);
+            AnimationClip onClip = Utility.GenerateAnimClip(helper.avatar, control.behaviors[1].list);
             if (control.autoTrackingControl)
                 easyAnimator.AddState(name, offClip, onClip, control.autoRestore, "control" + controlCount);
             else
@@ -355,14 +355,14 @@ namespace EasyAvatar
             if (control.behaviors.Count < 1)
                 return;
             List<EasyBehaviorGroup> behaviorGroups = control.behaviors;
-            AnimationClip offClip = Utility.GenerateAnimClip(behaviorGroups[0].list);
+            AnimationClip offClip = Utility.GenerateAnimClip(helper.avatar, behaviorGroups[0].list);
             List<float> positions = new List<float>();
             List<Motion> motions = new List<Motion>();
             for (int i = 1; i < behaviorGroups.Count; i++)
             {
                 EasyBehaviorGroup behaviorGroup = behaviorGroups[i];
                 positions.Add(behaviorGroup.position.x);
-                motions.Add(Utility.GenerateAnimClip(behaviorGroup.list));
+                motions.Add(Utility.GenerateAnimClip(helper.avatar, behaviorGroup.list));
             }
             if(positions.Count == 2&& positions[0] == 0 && positions[1] == 0)//版本升级，之前RadialPuppet没有位置信息
             {
@@ -385,14 +385,14 @@ namespace EasyAvatar
             if (control.behaviors.Count < 1)
                 return;
             List<EasyBehaviorGroup> behaviorGroups = control.behaviors;
-            AnimationClip offClip = Utility.GenerateAnimClip(behaviorGroups[0].list);
+            AnimationClip offClip = Utility.GenerateAnimClip(helper.avatar, behaviorGroups[0].list);
             List<Vector2> positions = new List<Vector2>();
             List<Motion> motions = new List<Motion>();
             for (int i = 1; i < behaviorGroups.Count; i++)
             {
                 EasyBehaviorGroup behaviorGroup = behaviorGroups[i];
                 positions.Add(behaviorGroup.position);
-                motions.Add(Utility.GenerateAnimClip(behaviorGroup.list));
+                motions.Add(Utility.GenerateAnimClip(helper.avatar, behaviorGroup.list));
             }
             BlendTree blendTree = Utility.Generate2DBlendTree(name, "float1", "float2", positions, motions);
             if (control.autoTrackingControl)

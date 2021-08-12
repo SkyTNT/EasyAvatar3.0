@@ -18,15 +18,16 @@ namespace EasyAvatar
             EditorGUI.BeginChangeCheck();
             avatar.objectReferenceValue = EditorGUILayout.ObjectField(Lang.Avatar, avatar.objectReferenceValue, typeof(GameObject), true);
             GameObject avatarObj = (GameObject)avatar.objectReferenceValue;
-            if (EditorGUI.EndChangeCheck())
+            if (EditorGUI.EndChangeCheck()&& avatarObj)
             {
                 //防止设置为自己
                 if(avatarObj.transform == ((EasyAvatarHelper)target).transform)
                 {
                     avatar.objectReferenceValue = avatarObj = null;
                 }
+                SetNewAvatar(avatarObj);
                 //检测Avatar Helper是否包含在Avatar中，vrchat是不允许avatar包含非白名单内的脚本的。
-                if (avatar.objectReferenceValue&&((EasyAvatarHelper)target).transform.IsChildOf(avatarObj.transform))
+                if (((EasyAvatarHelper)target).transform.IsChildOf(avatarObj.transform))
                     EditorUtility.DisplayDialog("Error", Lang.ErrAvatarHelperInAvatar, "ok");
             }
             
@@ -57,6 +58,83 @@ namespace EasyAvatar
             }
 
             serializedObject.ApplyModifiedProperties();
+        }
+
+        private void SetNewAvatar(GameObject avatar)
+        {
+            EasyMenu mainMenu = null;
+            EasyGestureManager gestureManager = null;
+            EasyAvatarHelper helper = (EasyAvatarHelper)target;
+
+            foreach (Transform child in helper.gameObject.transform)
+            {
+                EasyMenu tempMenu = child.GetComponent<EasyMenu>();
+                EasyGestureManager tempGestureManager = child.GetComponent<EasyGestureManager>();
+                if (tempMenu)
+                {
+                    if (mainMenu)//检测是否有多个主菜单
+                    {
+                        EditorUtility.DisplayDialog("Error", Lang.ErrAvatarMenuLen1, "ok");
+                        return;
+                    }
+                    mainMenu = tempMenu;
+                }
+
+                if (tempGestureManager)
+                {
+                    if (gestureManager)//检测是否有多个手势管理
+                    {
+                        EditorUtility.DisplayDialog("Error", Lang.ErrAvatarGestureManagerLen1, "ok");
+                        return;
+                    }
+                    gestureManager = tempGestureManager;
+                }
+            }
+
+            if (mainMenu)
+                SearchMenu(mainMenu.transform);
+            if (gestureManager)
+                foreach (Transform child in gestureManager.transform)
+                {
+                    EasyGesture gesture = child.GetComponent<EasyGesture>();
+                    if (!gesture)
+                        continue;
+                    FindBehaviorGroup(gesture.behaviors1);
+                    FindBehaviorGroup(gesture.behaviors2);
+                }
+
+            void SearchMenu(Transform menu)
+            {
+                foreach (Transform child in menu)
+                {
+                    EasyMenu subMenu = child.GetComponent<EasyMenu>();
+                    EasyControl control = child.GetComponent<EasyControl>();
+                    if (control)
+                    {
+                        foreach (var behaviorGroup in control.behaviors)
+                            FindBehaviorGroup(behaviorGroup);
+                    }
+
+                    if (subMenu)
+                        SearchMenu(subMenu.transform);
+                }
+            }
+
+            void FindBehaviorGroup(EasyBehaviorGroup behaviorGroup)
+            {
+                foreach (var behavior in behaviorGroup.list)
+                {
+                    EasyPropertyGroup propertyGroup = behavior.propertyGroup;
+                    if (propertyGroup.targetPath != "")
+                    {
+                        Transform tempTransform = avatar.transform.Find(propertyGroup.targetPath);
+                        if (tempTransform)
+                        {
+                            propertyGroup.tempTarget = tempTransform.gameObject;
+                        }
+                    }
+                }
+            }
         }
         
     }

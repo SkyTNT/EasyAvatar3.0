@@ -108,6 +108,8 @@ namespace EasyAvatar
         /// </summary>
         public void StartPreview()
         {
+            if (!avatar)
+                return;
             Animator animator = avatar.GetComponent<Animator>();
             if (!animator)
             {
@@ -154,7 +156,7 @@ namespace EasyAvatar
                 return;
             lastPreviewTime = Time.realtimeSinceStartup;
             AnimationMode.BeginSampling();
-            AnimationClip previewClip = Utility.MergeAnimClip(currentClip, Utility.GenerateAnimClip(behaviors.GetObject<List<EasyBehavior>>(), true));
+            AnimationClip previewClip = Utility.MergeAnimClip(currentClip, Utility.GenerateAnimClip(avatar, behaviors.GetObject<List<EasyBehavior>>(), true));
             AnimationMode.SampleAnimationClip(avatar, previewClip, 0);
             AnimationMode.EndSampling();
         }
@@ -257,7 +259,7 @@ namespace EasyAvatar
             };
 
             //当修改目标时
-            if (TargetObjectField(targetLabelRect, targetFieldRect, targetPath, out GameObject tempTarget))
+            if (TargetObjectField(targetLabelRect, targetFieldRect, propertyGroup, out GameObject tempTarget))
             {
 
 
@@ -278,40 +280,68 @@ namespace EasyAvatar
         }
 
 
-        public bool TargetObjectField(Rect targetLabelRect, Rect targetFieldRect, SerializedProperty targetPath, out GameObject tempTarget)
+        public bool TargetObjectField(Rect targetLabelRect, Rect targetFieldRect, SerializedProperty propertyGroup, out GameObject tempTargetObject)
         {
+            SerializedProperty targetPath = propertyGroup.FindPropertyRelative("targetPath");
+            SerializedProperty tempTarget = propertyGroup.FindPropertyRelative("tempTarget");
+
             GameObject newTarget = null;
-            tempTarget = null;
-            //获取目标物体
-            if (avatar && targetPath.stringValue != "")
+            tempTargetObject = (GameObject)tempTarget.objectReferenceValue;//首先从tempTarget获取
+
+            if (!tempTargetObject)//tempTarget获取不到就从targetPath获取
             {
-                Transform tempTransform = avatar.transform.Find(targetPath.stringValue);
-                if (tempTransform)
-                    tempTarget = tempTransform.gameObject;
+                if (avatar && targetPath.stringValue != "")
+                {
+                    Transform tempTransform = avatar.transform.Find(targetPath.stringValue);
+                    if (tempTransform)
+                    {
+                        tempTargetObject = tempTransform.gameObject;
+                        tempTarget.objectReferenceValue = tempTargetObject;
+                    }
+                        
+                }
             }
-            //当前avatar是否缺失目标物体（因为是目标物体相对于avatar的）
-            bool isMissing = !tempTarget && targetPath.stringValue != "";
             //目标物体
             EditorGUI.LabelField(targetLabelRect, Lang.Target);
-            newTarget = (GameObject)EditorGUI.ObjectField(targetFieldRect, tempTarget, typeof(GameObject), true);
+            newTarget = (GameObject)EditorGUI.ObjectField(targetFieldRect, tempTargetObject, typeof(GameObject), true);
 
             //目标物体缺失
-            if (isMissing)
+            if (!avatar||((!tempTargetObject|| !tempTargetObject.transform.IsChildOf(avatar.transform))&&targetPath.stringValue!=""))
             {
                 Rect missingRect = new Rect(targetFieldRect) { width = targetFieldRect.width - targetFieldRect.height - 2 };
                 GUI.Box(missingRect, GUIContent.none, "Tag MenuItem");
                 EditorGUI.LabelField(missingRect, Lang.Missing + ":" + targetPath.stringValue, MyGUIStyle.yellowLabel);
             }
 
-            if (newTarget != tempTarget)
+            if (newTarget != tempTargetObject)
             {
                 if (!avatar)
                     EditorUtility.DisplayDialog("Error", Lang.ErrAvatarNotSet, "ok");
                 else
-                    targetPath.stringValue = CalculateGameObjectPath(newTarget);
+                {
+                    if (!newTarget|| newTarget.transform.IsChildOf(avatar.transform))//None或者avatar内的物体
+                    {
+                        tempTarget.objectReferenceValue = newTarget;
+                    }
+                    else//avatar外的物体
+                    {
+                        newTarget = tempTargetObject;//取消修改
+                    }
+                }
             }
 
-            return newTarget != tempTarget;
+            if (!newTarget)
+            {
+                if (tempTargetObject)
+                    targetPath.stringValue = "";//只有原来不是空物体才置空（把目标设置为none时）
+            }
+            else if(avatar&&newTarget.transform.IsChildOf(avatar.transform))
+            {
+                targetPath.stringValue = CalculateGameObjectPath(newTarget);
+
+            }
+
+            return newTarget != tempTargetObject;
         }
 
         public void AnimTypeBehaviorLayout(Rect position, SerializedProperty behavior)
@@ -445,7 +475,7 @@ namespace EasyAvatar
 
         public void ToggleObjectTypeBehaviorLayout(Rect position, SerializedProperty behavior)
         {
-            SerializedProperty targetPath = behavior.FindPropertyRelative("propertyGroup.targetPath");
+            SerializedProperty propertyGroup = behavior.FindPropertyRelative("propertyGroup");
             SerializedProperty isActive = behavior.FindPropertyRelative("isActive");
 
             position.y += 3;
@@ -474,7 +504,7 @@ namespace EasyAvatar
                 width = position.width - toggleLabel.width
             };
 
-            TargetObjectField(targetLabelRect, targetFieldRect, targetPath, out GameObject tempTarget);
+            TargetObjectField(targetLabelRect, targetFieldRect, propertyGroup, out GameObject tempTarget);
             GUI.Label(toggleLabel, Lang.Toggle);
             EditorGUI.PropertyField(toggleFieldRect, isActive, GUIContent.none);
 
