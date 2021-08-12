@@ -16,6 +16,7 @@ namespace EasyAvatar
             serializedObject.Update();
             avatar = serializedObject.FindProperty("avatar");
             EditorGUI.BeginChangeCheck();
+            GameObject oldAvatar = (GameObject)avatar.objectReferenceValue;
             avatar.objectReferenceValue = EditorGUILayout.ObjectField(Lang.Avatar, avatar.objectReferenceValue, typeof(GameObject), true);
             GameObject avatarObj = (GameObject)avatar.objectReferenceValue;
             if (EditorGUI.EndChangeCheck()&& avatarObj)
@@ -25,7 +26,7 @@ namespace EasyAvatar
                 {
                     avatar.objectReferenceValue = avatarObj = null;
                 }
-                SetNewAvatar(avatarObj);
+                SetNewAvatar(avatarObj, oldAvatar);
                 //检测Avatar Helper是否包含在Avatar中，vrchat是不允许avatar包含非白名单内的脚本的。
                 if (((EasyAvatarHelper)target).transform.IsChildOf(avatarObj.transform))
                     EditorUtility.DisplayDialog("Error", Lang.ErrAvatarHelperInAvatar, "ok");
@@ -60,7 +61,7 @@ namespace EasyAvatar
             serializedObject.ApplyModifiedProperties();
         }
 
-        private void SetNewAvatar(GameObject avatar)
+        private void SetNewAvatar(GameObject avatar, GameObject oldAvatar)
         {
             EasyMenu mainMenu = null;
             EasyGestureManager gestureManager = null;
@@ -122,9 +123,17 @@ namespace EasyAvatar
 
             void FindBehaviorGroup(EasyBehaviorGroup behaviorGroup)
             {
+                if (behaviorGroup == null)
+                    return;
                 foreach (var behavior in behaviorGroup.list)
                 {
                     EasyPropertyGroup propertyGroup = behavior.propertyGroup;
+
+                    if (oldAvatar && propertyGroup.tempTarget && propertyGroup.tempTarget.transform.IsChildOf(oldAvatar.transform))//先获取在原来的avatar上的propertyGroup.targetPath
+                    {
+                        propertyGroup.targetPath = propertyGroup.tempTarget.transform.GetHierarchyPath(oldAvatar.transform);
+                    }
+
                     if (propertyGroup.targetPath != "")
                     {
                         Transform tempTransform = avatar.transform.Find(propertyGroup.targetPath);

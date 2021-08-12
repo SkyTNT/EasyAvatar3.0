@@ -148,18 +148,17 @@ namespace EasyAvatar
 
             if (mainMenu)
             {
-                controlCount = 0;
-                //构建菜单
-                VRCExpressionsMenu VRCMenu = BuildMenu(mainMenu, "Menu");
-
                 //构建VRCExpressionParameters
                 List<VRCExpressionParameters.Parameter> parameters = new List<VRCExpressionParameters.Parameter>();
                 VRCExpressionParameters expressionParameters = ScriptableObject.CreateInstance<VRCExpressionParameters>();
                 parameters.Add(new VRCExpressionParameters.Parameter() { name = "driver", valueType = VRCExpressionParameters.ValueType.Int, saved = false });
                 parameters.Add(new VRCExpressionParameters.Parameter() { name = "float1", valueType = VRCExpressionParameters.ValueType.Float, saved = false });
                 parameters.Add(new VRCExpressionParameters.Parameter() { name = "float2", valueType = VRCExpressionParameters.ValueType.Float, saved = false });
-                for (int i = 0; i < controlCount; i++)
-                    parameters.Add(new VRCExpressionParameters.Parameter() { name = "control" + (i + 1), valueType = VRCExpressionParameters.ValueType.Bool, saved = false });
+
+                controlCount = 0;
+                //构建菜单
+                VRCExpressionsMenu VRCMenu = BuildMenu(parameters, mainMenu, "Menu");
+
                 expressionParameters.parameters = parameters.ToArray();
                 AssetDatabase.CreateAsset(expressionParameters, menuBuildDir + "Parameters.asset");
 
@@ -200,7 +199,7 @@ namespace EasyAvatar
         /// <param name="menu">根菜单</param>
         /// <param name="prefix">菜单名字累加前缀</param>
         /// <returns>vrc菜单</returns>
-        private VRCExpressionsMenu BuildMenu(EasyMenu menu, string prefix)
+        private VRCExpressionsMenu BuildMenu(List<VRCExpressionParameters.Parameter> parameters, EasyMenu menu, string prefix)
         {
             if (EasyAvatarMenuItem.GetMenuItemCount(menu.gameObject.transform) > 8)
             {
@@ -220,6 +219,8 @@ namespace EasyAvatar
                 if (control)
                 {
                     controlCount++;
+                    parameters.Add(new VRCExpressionParameters.Parameter() { name = "control" + controlCount, valueType = VRCExpressionParameters.ValueType.Bool, saved = control.save });
+
                     VRCExpressionsMenu.Control vrcControl = new VRCExpressionsMenu.Control();
                     vrcControl.name = control.name;
                     vrcControl.icon = control.icon;
@@ -257,7 +258,7 @@ namespace EasyAvatar
                     VRCExpressionsMenu.Control vrcControl = new VRCExpressionsMenu.Control();
                     vrcControl.name = subMenu.name;
                     vrcControl.type = VRCExpressionsMenu.Control.ControlType.SubMenu;
-                    vrcControl.subMenu = BuildMenu(subMenu, prefix + "_" + count + "_" + subMenu.name);
+                    vrcControl.subMenu = BuildMenu(parameters, subMenu, prefix + "_" + count + "_" + subMenu.name);
                     expressionsMenu.controls.Add(vrcControl);
                 }
             }

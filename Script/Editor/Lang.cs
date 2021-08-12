@@ -24,6 +24,7 @@ namespace EasyAvatar
             MainMenu,
             SubMenu,
             Control,
+            Save,
             ControlType,
             Toggle,
             Button,
@@ -223,6 +224,7 @@ namespace EasyAvatar
             MainMenu = "主菜单";
             SubMenu = "子菜单";
             Control = "控件";
+            Save = "保存开关状态";
             ControlType = "控件类型";
             Toggle = "开关";
             Button = "按钮";
@@ -403,6 +405,7 @@ namespace EasyAvatar
             MainMenu = "Expression Menu";
             SubMenu = "Sub Menu";
             Control = "Control";
+            Save = "Save";
             ControlType = "Control Type";
             Toggle = "Toggle";
             Button = "Button";

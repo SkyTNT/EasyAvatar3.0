@@ -120,7 +120,27 @@ namespace EasyAvatar
                 foreach (var behavior in behaviorGroup.list)
                 {
                     string path = behavior.propertyGroup.targetPath;
-                    if (!avatar.transform.Find(path))
+                    GameObject tempTarget = behavior.propertyGroup.tempTarget;
+
+                    if (tempTarget && !tempTarget.transform.IsChildOf(avatar.transform))//如果tempTarget不在avatar内，看作没有获取到
+                        tempTarget = null;
+
+                    if (tempTarget)//获取到了就更新
+                    {
+                        behavior.propertyGroup.targetPath = tempTarget.transform.GetHierarchyPath(avatar.transform);
+                    }
+
+                    if (!tempTarget && path != "")//tempTarget获取不到就从targetPath获取
+                    {
+                        Transform tempTransform = avatar.transform.Find(path);
+                        if (tempTransform)
+                        {
+                            tempTarget = tempTransform.gameObject;
+                            behavior.propertyGroup.tempTarget = tempTarget;
+                        }
+                    }
+
+                    if (!tempTarget&&path!="")//这次就是Missing了
                     {
                         EasyPropertyGroup propertyGroup = behavior.propertyGroup;
                         missingPropertyGroups.Add(propertyGroup);

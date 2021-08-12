@@ -82,16 +82,7 @@ namespace EasyAvatar
             gestureBuilder.SetDrivedStateLayer(driverId, rightHand ? gestureRightLayer : gestureLeftLayer);
         }
 
-        /// <summary>
-        /// 添加状态
-        /// </summary>
-        /// <param name="name">名字</param>
-        /// <param name="offAnim">关闭的动画</param>
-        /// <param name="blendTree0">打开时混合树左端的动画</param>
-        /// <param name="blendTree1">打开时混合树右端的动画</param>
-        /// <param name="autoRestore">是否自动恢复</param>
-        /// <param name="parameterName">控制开关的参数名</param>
-        /// <param name="threshold">参数值</param>
+       
         public void AddState(string name, AnimationClip offAnim, Motion onMotion, bool autoRestore, string parameterName, int threshold = -999)
         {
             AddState(name, offAnim, onMotion, null, null, autoRestore, parameterName, threshold);
@@ -102,7 +93,7 @@ namespace EasyAvatar
         /// </summary>
         /// <param name="name">名字</param>
         /// <param name="offAnim">关闭的动画</param>
-        /// <param name="onMotion">打开时的混合树</param>
+        /// <param name="onMotion">打开时的动画<</param>
         /// <param name="offTracking">关闭时设置的追踪状态，null时自动生成</param>
         /// <param name="onTracking">打开时设置的追踪状态，null时自动生成</param>
         /// <param name="autoRestore">是否自动恢复</param>
@@ -708,6 +699,7 @@ namespace EasyAvatar
     public class AnimatorDriver
     {
         Dictionary<KeyValuePair<string, int>, int> drivers;
+        Dictionary<int, KeyValuePair<string, int>> paramasMap;
         AnimatorControllerBuilder builder;
 
         /// <summary>
@@ -717,7 +709,9 @@ namespace EasyAvatar
         public AnimatorDriver(AnimatorControllerBuilder builder)
         {
             drivers = new Dictionary<KeyValuePair<string, int>, int>();
+            paramasMap = new Dictionary<int, KeyValuePair<string, int>>();
             this.builder = builder;
+            builder.AddLayer("Init");
         }
 
         /// <summary>
@@ -728,38 +722,79 @@ namespace EasyAvatar
         public int GetDriverId(string parameterName)
         {
             //查询drivers里是否已经有driver
-            KeyValuePair<string, int> driverKey = new KeyValuePair<string, int>(parameterName, 1);
+            KeyValuePair<string, int> driverKey = new KeyValuePair<string, int>(parameterName, -999);
             if (drivers.ContainsKey(driverKey))
                 return drivers[driverKey];
             //每次id是成对的，所以乘2
             int driverCount = drivers.Count;
             int driverId = driverCount * 2 + 1;
-            //添加新的层
-            AnimatorControllerLayer layer = builder.AddLayer(parameterName);
-            AnimatorStateMachine stateMachine = layer.stateMachine;
-            //开关状态
-            AnimatorState stateOff = stateMachine.AddState("off");
-            AnimatorState stateOn = stateMachine.AddState("on");
-            stateMachine.defaultState = stateOff;
-            stateOff.writeDefaultValues = false;
-            stateOn.writeDefaultValues = false;
-            //VRC参数驱动，paramName的参数为true时driver设为driverId，paramName的参数为false是driver设为driverId+1
-            VRCAvatarParameterDriver offDriver = stateOff.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
-            offDriver.parameters.Add(new VRC.SDKBase.VRC_AvatarParameterDriver.Parameter() { name = "driver", value = driverId + 1, type = VRC.SDKBase.VRC_AvatarParameterDriver.ChangeType.Set });
-            VRCAvatarParameterDriver onDriver = stateOn.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
-            onDriver.parameters.Add(new VRC.SDKBase.VRC_AvatarParameterDriver.Parameter() { name = "driver", value = driverId, type = VRC.SDKBase.VRC_AvatarParameterDriver.ChangeType.Set });
 
-            if (!builder.CheckControllerParameter(parameterName))
-                builder.AddParameterBool(parameterName);
-            //状态连线
-            AnimatorStateTransition off_on = stateOff.AddTransition(stateOn);
-            off_on.duration = 0;
-            AnimatorStateTransition on_off = stateOn.AddTransition(stateOff);
-            on_off.duration = 0;
-            off_on.AddCondition(AnimatorConditionMode.If, 0, parameterName);
-            on_off.AddCondition(AnimatorConditionMode.IfNot, 0, parameterName);
+            {
+                //添加新的层
+                AnimatorControllerLayer layer = builder.AddLayer(parameterName);
+                AnimatorStateMachine stateMachine = layer.stateMachine;
+                //开关状态
+                AnimatorState stateOff = stateMachine.AddState("off");
+                AnimatorState stateOn = stateMachine.AddState("on");
+                stateMachine.defaultState = stateOff;
+                stateOff.writeDefaultValues = false;
+                stateOn.writeDefaultValues = false;
+                //VRC参数驱动，paramName的参数为true时driver设为driverId，paramName的参数为false是driver设为driverId+1
+                VRCAvatarParameterDriver offDriver = stateOff.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
+                offDriver.parameters.Add(new VRC.SDKBase.VRC_AvatarParameterDriver.Parameter() { name = "driver", value = driverId + 1, type = VRC.SDKBase.VRC_AvatarParameterDriver.ChangeType.Set });
+                VRCAvatarParameterDriver onDriver = stateOn.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
+                onDriver.parameters.Add(new VRC.SDKBase.VRC_AvatarParameterDriver.Parameter() { name = "driver", value = driverId, type = VRC.SDKBase.VRC_AvatarParameterDriver.ChangeType.Set });
+
+                if (!builder.CheckControllerParameter(parameterName))
+                    builder.AddParameterBool(parameterName);
+                //状态连线
+                AnimatorStateTransition off_on = stateOff.AddTransition(stateOn);
+                off_on.duration = 0;
+                AnimatorStateTransition on_off = stateOn.AddTransition(stateOff);
+                on_off.duration = 0;
+                off_on.AddCondition(AnimatorConditionMode.If, 0, parameterName);
+                on_off.AddCondition(AnimatorConditionMode.IfNot, 0, parameterName);
+            }
+
+            {
+                AnimatorControllerLayer layer = builder.FindLayer("Init");
+                AnimatorStateMachine stateMachine = layer.stateMachine;
+                AnimatorState stateBus = stateMachine.AddState("Bus"+ driverCount);
+                AnimatorState stateCheck = stateMachine.AddState("Ckeck"+ driverCount);
+                stateBus.writeDefaultValues = false;
+                stateCheck.writeDefaultValues = false;
+                VRCAvatarParameterDriver checkDriver = stateCheck.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
+                checkDriver.parameters.Add(new VRC.SDKBase.VRC_AvatarParameterDriver.Parameter() { name = "driver", value = driverId , type = VRC.SDKBase.VRC_AvatarParameterDriver.ChangeType.Set });
+                
+                AnimatorStateTransition b_c = stateBus.AddTransition(stateCheck);
+                b_c.duration = 0;
+                b_c.AddCondition(AnimatorConditionMode.If, 0, parameterName);
+                if (driverCount > 0)
+                {
+                    AnimatorState stateBusPre = builder.FindState(stateMachine, "Bus" + (driverCount - 1));
+                    AnimatorState stateCheckPre = builder.FindState(stateMachine, "Ckeck" + (driverCount - 1));
+                    AnimatorStateTransition b_b = stateBusPre.AddTransition(stateBus);
+                    b_b.duration = 0;
+                    KeyValuePair<string, int> preDriverKey = paramasMap[driverCount * 2 - 1];
+                    if (preDriverKey.Value == -999)
+                        b_b.AddCondition(AnimatorConditionMode.IfNot, 0, preDriverKey.Key);
+                    else
+                        b_b.AddCondition(AnimatorConditionMode.NotEqual, preDriverKey.Value, preDriverKey.Key);
+                    AnimatorStateTransition c_b = stateCheckPre.AddTransition(stateBus);
+                    c_b.duration = 0;
+                    c_b.hasExitTime = true;
+                    c_b.exitTime = 0.05f;
+                }
+                else
+                {
+                    stateMachine.defaultState = stateBus;
+                }
+
+            }
+
             //加入词典方便查询
             drivers.Add(driverKey, driverId);
+            paramasMap.Add(driverId, driverKey);
             return driverId;
         }
 
@@ -778,43 +813,81 @@ namespace EasyAvatar
 
             int driverCount = drivers.Count;
             int driverId = driverCount * 2 + 1;
-
-            AnimatorControllerLayer layer = builder.FindLayer(parameterName);
-            if (layer == null)
-                layer = builder.AddLayer(parameterName);
-            AnimatorStateMachine stateMachine = layer.stateMachine;
-
-            AnimatorState defaultState = builder.FindState(stateMachine, "default");
-            if (defaultState == null)
             {
-                defaultState = stateMachine.AddState("default");
-                defaultState.writeDefaultValues = false;
-                stateMachine.defaultState = defaultState;
+                AnimatorControllerLayer layer = builder.FindLayer(parameterName);
+                if (layer == null)
+                    layer = builder.AddLayer(parameterName);
+                AnimatorStateMachine stateMachine = layer.stateMachine;
+
+                AnimatorState defaultState = builder.FindState(stateMachine, "default");
+                if (defaultState == null)
+                {
+                    defaultState = stateMachine.AddState("default");
+                    defaultState.writeDefaultValues = false;
+                    stateMachine.defaultState = defaultState;
+                }
+
+                AnimatorState stateOff = stateMachine.AddState(threshold + "_off");
+                AnimatorState stateOn = stateMachine.AddState(threshold + "_on");
+                stateOff.writeDefaultValues = false;
+                stateOn.writeDefaultValues = false;
+                VRCAvatarParameterDriver offDriver = stateOff.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
+                offDriver.parameters.Add(new VRC.SDKBase.VRC_AvatarParameterDriver.Parameter() { name = "driver", value = driverId + 1, type = VRC.SDKBase.VRC_AvatarParameterDriver.ChangeType.Set });
+                VRCAvatarParameterDriver onDriver = stateOn.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
+                onDriver.parameters.Add(new VRC.SDKBase.VRC_AvatarParameterDriver.Parameter() { name = "driver", value = driverId, type = VRC.SDKBase.VRC_AvatarParameterDriver.ChangeType.Set });
+
+                if (!builder.CheckControllerParameter(parameterName))
+                    builder.AddParameterInt(parameterName);
+                AnimatorStateTransition default_on = defaultState.AddTransition(stateOn);
+                default_on.duration = 0;
+                AnimatorStateTransition on_off = stateOn.AddTransition(stateOff);
+                on_off.duration = 0;
+                AnimatorStateTransition off_default = stateOff.AddTransition(defaultState);
+                off_default.hasExitTime = true;
+                off_default.exitTime = 0.05f;
+                off_default.duration = 0;
+                default_on.AddCondition(AnimatorConditionMode.Equals, threshold, parameterName);
+                on_off.AddCondition(AnimatorConditionMode.NotEqual, threshold, parameterName);
             }
 
-            AnimatorState stateOff = stateMachine.AddState(threshold + "_off");
-            AnimatorState stateOn = stateMachine.AddState(threshold + "_on");
-            stateOff.writeDefaultValues = false;
-            stateOn.writeDefaultValues = false;
-            VRCAvatarParameterDriver offDriver = stateOff.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
-            offDriver.parameters.Add(new VRC.SDKBase.VRC_AvatarParameterDriver.Parameter() { name = "driver", value = driverId + 1, type = VRC.SDKBase.VRC_AvatarParameterDriver.ChangeType.Set });
-            VRCAvatarParameterDriver onDriver = stateOn.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
-            onDriver.parameters.Add(new VRC.SDKBase.VRC_AvatarParameterDriver.Parameter() { name = "driver", value = driverId, type = VRC.SDKBase.VRC_AvatarParameterDriver.ChangeType.Set });
+            {
+                AnimatorControllerLayer layer = builder.FindLayer("Init");
+                AnimatorStateMachine stateMachine = layer.stateMachine;
+                AnimatorState stateBus = stateMachine.AddState("Bus" + driverCount);
+                AnimatorState stateCheck = stateMachine.AddState("Ckeck" + driverCount);
+                stateBus.writeDefaultValues = false;
+                stateCheck.writeDefaultValues = false;
+                VRCAvatarParameterDriver checkDriver = stateCheck.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
+                checkDriver.parameters.Add(new VRC.SDKBase.VRC_AvatarParameterDriver.Parameter() { name = "driver", value = driverId, type = VRC.SDKBase.VRC_AvatarParameterDriver.ChangeType.Set });
 
-            if (!builder.CheckControllerParameter(parameterName))
-                builder.AddParameterInt(parameterName);
-            AnimatorStateTransition default_on = defaultState.AddTransition(stateOn);
-            default_on.duration = 0;
-            AnimatorStateTransition on_off = stateOn.AddTransition(stateOff);
-            on_off.duration = 0;
-            AnimatorStateTransition off_default = stateOff.AddTransition(defaultState);
-            off_default.hasExitTime = true;
-            off_default.exitTime = 0.05f;
-            off_default.duration = 0;
-            default_on.AddCondition(AnimatorConditionMode.Equals, threshold, parameterName);
-            on_off.AddCondition(AnimatorConditionMode.NotEqual, threshold, parameterName);
+                AnimatorStateTransition b_c = stateBus.AddTransition(stateCheck);
+                b_c.duration = 0;
+                b_c.AddCondition(AnimatorConditionMode.Equals, threshold, parameterName);
+                if (driverCount > 0)
+                {
+                    AnimatorState stateBusPre = builder.FindState(stateMachine, "Bus" + (driverCount - 1));
+                    AnimatorState stateCheckPre = builder.FindState(stateMachine, "Ckeck" + (driverCount - 1));
+                    AnimatorStateTransition b_b = stateBusPre.AddTransition(stateBus);
+                    b_b.duration = 0;
+                    KeyValuePair<string, int> preDriverKey = paramasMap[driverCount * 2 - 1];
+                    if (preDriverKey.Value == -999)
+                        b_b.AddCondition(AnimatorConditionMode.IfNot, 0, preDriverKey.Key);
+                    else
+                        b_b.AddCondition(AnimatorConditionMode.NotEqual, preDriverKey.Value, preDriverKey.Key);
+                    AnimatorStateTransition c_b = stateCheckPre.AddTransition(stateBus);
+                    c_b.duration = 0;
+                    c_b.hasExitTime = true;
+                    c_b.exitTime = 0.05f;
+                }
+                else
+                {
+                    stateMachine.defaultState = stateBus;
+                }
+
+            }
+
             drivers.Add(driverKey, driverId);
-
+            paramasMap.Add(driverId, driverKey);
             return driverId;
         }
     }
