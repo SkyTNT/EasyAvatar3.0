@@ -162,6 +162,13 @@ namespace EasyAvatar
 
         public void SetLocomotion(EasyLocomotionManager locomotionManager)
         {
+            if (locomotionManager.useAnimatorController)
+            {
+                locomotionBuilder.controller = locomotionManager.controller as AnimatorController;
+                useCustomLocomotionController = true;
+                return;
+            }
+
             EasyLocomotionGroup locomotionGroup = locomotionManager.defaultLocomotionGroup;
 
             if (!locomotionGroup)//更新检查
@@ -191,16 +198,7 @@ namespace EasyAvatar
                 EditorUtility.DisplayDialog("Error", Lang.ErrDefaultLocomotionNotSet, "ok");
                 return;
             }
-                
-
             afk = locomotionGroup.afk.animClip;
-
-            if (locomotionManager.useAnimatorController)
-            {
-                locomotionBuilder.controller = locomotionManager.controller as AnimatorController;
-                useCustomLocomotionController = true;
-                return;
-            }
 
             GenLocomotionStates(locomotionGroup, out AnimatorState standState, out AnimatorState crouchState, out AnimatorState proneState);
             locomotionBuilder.baseLayer.stateMachine.defaultState = standState;
