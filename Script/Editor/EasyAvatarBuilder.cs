@@ -179,9 +179,9 @@ namespace EasyAvatar
             //设置CustomizeAnimationLayers
             avatarDescriptor.customizeAnimationLayers = true;
             avatarDescriptor.baseAnimationLayers = new CustomAnimLayer[]{
-                    new CustomAnimLayer(){type = AnimLayerType.Base ,isDefault = false, animatorController = easyAnimator.locomotionController},
+                    new CustomAnimLayer(){type = AnimLayerType.Base ,isDefault = !locomotionManager, animatorController =locomotionManager? easyAnimator.locomotionController : null},
                     new CustomAnimLayer(){type = AnimLayerType.Additive ,isDefault = true},
-                    new CustomAnimLayer(){type = AnimLayerType.Gesture ,isDefault = false,animatorController = easyAnimator.gestureController},
+                    new CustomAnimLayer(){type = AnimLayerType.Gesture ,isDefault = !gestureManager ,animatorController = gestureManager? easyAnimator.gestureController : null},
                     new CustomAnimLayer(){type = AnimLayerType.Action ,isDefault = false , animatorController = easyAnimator.actionController},
                     new CustomAnimLayer(){type = AnimLayerType.FX ,isDefault = false,animatorController = easyAnimator.fxController}
                 };

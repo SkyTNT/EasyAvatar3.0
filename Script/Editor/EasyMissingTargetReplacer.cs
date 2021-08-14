@@ -20,7 +20,8 @@ namespace EasyAvatar
             if (GUILayout.Button(Lang.OneClickReplaceMissingTarget))
             {
                 
-                EasyMissingTargetReplacer easyMissingTargetReplacer = CreateWindow<EasyMissingTargetReplacer>(Lang.OneClickReplaceMissingTarget);
+                EasyMissingTargetReplacer easyMissingTargetReplacer = CreateInstance<EasyMissingTargetReplacer>();
+                easyMissingTargetReplacer.titleContent = new GUIContent(Lang.OneClickReplaceMissingTarget);
                 easyMissingTargetReplacer.Init(helper);
                 easyMissingTargetReplacer.Show();
             }
