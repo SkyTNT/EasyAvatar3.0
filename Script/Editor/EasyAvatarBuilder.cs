@@ -264,6 +264,7 @@ namespace EasyAvatar
 
                     VRCExpressionsMenu.Control vrcControl = new VRCExpressionsMenu.Control();
                     vrcControl.name = subMenu.name;
+                    vrcControl.icon = subMenu.icon;
                     vrcControl.type = VRCExpressionsMenu.Control.ControlType.SubMenu;
                     vrcControl.subMenu = BuildMenu(parameters, subMenu, prefix + "_" + count + "_" + subMenu.name);
                     expressionsMenu.controls.Add(vrcControl);

@@ -175,6 +175,7 @@ namespace EasyAvatar
                         {
                             locomotionGroup = null;
                             locomotionManager.defaultLocomotionGroup = null;
+                            break;
                         }
                         else
                         {

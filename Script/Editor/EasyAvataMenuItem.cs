@@ -38,8 +38,9 @@ namespace EasyAvatar
             CreateGesture(Lang.GestureHandGun, EasyGesture.GestureType.HandGun);
             CreateGesture(Lang.GestureThumbsUp, EasyGesture.GestureType.ThumbsUp);
             Selection.activeGameObject = helper;
-            CreateObject<EasyLocomotionManager>(Lang.LocomotionManager);
+            GameObject locomotionManager = CreateObject<EasyLocomotionManager>(Lang.LocomotionManager);
             GameObject locomotionGroup = CreateObject<EasyLocomotionGroup>(Lang.LocomotionGroup);
+            locomotionManager.GetComponent<EasyLocomotionManager>().defaultLocomotionGroup = locomotionGroup.GetComponent<EasyLocomotionGroup>();
             EasyLocomotionGroupEditor.SetAllDefaultLocomotion(new SerializedObject(locomotionGroup.GetComponent<EasyLocomotionGroup>()));
             Selection.activeGameObject = helper;
 
@@ -189,8 +190,7 @@ namespace EasyAvatar
                     EditorUtility.DisplayDialog("Error", Lang.ErrAvatarLocomotionManagerLen1, "ok");
                     return false;
                 }
-                GameObject gameObject = CreateObject<EasyLocomotionManager>(Lang.LocomotionManager);
-                EasyLocomotionGroupEditor.SetAllDefaultLocomotion(new SerializedObject(gameObject.GetComponent<EasyLocomotionManager>()));
+                CreateObject<EasyLocomotionManager>(Lang.LocomotionManager);
                 return true;
             }
             EditorUtility.DisplayDialog("Error", Lang.ErrLocomotionManagerPath, "ok");
@@ -214,7 +214,8 @@ namespace EasyAvatar
                     EditorUtility.DisplayDialog("Error", Lang.ErrLocomotionGroupPath, "ok");
                     return false;
                 }
-                CreateObject<EasyLocomotionGroup>(Lang.LocomotionGroup);
+                GameObject gameObject = CreateObject<EasyLocomotionGroup>(Lang.LocomotionGroup);
+                EasyLocomotionGroupEditor.SetAllDefaultLocomotion(new SerializedObject(gameObject.GetComponent<EasyLocomotionGroup>()));
                 return true;
             }
             EditorUtility.DisplayDialog("Error", Lang.ErrLocomotionGroupPath, "ok");

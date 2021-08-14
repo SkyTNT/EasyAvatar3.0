@@ -151,9 +151,12 @@ namespace EasyAvatar
             avatar = Utility.GetAvatar(((EasyControl)target).gameObject);
 
             //名字设置
-            target.name = EditorGUILayout.TextField(Lang.Name, target.name);
-            if (target.name == "")
-                target.name = Lang.Control;
+            string tempName = EditorGUILayout.TextField(Lang.Name, target.name);
+            if (tempName == "")
+                tempName = Lang.Control;
+            if (tempName != target.name)
+                Undo.RecordObject(((EasyControl)target).gameObject, "Set Name");
+            target.name = tempName;
             //图标设置
             EditorGUILayout.PropertyField(icon, new GUIContent(Lang.Icon));
             //控件类型
