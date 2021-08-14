@@ -28,7 +28,7 @@ namespace EasyAvatar
                 }
                 SetNewAvatar(avatarObj, oldAvatar);
                 //检测Avatar Helper是否包含在Avatar中，vrchat是不允许avatar包含非白名单内的脚本的。
-                if (((EasyAvatarHelper)target).transform.IsChildOf(avatarObj.transform))
+                if (avatarObj&&((EasyAvatarHelper)target).transform.IsChildOf(avatarObj.transform))
                     EditorUtility.DisplayDialog("Error", Lang.ErrAvatarHelperInAvatar, "ok");
             }
             

@@ -2,21 +2,27 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class EasyLocomotionManager : MonoBehaviour
+namespace EasyAvatar
 {
 
-    public bool useAnimatorController;
-    public RuntimeAnimatorController controller;
-
-    // Start is called before the first frame update
-    void Start()
+    public class EasyLocomotionManager : MonoBehaviour
     {
-        
-    }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
+        public bool useAnimatorController;
+        public RuntimeAnimatorController controller;
+        public EasyLocomotionGroup defaultLocomotionGroup;
+
+        // Start is called before the first frame update
+        void Start()
+        {
+
+        }
+
+        // Update is called once per frame
+        void Update()
+        {
+
+        }
     }
 }
+

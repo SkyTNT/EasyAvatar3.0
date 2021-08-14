@@ -86,7 +86,7 @@ namespace EasyAvatar
             Directory.CreateDirectory(animBuildDir);
 
             //初始化EasyAnimator
-            easyAnimator = new EasyAnimator(animBuildDir, helper.avatar ,AssetDatabase.LoadAssetAtPath<AnimatorController>(templateDir+ "LocomotionLayer.controller"));
+            easyAnimator = new EasyAnimator(animBuildDir, helper.avatar);
 
             //初始化EasyAvatarAsset
             EasyAvatarAsset.Init();
@@ -248,6 +248,10 @@ namespace EasyAvatar
                             vrcControl.type = VRCExpressionsMenu.Control.ControlType.TwoAxisPuppet;
                             vrcControl.subParameters = new VRCExpressionsMenu.Control.Parameter[] { new VRCExpressionsMenu.Control.Parameter() { name = "float1" }, new VRCExpressionsMenu.Control.Parameter() { name = "float2" } };
                             BuildTwoAxisPuppet(prefix + "_" + count + "_" + control.name, control);
+                            break;
+                        case EasyControl.Type.ChangeLocomotion:
+                            vrcControl.type = VRCExpressionsMenu.Control.ControlType.Toggle;
+                            easyAnimator.AddLocomotion(control.locomotionGroup, "control" + controlCount);
                             break;
                         default:
                             break;

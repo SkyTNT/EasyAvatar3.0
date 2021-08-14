@@ -214,7 +214,7 @@ namespace EasyAvatar
                     EditorUtility.DisplayDialog("Error", Lang.ErrLocomotionGroupPath, "ok");
                     return false;
                 }
-                CreateObject<EasyControl>(Lang.Control);
+                CreateObject<EasyLocomotionGroup>(Lang.LocomotionGroup);
                 return true;
             }
             EditorUtility.DisplayDialog("Error", Lang.ErrLocomotionGroupPath, "ok");

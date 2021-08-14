@@ -13,6 +13,7 @@ namespace EasyAvatar
             Button,
             RadialPuppet,
             TwoAxisPuppet,
+            ChangeLocomotion,
         }
 
         [SerializeField]
@@ -31,6 +32,8 @@ namespace EasyAvatar
         public bool save = true;
         [SerializeField]
         public bool toggleDefault = false;
+        [SerializeField]
+        public EasyLocomotionGroup locomotionGroup;
 
         // Start is called before the first frame update
         void Start()

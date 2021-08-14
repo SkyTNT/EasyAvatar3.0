@@ -78,6 +78,7 @@ MonoBehaviour:
       propertyGroup:
         targetPath: 
         properties: []
+        tempTarget: {fileID: 0}
       anim: {fileID: 7400000, guid: 44ce16481749f4c4baf0549d1bf3b3f3, type: 2}
       mask:
         head: 1
@@ -95,6 +96,8 @@ MonoBehaviour:
       audio: {fileID: 0}
     position: {x: 0, y: 0}
     hide: 0
+  save: 0
+  toggleDefault: 0
 --- !u!1 &7158346143437966063
 GameObject:
   m_ObjectHideFlags: 0
@@ -173,6 +176,7 @@ MonoBehaviour:
       propertyGroup:
         targetPath: 
         properties: []
+        tempTarget: {fileID: 0}
       anim: {fileID: 7400000, guid: 762c2cb22a9e6cc45803bd200a00c634, type: 2}
       mask:
         head: 1
@@ -190,6 +194,8 @@ MonoBehaviour:
       audio: {fileID: 0}
     position: {x: 0, y: 0}
     hide: 0
+  save: 0
+  toggleDefault: 0
 --- !u!1 &7158346143591412343
 GameObject:
   m_ObjectHideFlags: 0
@@ -268,6 +274,7 @@ MonoBehaviour:
       propertyGroup:
         targetPath: 
         properties: []
+        tempTarget: {fileID: 0}
       anim: {fileID: 7400000, guid: 0d2e5f9cc00d88a48b7bbe6e2898a4b4, type: 2}
       mask:
         head: 1
@@ -285,6 +292,8 @@ MonoBehaviour:
       audio: {fileID: 0}
     position: {x: 0, y: 0}
     hide: 0
+  save: 0
+  toggleDefault: 0
 --- !u!1 &7158346143616234342
 GameObject:
   m_ObjectHideFlags: 0
@@ -363,6 +372,7 @@ MonoBehaviour:
       propertyGroup:
         targetPath: 
         properties: []
+        tempTarget: {fileID: 0}
       anim: {fileID: 7400000, guid: 2af7e07b1514ac14bafe50d6b79cd07e, type: 2}
       mask:
         head: 1
@@ -380,6 +390,8 @@ MonoBehaviour:
       audio: {fileID: 0}
     position: {x: 0, y: 0}
     hide: 0
+  save: 0
+  toggleDefault: 0
 --- !u!1 &7158346143995345493
 GameObject:
   m_ObjectHideFlags: 0
@@ -458,6 +470,7 @@ MonoBehaviour:
       propertyGroup:
         targetPath: 
         properties: []
+        tempTarget: {fileID: 0}
       anim: {fileID: 7400000, guid: 4cf06429686164a45adaedb6a6e520a5, type: 2}
       mask:
         head: 1
@@ -475,6 +488,8 @@ MonoBehaviour:
       audio: {fileID: 0}
     position: {x: 0, y: 0}
     hide: 0
+  save: 0
+  toggleDefault: 0
 --- !u!1 &7158346144317744900
 GameObject:
   m_ObjectHideFlags: 0
@@ -553,6 +568,7 @@ MonoBehaviour:
       propertyGroup:
         targetPath: 
         properties: []
+        tempTarget: {fileID: 0}
       anim: {fileID: 7400000, guid: 60873c431a64a744d87a5ad1e20bf886, type: 2}
       mask:
         head: 1
@@ -570,6 +586,8 @@ MonoBehaviour:
       audio: {fileID: 0}
     position: {x: 0, y: 0}
     hide: 0
+  save: 0
+  toggleDefault: 0
 --- !u!1 &7158346144841554859
 GameObject:
   m_ObjectHideFlags: 0
@@ -699,6 +717,7 @@ MonoBehaviour:
       propertyGroup:
         targetPath: 
         properties: []
+        tempTarget: {fileID: 0}
       anim: {fileID: 7400000, guid: 7359fa5b13647ba4986416b105f0d6dd, type: 2}
       mask:
         head: 1
@@ -716,6 +735,8 @@ MonoBehaviour:
       audio: {fileID: 0}
     position: {x: 0, y: 0}
     hide: 0
+  save: 0
+  toggleDefault: 0
 --- !u!1 &7158346145247430597
 GameObject:
   m_ObjectHideFlags: 0
@@ -794,6 +815,7 @@ MonoBehaviour:
       propertyGroup:
         targetPath: 
         properties: []
+        tempTarget: {fileID: 0}
       anim: {fileID: 7400000, guid: 498e9dfd6d870064184180c5e4a3fc59, type: 2}
       mask:
         head: 1
@@ -811,3 +833,5 @@ MonoBehaviour:
       audio: {fileID: 0}
     position: {x: 0, y: 0}
     hide: 0
+  save: 0
+  toggleDefault: 0

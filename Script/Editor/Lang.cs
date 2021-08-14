@@ -31,6 +31,7 @@ namespace EasyAvatar
             Button,
             RadialPuppet,
             TwoAxisPuppet,
+            ChangeLocomotion,
             Icon,
             Target,
             Missing,
@@ -120,6 +121,7 @@ namespace EasyAvatar
             AutoTrackingControl,
             LocomotionManager,
             LocomotionGroup,
+            DefaultLocomotionGroup,
             LocomotionStand,
             LocomotionProne,
             LocomotionCrouch,
@@ -181,6 +183,8 @@ namespace EasyAvatar
             ErrGestureManagerPath,
             ErrLocomotionManagerPath,
             ErrLocomotionGroupPath,
+            ErrSetLocomotion,
+            ErrDefaultLocomotionNotSet,
             ErrGesturePath,
             ErrAvatarNotSet,
             ErrAvatarHelperInAvatar;
@@ -232,6 +236,7 @@ namespace EasyAvatar
             Button = "按钮";
             RadialPuppet = "旋钮";
             TwoAxisPuppet = "两轴操纵杆";
+            ChangeLocomotion = "改变姿态";
             Icon = "图标";
             Target = "目标";
             Missing = "缺失";
@@ -321,6 +326,7 @@ namespace EasyAvatar
             AutoTrackingControl = "自动设置追踪状态";
             LocomotionManager = "姿态管理";
             LocomotionGroup = "姿态组";
+            DefaultLocomotionGroup = "默认使用的姿态";
             LocomotionStand = "站立姿势";
             LocomotionCrouch = "蹲下姿势";
             LocomotionProne = "趴下姿势";
@@ -383,6 +389,8 @@ namespace EasyAvatar
             ErrGesturePath = "手势只能添加在手势管理中";
             ErrLocomotionManagerPath = "姿态管理只能添加在模型助手下";
             ErrLocomotionGroupPath = "姿态组只能放在姿态管理中";
+            ErrSetLocomotion = "只能设置当前姿态管理下的姿态";
+            ErrDefaultLocomotionNotSet = "没有在姿态管理中设置默认的姿态";
             ErrAvatarNotSet = "请确保模型助手绑定了模型";
             ErrAvatarHelperInAvatar = "模型助手不能包含在模型里，请放在模型的外边";
         }
@@ -414,6 +422,7 @@ namespace EasyAvatar
             Button = "Button";
             RadialPuppet = "Radial Puppet";
             TwoAxisPuppet = "Two Axis Puppet";
+            ChangeLocomotion = "Change Locomotion";
             Icon = "Icon";
             Target = "Target";
             Missing = "Missing";
@@ -503,6 +512,7 @@ namespace EasyAvatar
             AutoTrackingControl = "Auto set tracking state";
             LocomotionManager = "Locomotion Manager";
             LocomotionGroup = "Locomotion Group";
+            DefaultLocomotionGroup = "Default Locomotion";
             LocomotionStand = "Stand";
             LocomotionCrouch = "Crouch";
             LocomotionProne = "Crawl";
@@ -565,6 +575,8 @@ namespace EasyAvatar
             ErrGesturePath = "Gesture can only be added to the Gesture Manager";
             ErrLocomotionManagerPath = "Locomotion Manager can only be added to the Avatar Helper";
             ErrLocomotionGroupPath = "Locomotion Group can only be added to the Locomotion Manager";
+            ErrSetLocomotion = "It can only be set as the locomotion under the current locomotion manager";
+            ErrDefaultLocomotionNotSet = "No default locomotion is set in the locomotion manager";
             ErrAvatarNotSet = "Avatar is not set in the Avatar Helper";
             ErrAvatarHelperInAvatar = "Avatar Helper cannot be included in a avatar, Please put it outside the avatar.";
         }

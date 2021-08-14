@@ -13,11 +13,14 @@ namespace EasyAvatar
     {
         string directoryPath;
         GameObject avatar;
+
         AnimatorControllerBuilder fxBuilder,actionBuilder,gestureBuilder,locomotionBuilder;
         AnimatorControllerLayer gestureLeftLayer, gestureRightLayer;
         AnimatorDriver driver;
         AnimationClip afk;
-
+        AnimatorController locomotionTemplate;
+        bool useCustomLocomotionController;
+            
         public AnimatorController fxController
         {
             get
@@ -50,20 +53,34 @@ namespace EasyAvatar
             }
         }
 
-        public EasyAnimator(string directoryPath, GameObject avatar, AnimatorController locomotionTemplate)
+        public EasyAnimator(string directoryPath, GameObject avatar)
         {
             this.directoryPath = directoryPath;
             this.avatar = avatar;
+            locomotionTemplate = AssetDatabase.LoadAssetAtPath<AnimatorController>(EasyAvatarBuilder.templateDir + "LocomotionLayer.controller");
             fxBuilder = new AnimatorControllerBuilder(directoryPath + "FXLayer.controller");
             actionBuilder = new AnimatorControllerBuilder(directoryPath + "ActionLayer.controller");
             gestureBuilder = new AnimatorControllerBuilder(directoryPath + "GestureLayer.controller");
-            locomotionBuilder = new AnimatorControllerBuilder(directoryPath + "LocomotionLayer.controller",locomotionTemplate);
+            locomotionBuilder = new AnimatorControllerBuilder(directoryPath + "LocomotionLayer.controller");
             gestureLeftLayer = gestureBuilder.AddLayer("gesture Left");
             gestureRightLayer = gestureBuilder.AddLayer("gesture Right");
             gestureBuilder.baseLayer.avatarMask = VRCAssets.hands_only;
             gestureLeftLayer.avatarMask = VRCAssets.hand_left;
             gestureRightLayer.avatarMask = VRCAssets.hand_right;
             driver = new AnimatorDriver(fxBuilder);
+
+            List<AnimatorControllerParameter> parameters = new List<AnimatorControllerParameter>();
+            foreach (var parameter in locomotionTemplate.parameters)
+            {
+                var newParameter = new AnimatorControllerParameter();
+                newParameter.name = parameter.name;
+                newParameter.type = parameter.type;
+                newParameter.defaultBool = parameter.defaultBool;
+                newParameter.defaultFloat = parameter.defaultFloat;
+                newParameter.defaultInt = parameter.defaultInt;
+                parameters.Add(newParameter);
+            }
+            locomotionBuilder.controller.parameters = parameters.ToArray();
         }
 
         /// <summary>
@@ -138,29 +155,95 @@ namespace EasyAvatar
             }
         }
 
+        
+        AnimatorState standStateBase;
+        AnimatorState crouchStateBase;
+        AnimatorState proneStateBase;
+
         public void SetLocomotion(EasyLocomotionManager locomotionManager)
         {
-            EasyLocomotionGroup locomotionGroup = null;
+            EasyLocomotionGroup locomotionGroup = locomotionManager.defaultLocomotionGroup;
 
-            foreach (Transform child in locomotionManager.gameObject.transform)
+            if (!locomotionGroup)//更新检查
             {
-                EasyLocomotionGroup childLocomotionGroup = child.GetComponent<EasyLocomotionGroup>();
-                if(childLocomotionGroup)
+                foreach (Transform child in locomotionManager.gameObject.transform)
                 {
-                    locomotionGroup = childLocomotionGroup;
-                    break;
+                    EasyLocomotionGroup childLocomotionGroup = child.GetComponent<EasyLocomotionGroup>();
+                    if (childLocomotionGroup)
+                    {
+                        if (locomotionGroup)//当有第二个childLocomotionGroup
+                        {
+                            locomotionGroup = null;
+                            locomotionManager.defaultLocomotionGroup = null;
+                        }
+                        else
+                        {
+                            locomotionGroup = childLocomotionGroup;
+                            locomotionManager.defaultLocomotionGroup  = locomotionGroup;
+                        }
+                    }
                 }
             }
+            
             if (!locomotionGroup)
+            {
+                EditorUtility.DisplayDialog("Error", Lang.ErrDefaultLocomotionNotSet, "ok");
                 return;
+            }
+                
 
             afk = locomotionGroup.afk.animClip;
 
             if (locomotionManager.useAnimatorController)
             {
                 locomotionBuilder.controller = locomotionManager.controller as AnimatorController;
+                useCustomLocomotionController = true;
                 return;
             }
+
+            GenLocomotionStates(locomotionGroup, out AnimatorState standState, out AnimatorState crouchState, out AnimatorState proneState);
+            locomotionBuilder.baseLayer.stateMachine.defaultState = standState;
+            standStateBase = standState;
+            crouchStateBase = crouchState;
+            proneStateBase = proneState;
+
+        }
+
+        public void AddLocomotion(EasyLocomotionGroup locomotionGroup, string parameterName)
+        {
+            if (!locomotionGroup || useCustomLocomotionController)
+                return;
+
+            locomotionBuilder.AddParameterBool(parameterName);
+
+            GenLocomotionStates(locomotionGroup, out AnimatorState standState, out AnimatorState crouchState, out AnimatorState proneState);
+
+            AnimatorStateTransition s_t1 = standStateBase.AddTransition(standState);
+            AnimatorStateTransition c_t1 = crouchStateBase.AddTransition(crouchState);
+            AnimatorStateTransition p_t1 = proneStateBase.AddTransition(proneState);
+            s_t1.duration = 0;
+            c_t1.duration = 0;
+            p_t1.duration = 0;
+            s_t1.AddCondition(AnimatorConditionMode.If, 0, parameterName);
+            c_t1.AddCondition(AnimatorConditionMode.If, 0, parameterName);
+            p_t1.AddCondition(AnimatorConditionMode.If, 0, parameterName);
+
+            AnimatorStateTransition s_t2 = standState.AddTransition(standStateBase);
+            AnimatorStateTransition c_t2 = crouchState.AddTransition(crouchStateBase);
+            AnimatorStateTransition p_t2 = proneState.AddTransition(proneStateBase);
+            s_t2.duration = 0;
+            c_t2.duration = 0;
+            p_t2.duration = 0;
+            s_t2.AddCondition(AnimatorConditionMode.IfNot, 0, parameterName);
+            c_t2.AddCondition(AnimatorConditionMode.IfNot, 0, parameterName);
+            p_t2.AddCondition(AnimatorConditionMode.IfNot, 0, parameterName);
+        }
+
+        int locomotionCount = 0;
+        public void GenLocomotionStates(EasyLocomotionGroup locomotionGroup,out AnimatorState standState, out AnimatorState crouchState, out AnimatorState proneState)
+        {
+
+
             BlendTree standBlendTree, crouchBlendTree, proneBlendTree;
             if (locomotionGroup.useStandBlendTree)
             {
@@ -248,23 +331,26 @@ namespace EasyAvatar
             }
 
             string locomotinControllerPath = AssetDatabase.GetAssetPath(locomotionBuilder.controller);
-
             
-            AnimatorState standState = locomotionBuilder.FindState(locomotionBuilder.baseLayer.stateMachine, "Standing");
+            AnimatorStateMachine locomotionStateMachine = CopyStateMachine(locomotionTemplate.layers[0].stateMachine, locomotinControllerPath);
+            locomotionStateMachine.name += locomotionCount;
+            locomotionBuilder.baseLayer.stateMachine.AddStateMachine(locomotionStateMachine, new Vector3(locomotionCount * 300, 0, 0));
+
+            standState = locomotionBuilder.FindState(locomotionStateMachine, "Standing");
             VRCAnimatorTrackingControl standTracking = VRCStateMachineBehaviourUtility.GetTrackingControl(locomotionGroup.standTracking);
             standTracking.hideFlags = HideFlags.HideInHierarchy;
             AssetDatabase.AddObjectToAsset(standTracking, locomotinControllerPath);
             standState.motion = standBlendTree;
             standState.behaviours = new StateMachineBehaviour[] { standTracking };
 
-            AnimatorState crouchState = locomotionBuilder.FindState(locomotionBuilder.baseLayer.stateMachine, "Crouching");
+            crouchState = locomotionBuilder.FindState(locomotionStateMachine, "Crouching");
             VRCAnimatorTrackingControl crouchTracking = VRCStateMachineBehaviourUtility.GetTrackingControl(locomotionGroup.crouchTracking);
             crouchTracking.hideFlags = HideFlags.HideInHierarchy;
             AssetDatabase.AddObjectToAsset(crouchTracking, locomotinControllerPath);
             crouchState.motion = crouchBlendTree;
             crouchState.behaviours = new StateMachineBehaviour[] { crouchTracking };
 
-            AnimatorState proneState = locomotionBuilder.FindState(locomotionBuilder.baseLayer.stateMachine, "Prone");
+            proneState = locomotionBuilder.FindState(locomotionStateMachine, "Prone");
             VRCAnimatorTrackingControl proneTracking = VRCStateMachineBehaviourUtility.GetTrackingControl(locomotionGroup.proneTracking);
             proneTracking.hideFlags = HideFlags.HideInHierarchy;
             AssetDatabase.AddObjectToAsset(proneTracking, locomotinControllerPath);
@@ -279,7 +365,7 @@ namespace EasyAvatar
                 {
                     Vector2 pos = child.position;
                     float distance = Mathf.Sqrt(pos.x * pos.x + pos.y * pos.y);
-                    if (distance<0.2f&& distance<minDistance)
+                    if (distance < 0.2f && distance < minDistance)
                     {
                         minDistance = distance;
                         standStill = new EasyLocomotion { animClip = child.motion as AnimationClip, speed = 1, mirror = false };
@@ -287,8 +373,8 @@ namespace EasyAvatar
 
                 }
             }
-            AnimatorStateMachine jumpStateMachine = locomotionBuilder.FindStateMachine(locomotionBuilder.baseLayer.stateMachine, "JumpAndFall");
-            ReplaceJumpMotion("SmallHop",locomotionGroup.shortFall);
+            AnimatorStateMachine jumpStateMachine = locomotionBuilder.FindStateMachine(locomotionStateMachine, "JumpAndFall");
+            ReplaceJumpMotion("SmallHop", locomotionGroup.shortFall);
             ReplaceJumpMotion("Short Fall", locomotionGroup.shortFall);
             ReplaceJumpMotion("RestoreToHop", locomotionGroup.shortFall);
             ReplaceJumpMotion("LongFall", locomotionGroup.longFall);
@@ -296,7 +382,9 @@ namespace EasyAvatar
             ReplaceJumpMotion("HardLand", locomotionGroup.land);
             ReplaceJumpMotion("RestoreTracking", standStill);
 
-            void AddChild(List<ChildMotion> motions, EasyLocomotion locomotion,float x,float y)
+            locomotionCount++;
+
+            void AddChild(List<ChildMotion> motions, EasyLocomotion locomotion, float x, float y)
             {
                 if (!locomotion.animClip)
                     return;
@@ -310,8 +398,139 @@ namespace EasyAvatar
                 state.speed = locomotion.speed;
                 state.mirror = locomotion.mirror;
             }
+
         }
-        
+
+        public static AnimatorStateMachine CopyStateMachine(AnimatorStateMachine source ,string attachPath)
+        {
+
+            Dictionary<int, AnimatorState> newStateMap = new Dictionary<int, AnimatorState>();
+            Dictionary<int, AnimatorStateMachine> newStateMachineMap = new Dictionary<int, AnimatorStateMachine>();
+
+            AnimatorStateMachine CopyStateMachine_impl(AnimatorStateMachine src)
+            {
+                AnimatorStateMachine newStateMachine = new AnimatorStateMachine();
+                newStateMachine.name = src.name;
+                newStateMachine.anyStatePosition = src.anyStatePosition;
+                newStateMachine.entryPosition = src.entryPosition;
+                newStateMachine.exitPosition = src.exitPosition;
+                newStateMachine.parentStateMachinePosition = src.parentStateMachinePosition;
+                
+
+                foreach (var state in src.states)
+                {
+                    AnimatorState newState = newStateMachine.AddState(state.state.name, state.position);
+                    newState.speed = state.state.speed;
+                    newState.mirror = state.state.mirror;
+                    newState.motion = state.state.motion;
+
+                    List<StateMachineBehaviour> newBehaviors = new List<StateMachineBehaviour>();
+                    foreach (var behavior in state.state.behaviours)
+                    {
+                        StateMachineBehaviour newBehavior = Object.Instantiate(behavior);
+                        newBehavior.hideFlags = HideFlags.HideInHierarchy;
+                        newBehaviors.Add(newBehavior);
+                        AssetDatabase.AddObjectToAsset(newBehavior, attachPath);
+                    }
+                    newState.behaviours = newBehaviors.ToArray();
+                    newStateMap.Add(state.state.GetInstanceID(), newState);
+                }
+                if (src.defaultState)
+                {
+                    newStateMachine.defaultState = newStateMap[src.defaultState.GetInstanceID()];
+                }
+
+                foreach (var subStateMachine in src.stateMachines)
+                {
+                    AnimatorStateMachine newSubStateMachine = CopyStateMachine_impl(subStateMachine.stateMachine);
+                    newStateMachineMap.Add(subStateMachine.stateMachine.GetInstanceID(), newSubStateMachine);
+                    newStateMachine.AddStateMachine(newSubStateMachine, subStateMachine.position);
+                }
+
+                foreach (var state in src.states)
+                {
+                    foreach (var transition in state.state.transitions)
+                    {
+                        AnimatorStateTransition newTransition = null;
+                        if (transition.destinationState)
+                        {
+                            newTransition = newStateMap[state.state.GetInstanceID()].AddTransition(newStateMap[transition.destinationState.GetInstanceID()]);
+                        }
+                        if (transition.destinationStateMachine)
+                        {
+                            newTransition = newStateMap[state.state.GetInstanceID()].AddTransition(newStateMachineMap[transition.destinationStateMachine.GetInstanceID()]);
+                        }
+                        if (transition.isExit)
+                        {
+                            newTransition = newStateMap[state.state.GetInstanceID()].AddExitTransition();
+                        }
+                        if (newTransition)
+                        {
+                            newTransition.hasExitTime = transition.hasExitTime;
+                            newTransition.hasFixedDuration = transition.hasFixedDuration;
+                            newTransition.exitTime = transition.exitTime;
+                            newTransition.canTransitionToSelf = transition.canTransitionToSelf;
+                            newTransition.conditions = transition.conditions;
+                            newTransition.offset = transition.offset;
+                            newTransition.duration = transition.duration;
+                            newTransition.interruptionSource = transition.interruptionSource;
+                            newTransition.orderedInterruption = transition.orderedInterruption;
+                        }
+                        
+                    }
+                }
+
+                foreach (var transition in src.entryTransitions)
+                {
+                    AnimatorTransition newTransition = null;
+                    if (transition.destinationState)
+                    {
+                        newTransition = newStateMachine.AddEntryTransition(newStateMap[transition.destinationState.GetInstanceID()]);
+                    }
+                    if (transition.destinationStateMachine)
+                    {
+                        newTransition = newStateMachine.AddEntryTransition(newStateMachineMap[transition.destinationStateMachine.GetInstanceID()]);
+                    }
+                    if (newTransition)
+                    {
+                        newTransition.conditions = transition.conditions;
+                    }
+
+                }
+
+                foreach (var transition in src.anyStateTransitions)
+                {
+                    AnimatorStateTransition newTransition = null;
+                    if (transition.destinationState)
+                    {
+                        newTransition = newStateMachine.AddAnyStateTransition(newStateMap[transition.destinationState.GetInstanceID()]);
+                    }
+                    if (transition.destinationStateMachine)
+                    {
+                        newTransition = newStateMachine.AddAnyStateTransition(newStateMachineMap[transition.destinationStateMachine.GetInstanceID()]);
+                    }
+                    if (newTransition)
+                    {
+                        newTransition.hasExitTime = transition.hasExitTime;
+                        newTransition.hasFixedDuration = transition.hasFixedDuration;
+                        newTransition.exitTime = transition.exitTime;
+                        newTransition.canTransitionToSelf = transition.canTransitionToSelf;
+                        newTransition.conditions = transition.conditions;
+                        newTransition.offset = transition.offset;
+                        newTransition.duration = transition.duration;
+                        newTransition.interruptionSource = transition.interruptionSource;
+                        newTransition.orderedInterruption = transition.orderedInterruption;
+                    }
+
+                }
+                newStateMachine.hideFlags = HideFlags.HideInHierarchy;
+                AssetDatabase.AddObjectToAsset(newStateMachine, attachPath);
+                return newStateMachine;
+            }
+
+            return CopyStateMachine_impl(source);
+        }
+
         /// <summary>
         /// 生成所有动画控制器
         /// </summary>

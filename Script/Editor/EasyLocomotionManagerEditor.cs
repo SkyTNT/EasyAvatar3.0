@@ -12,6 +12,7 @@ namespace EasyAvatar
         {
             serializedObject.Update();
             SerializedProperty useController = serializedObject.FindProperty("useAnimatorController");
+            SerializedProperty defaultLocomotionGroup = serializedObject.FindProperty("defaultLocomotionGroup");
             EditorGUILayout.PropertyField(useController, new GUIContent(Lang.UseController));
             if (useController.boolValue)
             {
@@ -22,8 +23,25 @@ namespace EasyAvatar
                     serializedObject.FindProperty("controller").objectReferenceValue = VRCAssets.locomotionController;
                 }
                 GUILayout.EndHorizontal();
+                EditorGUILayout.HelpBox(Lang.LocomotionControllerNote, MessageType.Info);
+
             }
-            EditorGUILayout.HelpBox(Lang.LocomotionControllerNote, MessageType.Info);
+            else
+            {
+                EditorGUI.BeginChangeCheck();
+                EditorGUILayout.PropertyField(defaultLocomotionGroup, new GUIContent(Lang.DefaultLocomotionGroup));
+                if (EditorGUI.EndChangeCheck())
+                {
+                    EasyLocomotionManager locomotionManager = (EasyLocomotionManager)target;
+                    EasyLocomotionGroup locomotion = (EasyLocomotionGroup)defaultLocomotionGroup.objectReferenceValue;
+                    if (locomotion && !locomotion.transform.IsChildOf(locomotionManager.transform))
+                    {
+                        defaultLocomotionGroup.objectReferenceValue = null;
+                        EditorUtility.DisplayDialog("Error", Lang.ErrSetLocomotion, "OK");
+                    }
+                }
+            }
+            
             serializedObject.ApplyModifiedProperties();
         }
     }

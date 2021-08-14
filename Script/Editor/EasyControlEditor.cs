@@ -14,10 +14,10 @@ namespace EasyAvatar
     {
         GameObject avatar;
         static bool offTrackingFold=true, onTrackingFold = true;
-        SerializedProperty controlType, icon, save, toggleDefault, autoRestore, autoTrackingControl, offTrackingControl, onTrackingControl, behaviorGroupList;
+        SerializedProperty controlType, icon, save, toggleDefault, autoRestore, autoTrackingControl, offTrackingControl, onTrackingControl, behaviorGroupList, locomotionGroup;
         List<EasyBehaviorGroupEditor> editors;
         bool needReLoad;
-        int[] typeIndex = { 0, 1, 2, 3 };
+        int[] typeIndex = { 0, 1, 2, 3 ,4};
         private void OnEnable()
         {
             ReLoad();
@@ -44,6 +44,7 @@ namespace EasyAvatar
             offTrackingControl = serializedObject.FindProperty("offTrackingControl");
             onTrackingControl = serializedObject.FindProperty("onTrackingControl");
             behaviorGroupList = serializedObject.FindProperty("behaviors");
+            locomotionGroup = serializedObject.FindProperty("locomotionGroup");
             editors = new List<EasyBehaviorGroupEditor>();
             for (int i = 0; i < behaviorGroupList.arraySize; i++)
             {
@@ -74,7 +75,7 @@ namespace EasyAvatar
                     ResizeBehaviorGroupList(2);
                     break;
                 case EasyControl.Type.RadialPuppet:
-                    if (pre == EasyControl.Type.TwoAxisPuppet)//不进行修改
+                    if (pre == EasyControl.Type.TwoAxisPuppet || pre == EasyControl.Type.ChangeLocomotion)//不进行修改
                         break;
                     ResizeBehaviorGroupList(3);
                     for (int i = 1; i < 3; i++)
@@ -98,7 +99,7 @@ namespace EasyAvatar
                     }
                     break;
                 case EasyControl.Type.TwoAxisPuppet:
-                    if (pre == EasyControl.Type.RadialPuppet)//不进行修改
+                    if (pre == EasyControl.Type.RadialPuppet || pre == EasyControl.Type.ChangeLocomotion)//不进行修改
                         break;
                     ResizeBehaviorGroupList(6);
                     
@@ -158,150 +159,167 @@ namespace EasyAvatar
             //控件类型
             EasyControl.Type tempType = (EasyControl.Type)controlType.enumValueIndex;
             EditorGUI.BeginChangeCheck();
-            controlType.enumValueIndex = EditorGUILayout.IntPopup(Lang.ControlType,(int) tempType, new string[] { Lang.Toggle, Lang.Button, Lang.RadialPuppet, Lang.TwoAxisPuppet }, typeIndex);
+            controlType.enumValueIndex = EditorGUILayout.IntPopup(Lang.ControlType, (int)tempType, new string[] { Lang.Toggle, Lang.Button, Lang.RadialPuppet, Lang.TwoAxisPuppet, Lang.ChangeLocomotion }, typeIndex);
             if (EditorGUI.EndChangeCheck())
                 ChangeType((EasyControl.Type)controlType.enumValueIndex, tempType);
 
-            if (controlType.enumValueIndex == (int)EasyControl.Type.Toggle)
+            if(controlType.enumValueIndex == (int)EasyControl.Type.ChangeLocomotion)//ChangeLocomotion类型
             {
-                //是否保存状态
-                save.boolValue = EditorGUILayout.ToggleLeft(Lang.Save, save.boolValue);
-                //是否默认打开
-                toggleDefault.boolValue = EditorGUILayout.ToggleLeft(Lang.ToggleDefault, toggleDefault.boolValue);
-            }
-            //是否自动恢复
-            autoRestore.boolValue = EditorGUILayout.ToggleLeft(Lang.AutoRestore, autoRestore.boolValue);
-            //是否自动设置追踪
-            autoTrackingControl.boolValue = EditorGUILayout.ToggleLeft(Lang.AutoTrackingControl, autoTrackingControl.boolValue);
-
-            if (!autoTrackingControl.boolValue)
-            {
-                offTrackingFold = EditorGUILayout.Foldout(offTrackingFold, Lang.OnClose);
-                if(offTrackingFold)
-                    EditorGUILayout.PropertyField(offTrackingControl);
-                onTrackingFold = EditorGUILayout.Foldout(onTrackingFold, Lang.OnOpen);
-                if (onTrackingFold)
-                    EditorGUILayout.PropertyField(onTrackingControl);
-            }
-
-            string[] labels;
-            switch ((EasyControl.Type)controlType.enumValueIndex)
-            {
-                case EasyControl.Type.Toggle:
-                    labels = new string[] { Lang.OnSwitchOff, Lang.OnSwitchOn };
-                    break;
-                case EasyControl.Type.Button:
-                    labels = new string[] { Lang.OnRelease, Lang.OnPress };
-                    break;
-                case EasyControl.Type.RadialPuppet:
-                    labels = new string[] { Lang.OnRadialPuppetOff, Lang.OnRadialPuppet };
-                    break;
-                case EasyControl.Type.TwoAxisPuppet:
-                    labels = new string[] { Lang.OnTwoAxisPuppetOff, Lang.OnTwoAxisPuppetPosition };
-                    break;
-                default:
-                    labels = new string[] { "" };
-                    break;
-            }
-
-
-            //TwoAxisPuppet是可以自己添加多个BehaviorGroup的
-            if ((EasyControl.Type)controlType.enumValueIndex == EasyControl.Type.TwoAxisPuppet || (EasyControl.Type)controlType.enumValueIndex == EasyControl.Type.RadialPuppet)
-            {
-                int editorCount = editors.Count;
-                int removeIndex, changeIndex1, changeIndex2;
-                removeIndex = changeIndex1 = changeIndex2 = -1;
-
-                for (int i = 0; i < editorCount; i++)
+                EditorGUI.BeginChangeCheck();
+                EditorGUILayout.PropertyField(locomotionGroup, new GUIContent(Lang.LocomotionGroup));
+                if (EditorGUI.EndChangeCheck())
                 {
-                    SerializedProperty position = behaviorGroupList.GetArrayElementAtIndex(i).FindPropertyRelative("position");
-                    Vector2 positionVal = position.vector2Value;
-                    EasyBehaviorGroupEditor editor = editors[i];
-                    GUILayout.BeginVertical(GUI.skin.box);
-                    GUILayout.BeginHorizontal();
-                    if((EasyControl.Type)controlType.enumValueIndex == EasyControl.Type.TwoAxisPuppet)//TwoAxisPuppet有Y
-                        GUILayout.Label(i == 0 ? labels[0] : string.Format(labels[1], positionVal.x, positionVal.y), EditorStyles.boldLabel);
-                    else
-                        GUILayout.Label(i == 0 ? labels[0] : string.Format(labels[1], positionVal.x), EditorStyles.boldLabel);
-
-                    GUILayout.FlexibleSpace();
-                    //0处为关闭，位置固定为0，不能删除
-                    if (i > 0)
+                    EasyAvatarHelper helper = ((EasyControl)target).GetComponentInParent<EasyAvatarHelper>();
+                    EasyLocomotionGroup locomotion = (EasyLocomotionGroup)locomotionGroup.objectReferenceValue; 
+                    if (helper&& locomotion && !locomotion.transform.IsChildOf(helper.transform))
                     {
-                        //上移
-                        if (i > 1 && GUILayout.Button(Lang.Up))
-                        {
-                            changeIndex1 = i - 1;
-                            changeIndex2 = i;
-                        }
-                        //下移
-                        if (i < editorCount - 1 && GUILayout.Button(Lang.Down))
-                        {
-                            changeIndex1 = i;
-                            changeIndex2 = i + 1;
-                        }
-                        //删除
-                        if (GUILayout.Button(Lang.Delete))
-                        {
-                            removeIndex = i;
-                        }
+                        locomotionGroup.objectReferenceValue = null;
+                        EditorUtility.DisplayDialog("Error", Lang.ErrSetLocomotion, "OK");
                     }
-                    
-                    GUILayout.EndHorizontal();
-                    if (i > 0)
+                }
+            }
+            else//其他类型
+            {
+                if (controlType.enumValueIndex == (int)EasyControl.Type.Toggle)
+                {
+                    //是否保存状态
+                    save.boolValue = EditorGUILayout.ToggleLeft(Lang.Save, save.boolValue);
+                    //是否默认打开
+                    toggleDefault.boolValue = EditorGUILayout.ToggleLeft(Lang.ToggleDefault, toggleDefault.boolValue);
+                }
+                //是否自动恢复
+                autoRestore.boolValue = EditorGUILayout.ToggleLeft(Lang.AutoRestore, autoRestore.boolValue);
+                //是否自动设置追踪
+                autoTrackingControl.boolValue = EditorGUILayout.ToggleLeft(Lang.AutoTrackingControl, autoTrackingControl.boolValue);
+
+                if (!autoTrackingControl.boolValue)
+                {
+                    offTrackingFold = EditorGUILayout.Foldout(offTrackingFold, Lang.OnClose);
+                    if (offTrackingFold)
+                        EditorGUILayout.PropertyField(offTrackingControl);
+                    onTrackingFold = EditorGUILayout.Foldout(onTrackingFold, Lang.OnOpen);
+                    if (onTrackingFold)
+                        EditorGUILayout.PropertyField(onTrackingControl);
+                }
+
+                string[] labels;
+                switch ((EasyControl.Type)controlType.enumValueIndex)
+                {
+                    case EasyControl.Type.Toggle:
+                        labels = new string[] { Lang.OnSwitchOff, Lang.OnSwitchOn };
+                        break;
+                    case EasyControl.Type.Button:
+                        labels = new string[] { Lang.OnRelease, Lang.OnPress };
+                        break;
+                    case EasyControl.Type.RadialPuppet:
+                        labels = new string[] { Lang.OnRadialPuppetOff, Lang.OnRadialPuppet };
+                        break;
+                    case EasyControl.Type.TwoAxisPuppet:
+                        labels = new string[] { Lang.OnTwoAxisPuppetOff, Lang.OnTwoAxisPuppetPosition };
+                        break;
+                    default:
+                        labels = new string[] { "" };
+                        break;
+                }
+
+
+                //TwoAxisPuppet是可以自己添加多个BehaviorGroup的
+                if ((EasyControl.Type)controlType.enumValueIndex == EasyControl.Type.TwoAxisPuppet || (EasyControl.Type)controlType.enumValueIndex == EasyControl.Type.RadialPuppet)
+                {
+                    int editorCount = editors.Count;
+                    int removeIndex, changeIndex1, changeIndex2;
+                    removeIndex = changeIndex1 = changeIndex2 = -1;
+
+                    for (int i = 0; i < editorCount; i++)
                     {
-                        
+                        SerializedProperty position = behaviorGroupList.GetArrayElementAtIndex(i).FindPropertyRelative("position");
+                        Vector2 positionVal = position.vector2Value;
+                        EasyBehaviorGroupEditor editor = editors[i];
+                        GUILayout.BeginVertical(GUI.skin.box);
+                        GUILayout.BeginHorizontal();
                         if ((EasyControl.Type)controlType.enumValueIndex == EasyControl.Type.TwoAxisPuppet)//TwoAxisPuppet有Y
-                        {
-                            positionVal.x = EditorGUILayout.Slider(Lang.OnTwoAxisPuppetH, positionVal.x, -1, 1);
-                            positionVal.y = EditorGUILayout.Slider(Lang.OnTwoAxisPuppetV, positionVal.y, -1, 1);
-
-                        }
+                            GUILayout.Label(i == 0 ? labels[0] : string.Format(labels[1], positionVal.x, positionVal.y), EditorStyles.boldLabel);
                         else
+                            GUILayout.Label(i == 0 ? labels[0] : string.Format(labels[1], positionVal.x), EditorStyles.boldLabel);
+
+                        GUILayout.FlexibleSpace();
+                        //0处为关闭，位置固定为0，不能删除
+                        if (i > 0)
                         {
-                            positionVal.x = EditorGUILayout.Slider(Lang.OnRadialPuppetX, positionVal.x, 0, 1);
+                            //上移
+                            if (i > 1 && GUILayout.Button(Lang.Up))
+                            {
+                                changeIndex1 = i - 1;
+                                changeIndex2 = i;
+                            }
+                            //下移
+                            if (i < editorCount - 1 && GUILayout.Button(Lang.Down))
+                            {
+                                changeIndex1 = i;
+                                changeIndex2 = i + 1;
+                            }
+                            //删除
+                            if (GUILayout.Button(Lang.Delete))
+                            {
+                                removeIndex = i;
+                            }
                         }
-                            
+
+                        GUILayout.EndHorizontal();
+                        if (i > 0)
+                        {
+
+                            if ((EasyControl.Type)controlType.enumValueIndex == EasyControl.Type.TwoAxisPuppet)//TwoAxisPuppet有Y
+                            {
+                                positionVal.x = EditorGUILayout.Slider(Lang.OnTwoAxisPuppetH, positionVal.x, -1, 1);
+                                positionVal.y = EditorGUILayout.Slider(Lang.OnTwoAxisPuppetV, positionVal.y, -1, 1);
+
+                            }
+                            else
+                            {
+                                positionVal.x = EditorGUILayout.Slider(Lang.OnRadialPuppetX, positionVal.x, 0, 1);
+                            }
+
+                        }
+                        editor.DoLayout(avatar);
+                        GUILayout.EndVertical();
+                        position.vector2Value = positionVal;
                     }
-                    editor.DoLayout(avatar);
-                    GUILayout.EndVertical();
-                    position.vector2Value = positionVal;
-                }
 
-                //只能在遍历外进行操作
-                if (removeIndex != -1)
-                {
-                    behaviorGroupList.DeleteArrayElementAtIndex(removeIndex);
-                    needReLoad = true;
-                }
-                if (changeIndex1 != -1 && changeIndex2 != -1)
-                {
-                    behaviorGroupList.MoveArrayElement(changeIndex1, changeIndex2);
-                    needReLoad = true;
-                }
+                    //只能在遍历外进行操作
+                    if (removeIndex != -1)
+                    {
+                        behaviorGroupList.DeleteArrayElementAtIndex(removeIndex);
+                        needReLoad = true;
+                    }
+                    if (changeIndex1 != -1 && changeIndex2 != -1)
+                    {
+                        behaviorGroupList.MoveArrayElement(changeIndex1, changeIndex2);
+                        needReLoad = true;
+                    }
 
-                if (GUILayout.Button(Lang.Add))
+                    if (GUILayout.Button(Lang.Add))
+                    {
+                        behaviorGroupList.arraySize++;
+                        //默认情况新的元素会填充上一个元素的值，这里进行清除
+                        SerializedProperty behaviorGroup = behaviorGroupList.GetArrayElementAtIndex(behaviorGroupList.arraySize - 1);
+                        behaviorGroup.FindPropertyRelative("list").ClearArray();
+                        behaviorGroup.FindPropertyRelative("position").vector2Value = new Vector2();
+                        needReLoad = true;
+                    }
+                }
+                else
                 {
-                    behaviorGroupList.arraySize++;
-                    //默认情况新的元素会填充上一个元素的值，这里进行清除
-                    SerializedProperty behaviorGroup = behaviorGroupList.GetArrayElementAtIndex(behaviorGroupList.arraySize - 1);
-                    behaviorGroup.FindPropertyRelative("list").ClearArray();
-                    behaviorGroup.FindPropertyRelative("position").vector2Value = new Vector2();
-                    needReLoad = true;
+                    for (int i = 0; i < editors.Count; i++)
+                    {
+                        EasyBehaviorGroupEditor editor = editors[i];
+                        GUILayout.BeginVertical(GUI.skin.box);
+                        GUILayout.Label(labels[i], EditorStyles.boldLabel);
+                        editor.DoLayout(avatar);
+                        GUILayout.EndVertical();
+                    }
                 }
             }
-            else
-            {
-                for (int i = 0; i < editors.Count; i++)
-                {
-                    EasyBehaviorGroupEditor editor = editors[i];
-                    GUILayout.BeginVertical(GUI.skin.box);
-                    GUILayout.Label(labels[i], EditorStyles.boldLabel);
-                    editor.DoLayout(avatar);
-                    GUILayout.EndVertical();
-                }
-            }
-
             serializedObject.ApplyModifiedProperties();
 
         }

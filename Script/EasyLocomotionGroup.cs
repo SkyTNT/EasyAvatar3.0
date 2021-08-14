@@ -56,6 +56,7 @@ namespace EasyAvatar
         public EasyLocomotion land;
 
         public EasyLocomotion afk;
+
         // Start is called before the first frame update
         void Start()
         {
