@@ -414,7 +414,7 @@ namespace EasyAvatar
                 newStateMachine.entryPosition = src.entryPosition;
                 newStateMachine.exitPosition = src.exitPosition;
                 newStateMachine.parentStateMachinePosition = src.parentStateMachinePosition;
-                
+                AssetDatabase.AddObjectToAsset(newStateMachine, attachPath);
 
                 foreach (var state in src.states)
                 {
@@ -523,7 +523,7 @@ namespace EasyAvatar
 
                 }
                 newStateMachine.hideFlags = HideFlags.HideInHierarchy;
-                AssetDatabase.AddObjectToAsset(newStateMachine, attachPath);
+                
                 return newStateMachine;
             }
 
