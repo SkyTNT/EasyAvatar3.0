@@ -153,6 +153,15 @@ namespace EasyAvatar
                     actionBuilder.AddDrivedStateBehaviour(driverId + 1, VRCStateMachineBehaviourUtility.ReverseTrackingControl(trackingControl), VRCStateMachineBehaviourUtility.ActionLayerControl(0, 0));
                 }
             }
+            else
+            {
+                if (offTracking != null && onTracking != null)
+                {
+                    fxBuilder.AddDrivedStateBehaviour(driverId, VRCStateMachineBehaviourUtility.GetTrackingControl(onTracking));
+                    fxBuilder.AddDrivedStateBehaviour(driverId + 1, VRCStateMachineBehaviourUtility.GetTrackingControl(offTracking));
+
+                }
+            }
         }
 
         
