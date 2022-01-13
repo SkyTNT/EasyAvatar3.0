@@ -11,6 +11,7 @@ namespace EasyAvatar
         public bool useAnimatorController;
         public RuntimeAnimatorController controller;
         public EasyLocomotionGroup defaultLocomotionGroup;
+        public AnimationClip afk;
 
         // Start is called before the first frame update
         void Start()

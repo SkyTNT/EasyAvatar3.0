@@ -96,6 +96,8 @@ namespace EasyAvatar
                         propertyGroup.tempTarget = tempTransform.gameObject;
                     }
                 }
+                if (propertyGroup.targetPath == avatar.name)
+                    propertyGroup.targetPath = "";
 
                 if (isProxy)
                 {
@@ -208,7 +210,10 @@ namespace EasyAvatar
         {
             AnimationClip clip = new AnimationClip();
             HumanPose humanPose = new HumanPose();
-            HumanPoseHandler humanPoseHandler = new HumanPoseHandler(avatar.GetComponent<Animator>().avatar, avatar.transform);
+            Avatar avatar1 = avatar.GetComponent<Animator>().avatar;
+            if (!avatar1)
+                return clip;
+            HumanPoseHandler humanPoseHandler = new HumanPoseHandler(avatar1, avatar.transform);
             humanPoseHandler.GetHumanPose(ref humanPose);
             string[] names = HumanTrait.MuscleName;
             for (int i=0;i< HumanTrait.MuscleCount; i++)
@@ -374,7 +379,9 @@ namespace EasyAvatar
             foreach (EditorCurveBinding binding in AnimationUtility.GetCurveBindings(clip))
             {
                 if (binding.type == typeof(Animator) && binding.path == "")
+                {
                     AnimationUtility.SetEditorCurve(action, binding, AnimationUtility.GetEditorCurve(clip, binding));
+                }
                 else
                     AnimationUtility.SetEditorCurve(fx, binding, AnimationUtility.GetEditorCurve(clip, binding));
 

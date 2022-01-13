@@ -16,13 +16,15 @@ namespace EasyAvatar
             EditorGUILayout.PropertyField(useController, new GUIContent(Lang.UseController));
             if (useController.boolValue)
             {
-                GUILayout.BeginHorizontal();
+                GUILayout.BeginVertical();
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("controller"), new GUIContent(Lang.AnimatorController));
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("afk"), new GUIContent(Lang.AFK));
                 if (GUILayout.Button(Lang.Default))
                 {
                     serializedObject.FindProperty("controller").objectReferenceValue = VRCAssets.locomotionController;
+                    serializedObject.FindProperty("afk").objectReferenceValue = VRCAssets.proxy_afk;
                 }
-                GUILayout.EndHorizontal();
+                GUILayout.EndVertical();
                 EditorGUILayout.HelpBox(Lang.LocomotionControllerNote, MessageType.Info);
 
             }

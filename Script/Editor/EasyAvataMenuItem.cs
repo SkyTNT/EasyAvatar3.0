@@ -190,7 +190,8 @@ namespace EasyAvatar
                     EditorUtility.DisplayDialog("Error", Lang.ErrAvatarLocomotionManagerLen1, "ok");
                     return false;
                 }
-                CreateObject<EasyLocomotionManager>(Lang.LocomotionManager);
+                CreateObject<EasyLocomotionManager>(Lang.LocomotionManager).GetComponent<EasyLocomotionManager>().afk = VRCAssets.proxy_afk;
+
                 return true;
             }
             EditorUtility.DisplayDialog("Error", Lang.ErrLocomotionManagerPath, "ok");

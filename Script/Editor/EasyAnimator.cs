@@ -174,6 +174,7 @@ namespace EasyAvatar
             if (locomotionManager.useAnimatorController)
             {
                 locomotionBuilder.controller = locomotionManager.controller as AnimatorController;
+                afk = locomotionManager.afk;
                 useCustomLocomotionController = true;
                 return;
             }

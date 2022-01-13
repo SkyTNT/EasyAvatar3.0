@@ -40,9 +40,9 @@ namespace EasyAvatar
             
             if (GUI.Button(rect, content,EditorStyles.objectField))
             {
-                if(!target)
+                if(!avatar)
                 {
-                    EditorUtility.DisplayDialog("Error", Lang.MissingTarget, "ok");
+                    EditorUtility.DisplayDialog("Error", Lang.ErrAvatarNotSet, "ok");
                     return;
                 }
                 EasyPropertySelector editorWindow = CreateInstance<EasyPropertySelector>();
@@ -98,7 +98,10 @@ namespace EasyAvatar
             this.target = target;
             this.avatar = avatar;
             this.propertyGroup = propertyGroup;
-            bindings = AnimationUtility.GetAnimatableBindings(target, avatar);
+            if(!target)
+                bindings = AnimationUtility.GetAnimatableBindings(avatar, avatar);
+            else
+                bindings = AnimationUtility.GetAnimatableBindings(target, avatar);
 
             //按照type分类
             bindingsDictionary = new Dictionary<string, List<EditorCurveBinding[]>>();
