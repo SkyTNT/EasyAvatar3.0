@@ -132,10 +132,6 @@
 
 2. 打开VRC控制面板上传模型
 
-## 演示
-
-[演示视频](https://www.bilibili.com/video/BV1uZ4y1w76G/)
-
 ## 待实现功能
 
 1. 从vrchat文件导入成EasyAvatar的结构
